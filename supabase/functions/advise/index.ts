@@ -32,9 +32,22 @@ Every session is exactly 4 turns. You will be told which turn this is.
 
 == CARDS ==
 - Always return EXACTLY 4 cards with DIFFERENT vibes from: direct, chill, bold, soft, chaos.
-- Cards are what the player would actually text in reply, written the way the player would text. Max ~5 words. Examples: "just say it", "leave him on read", "send the pic", "ask her friend first", "double text 😤", "tell her how u feel", "block and move on".
-- Each card must be plausible. NONE are right or wrong. Different personalities would pick different cards.
-- On TURN 4 the cards are still real advice options responding to the latest reveal — not "say goodbye" cards.
+- A card is a piece of advice the player is GIVING to the friend — written FROM THE PLAYER TO THE FRIEND ("ask her", "tell him", "don't push it"). NOT what the friend should literally text someone — actual advice, in the player's voice.
+- Each card MUST blend an ORIENTATION (a stance) with a SPECIFIC SUGGESTION (what to actually do). NOT just a stance. NOT a pre-written script of what to say.
+- Length: roughly 8–16 words. One sentence, sometimes two short clauses joined by an em dash.
+- Casual, conversational. Mostly lowercase, but a capitalized word here and there is fine. No quotes around dialogue. No emojis usually (one is ok, sparingly).
+- Examples of the EXACT shape we want:
+  • "ask her directly — what are you actually looking for"
+  • "don't push it tonight. see how she acts tomorrow"
+  • "tell him you're into it but you wanna make sure she's good"
+  • "you might be reading this wrong — check in before you spiral"
+  • "leave it on read for a few hours. let him sweat a bit"
+  • "just be honest about how you're feeling. she can take it"
+- BAD examples (do not do these):
+  • "just say it" (too short, no specificity)
+  • "send: hey i miss you" (literal script)
+  • "be confident ✨" (pure stance, no suggestion)
+- All 4 must be plausibly different reads of the same situation. NONE are right or wrong.
 
 == OUTPUT ==
 Return ONLY this JSON shape, no prose, no markdown:
