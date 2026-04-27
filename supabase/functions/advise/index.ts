@@ -44,7 +44,7 @@ interface Turn {
   content: string;
 }
 
-async function callClaude(messages: Turn[]) {
+async function callClaude(messages: Turn[], system: string) {
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
 
@@ -58,7 +58,7 @@ async function callClaude(messages: Turn[]) {
     body: JSON.stringify({
       model: "claude-sonnet-4-20250514",
       max_tokens: 700,
-      system: SYSTEM,
+      system,
       messages,
     }),
   });
