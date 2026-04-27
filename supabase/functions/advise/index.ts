@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
 
     parsed.cards = (parsed.cards || []).slice(0, 4).map((c: any, i: number) => ({
       id: `${Date.now()}-${i}`,
-      label: String(c.label || "").slice(0, 40),
+      label: String(c.label || "").slice(0, 140),
       vibe: ["direct", "chill", "bold", "soft", "chaos"].includes(c.vibe) ? c.vibe : "chill",
     }));
 
