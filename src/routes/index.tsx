@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { GameScreen } from "@/components/game/GameScreen";
+import { FriendSelect } from "@/components/game/FriendSelect";
+import type { Friend } from "@/components/game/friends";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -14,10 +16,34 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-function Index() {
-  const [playing, setPlaying] = useState(false);
+type Stage = "landing" | "select" | "play";
 
-  if (playing) return <GameScreen onExit={() => setPlaying(false)} />;
+function Index() {
+  const [stage, setStage] = useState<Stage>("landing");
+  const [friend, setFriend] = useState<Friend | null>(null);
+
+  if (stage === "play" && friend) {
+    return (
+      <GameScreen
+        friend={friend}
+        onExit={() => {
+          setFriend(null);
+          setStage("select");
+        }}
+      />
+    );
+  }
+
+  if (stage === "select") {
+    return (
+      <FriendSelect
+        onPick={(f) => {
+          setFriend(f);
+          setStage("play");
+        }}
+      />
+    );
+  }
 
   return (
     <div className="relative min-h-[100dvh] max-w-[480px] mx-auto flex flex-col items-center justify-between px-6 py-10 grain overflow-hidden">
@@ -51,7 +77,7 @@ function Index() {
 
       {/* CTA */}
       <button
-        onClick={() => setPlaying(true)}
+        onClick={() => setStage("select")}
         className="relative w-full h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-lg tracking-tight active:scale-[0.98] transition-transform animate-pulse-glow"
       >
         tap in

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Bubble, TypingBubble } from "@/components/game/Bubble";
 import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
+import type { Friend } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
 
 type Card = { id: string; label: string; vibe: Vibe };
@@ -10,7 +11,7 @@ type ChatItem =
   | { kind: "you"; text: string };
 type Turn = { role: "user" | "assistant"; content: string };
 
-export function GameScreen({ onExit }: { onExit: () => void }) {
+export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => void }) {
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
   const [history, setHistory] = useState<Turn[]>([]);
@@ -36,6 +37,7 @@ export function GameScreen({ onExit }: { onExit: () => void }) {
           start: opts.start ?? false,
           chosenCard: opts.chosenCard,
           history,
+          friendContext: friend.context,
         },
       });
       if (error) throw error;
@@ -83,11 +85,20 @@ export function GameScreen({ onExit }: { onExit: () => void }) {
         >
           ←
         </button>
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent grid place-items-center text-lg font-bold text-primary-foreground">
-          M
+        <div
+          className="w-10 h-10 rounded-full overflow-hidden ring-2"
+          style={{ boxShadow: `0 0 0 2px var(--${friend.accent})` }}
+        >
+          <img
+            src={friend.avatar}
+            alt={friend.name}
+            width={80}
+            height={80}
+            className="w-full h-full object-cover"
+          />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-[15px] truncate">maya</div>
+          <div className="font-semibold text-[15px] truncate lowercase">{friend.name}</div>
           <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             online · texting you

@@ -7,18 +7,20 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM = `You write tiny ongoing text-message scenes for a mobile game called "moves with friends".
+const BASE_SYSTEM = `You write tiny ongoing text-message scenes for a mobile game called "moves with friends".
 
-The player is texting a FRIEND who is in the middle of an ambiguous romantic or social situation (crush, party drama, group chat tension, ghosting, sneaky link, situationship, prom, locker-room moment, DM slide, etc.). The friend texts the player. The player picks a card to advise. Then you continue the scene.
+The player is texting a SPECIFIC FRIEND who is in the middle of an ambiguous romantic or social situation. The friend texts the player. The player picks a card to advise. Then you continue the scene.
 
 CRITICAL RULES:
 - Audience: 13-18 year olds. Voice = real teen texting. Lowercase mostly, slang, emojis used sparingly but naturally (😭 💀 🙏 ✨ etc), abbreviations (idk, fr, lowkey, ngl, tbh, bestie, bro). NEVER cringe. NEVER use "rizz", "skibidi", or any try-hard slang.
 - NEVER judge the advice. NEVER say "that was a good call" or "bad idea". NEVER score, grade, or moralize. The friend just reacts as a real teen would — sometimes it works, sometimes it spirals, sometimes it just shifts.
-- NO right answers. Cards should each be plausible and reflect different vibes/personalities — not good vs bad.
+- NO right answers. Cards should each be plausible and reflect different vibes — not good vs bad.
 - Keep the friend's messages SHORT. Like real texts. 1-3 messages, each under ~80 chars. Break thoughts across bubbles.
 - Never narrate (no "*she walks in*"). Pure texting only.
 - The situation should EVOLVE every turn — new info drops, someone replies, plans shift. Avoid loops.
 - After ~6-8 turns total, scenes can naturally wind down (friend says "ok ttyl", "wish me luck", "ill update u") — but do NOT add a verdict or summary. Just end mid-life.
+
+You will be given a SPECIFIC FRIEND character and their ongoing situation. STAY IN THEIR VOICE AND THEIR SITUATION the entire session. Do NOT switch to a different scenario type — every scene must stay grounded in this friend's specific ongoing thing. Match their texting style precisely (capitalization, emoji use, vocabulary, length, energy).
 
 Always respond in this strict JSON shape, no prose, no markdown:
 {
@@ -30,14 +32,19 @@ Always respond in this strict JSON shape, no prose, no markdown:
 
 Always return EXACTLY 4 cards with DIFFERENT vibes. Card labels are what the player would actually advise — write them as the player would text them, e.g. "just say it", "leave him on read", "send the pic", "ask her friend first", "double text 😤".`;
 
-const STARTER_USER = `Start a brand new scene. Pick ONE fresh, specific situation (crush texted something weird, party invite drama, ex showed up, group chat is going off, someone sent a screenshot, etc). The friend opens the convo with you. Return JSON only.`;
+function buildSystem(friendContext?: string) {
+  if (!friendContext) return BASE_SYSTEM;
+  return `${BASE_SYSTEM}\n\n--- THIS SESSION'S FRIEND ---\n${friendContext}\n--- END FRIEND ---\n\nEvery message and card must feel like it belongs to THIS friend. Do not break voice.`;
+}
+
+const STARTER_USER = `Open the convo. Drop me into the middle of something happening RIGHT NOW in your situation — a fresh moment, something that just shifted (a text just came in, you just saw something, plans just changed, etc). Don't recap or explain — text me the way you actually would when something is unfolding. Return JSON only.`;
 
 interface Turn {
   role: "user" | "assistant";
   content: string;
 }
 
-async function callClaude(messages: Turn[]) {
+async function callClaude(messages: Turn[], system: string) {
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
 
@@ -51,7 +58,7 @@ async function callClaude(messages: Turn[]) {
     body: JSON.stringify({
       model: "claude-sonnet-4-20250514",
       max_tokens: 700,
-      system: SYSTEM,
+      system,
       messages,
     }),
   });
@@ -79,6 +86,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const history: Turn[] = Array.isArray(body.history) ? body.history : [];
     const chosenCard: string | undefined = body.chosenCard;
+    const friendContext: string | undefined = body.friendContext;
     const isStart: boolean = body.start === true || history.length === 0;
 
     let messages: Turn[];
@@ -89,12 +97,12 @@ Deno.serve(async (req) => {
         ...history,
         {
           role: "user",
-          content: `The player picked this card to advise me: "${chosenCard}". Continue the scene. Return JSON only.`,
+          content: `The player picked this card to advise me: "${chosenCard}". Continue the scene — stay in your voice and your situation. Return JSON only.`,
         },
       ];
     }
 
-    const raw = await callClaude(messages);
+    const raw = await callClaude(messages, buildSystem(friendContext));
     const parsed = extractJson(raw);
 
     // Add stable ids
