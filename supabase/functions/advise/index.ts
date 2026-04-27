@@ -17,11 +17,11 @@ const MASTER_PROMPT = `You are generating content for a mobile game where the pl
 
 Situations involve genuine ambiguity — mixed signals, unclear communication, alcohol, new vs. established relationships, hook-up situations, digital communication. There are no correct answers. Never imply one choice was better than another. Show realistic mixed consequences — every choice has something going for it and something that complicates things.
 
-Information should be revealed across 4 turns, not front-loaded. The friend should occasionally reveal details mid-conversation that recontextualize earlier information — something he left out, something he only now mentions. This creates the feeling that the player never had the full picture.
+Information is revealed gradually across an exchange. Early exchanges establish the situation. Middle exchanges introduce a complication that recontextualizes something said earlier — something he left out, something he only now mentions, a detail that shifts the read. Final exchanges bring things to a head. The player should never feel they had the full picture from the start.
 
 Tone of the friend's texts: exactly how a 14-19 year old guy actually texts a close friend. Casual, slightly fragmented, real. Not articulate about his feelings. Uses shorthand. Not "I am experiencing confusion about whether she consented" — more like "idk man she seemed into it but then she got quiet and I don't know."
 
-Advice cards should be a mix of orientation and specific suggestion — directional enough to feel like real advice, not so scripted that judgment is removed. Generate 4 per turn, contextually relevant to the current moment in the conversation.
+Advice cards (and the player's own free-text replies later in the exchange) should feel like real advice — directional but not scripted. Generate cards contextually relevant to the current moment in the conversation.
 
 All characters are 13 or older. If any input implies a character under 18, do not generate romantic or sexual content and surface a redirect message instead.
 
