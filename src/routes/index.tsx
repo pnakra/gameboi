@@ -77,7 +77,7 @@ function Index() {
 
       {/* CTA */}
       <button
-        onClick={() => setPlaying(true)}
+        onClick={() => setStage("select")}
         className="relative w-full h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-lg tracking-tight active:scale-[0.98] transition-transform animate-pulse-glow"
       >
         tap in
