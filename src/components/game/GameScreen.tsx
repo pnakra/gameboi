@@ -390,6 +390,117 @@ export function GameScreen({
   );
 }
 
+/* ---------- input components ---------- */
+
+function ComposeBar({
+  value,
+  onChange,
+  onSend,
+  disabled,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onSend: () => void;
+  disabled?: boolean;
+}) {
+  const canSend = value.trim().length > 0 && !disabled;
+  return (
+    <div className="flex items-end gap-2">
+      <div className="flex-1 min-h-[44px] rounded-[22px] bg-surface border border-white/[0.08] px-4 py-2.5 focus-within:border-white/20 transition-colors">
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              if (canSend) onSend();
+            }
+          }}
+          placeholder="iMessage"
+          rows={1}
+          className="w-full resize-none bg-transparent outline-none text-[15px] leading-[1.35] placeholder:text-muted-foreground/60 max-h-[120px]"
+          style={{ fieldSizing: "content" } as React.CSSProperties}
+        />
+      </div>
+      <button
+        onClick={onSend}
+        disabled={!canSend}
+        aria-label="Send"
+        className={cn(
+          "shrink-0 w-10 h-10 rounded-full grid place-items-center transition-all",
+          canSend
+            ? "bg-primary text-primary-foreground active:scale-90"
+            : "bg-surface text-muted-foreground/40 cursor-not-allowed",
+        )}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M5 12h14M13 6l6 6-6 6"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+function SuggestionStrip({
+  cards,
+  disabled,
+  onPick,
+}: {
+  cards: Card[];
+  disabled?: boolean;
+  onPick: (c: Card) => void;
+}) {
+  if (!cards.length) return <div className="h-12 mt-3" />;
+  return (
+    <div className="mt-3 -mx-2 px-2 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+      {cards.map((c) => {
+        const isWild = !!c.isWildcard;
+        const tintVar = isWild
+          ? "--card-ito"
+          : c.vibe === "direct"
+          ? "--card-direct"
+          : c.vibe === "chill"
+          ? "--card-chill"
+          : c.vibe === "bold"
+          ? "--card-bold"
+          : c.vibe === "soft"
+          ? "--card-soft"
+          : c.vibe === "chaos"
+          ? "--card-chaos"
+          : "--card-chill";
+        return (
+          <button
+            key={c.id}
+            disabled={disabled}
+            onClick={() => onPick(c)}
+            className={cn(
+              "shrink-0 max-w-[260px] text-left text-[12.5px] leading-[1.3] font-medium",
+              "px-3 py-2 rounded-2xl border transition-all active:scale-[0.97]",
+              "disabled:opacity-50",
+            )}
+            style={{
+              borderColor: `color-mix(in oklch, var(${tintVar}) 40%, transparent)`,
+              backgroundColor: `color-mix(in oklch, var(${tintVar}) 10%, var(--surface))`,
+              color: "var(--foreground)",
+            }}
+          >
+            <span className="block text-[9px] uppercase tracking-[0.18em] mb-0.5" style={{ color: `var(${tintVar})` }}>
+              {isWild ? "isthisok.app" : c.vibe}
+            </span>
+            <span className="line-clamp-2">{c.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ---------- helpers ---------- */
 
 type GroupedItem =
