@@ -85,11 +85,20 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
         >
           ←
         </button>
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent grid place-items-center text-lg font-bold text-primary-foreground">
-          M
+        <div
+          className="w-10 h-10 rounded-full overflow-hidden ring-2"
+          style={{ boxShadow: `0 0 0 2px var(--${friend.accent})` }}
+        >
+          <img
+            src={friend.avatar}
+            alt={friend.name}
+            width={80}
+            height={80}
+            className="w-full h-full object-cover"
+          />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-[15px] truncate">maya</div>
+          <div className="font-semibold text-[15px] truncate lowercase">{friend.name}</div>
           <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             online · texting you
