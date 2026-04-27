@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Bubble, TypingBubble } from "@/components/game/Bubble";
 import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
+import type { Friend } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
 
 type Card = { id: string; label: string; vibe: Vibe };
@@ -10,7 +11,7 @@ type ChatItem =
   | { kind: "you"; text: string };
 type Turn = { role: "user" | "assistant"; content: string };
 
-export function GameScreen({ onExit }: { onExit: () => void }) {
+export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => void }) {
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
   const [history, setHistory] = useState<Turn[]>([]);
