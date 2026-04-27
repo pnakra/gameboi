@@ -110,8 +110,20 @@ export function GameScreen({
       if (data.isFinal) {
         setIsFinished(true);
         setHand([]);
+        // Brief beat so the last bubble lands before the end card.
+        window.setTimeout(() => {
+          onEnd({
+            transcript: buildTranscript([...chatRef.current]),
+            itoFirst: !!data.earlyExit,
+          });
+        }, 1100);
       } else {
-        const incoming: Card[] = (data.cards ?? []).slice(0, HAND_SIZE);
+        const incoming: Card[] = (data.cards ?? []).slice(0, HAND_SIZE).map((c: any) => ({
+          id: c.id,
+          label: c.label,
+          vibe: c.vibe,
+          isWildcard: !!c.isWildcard,
+        }));
         await dealCards(incoming);
       }
     } catch (e) {
@@ -132,10 +144,50 @@ export function GameScreen({
       setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
+
+      if (c.isWildcard) {
+        // Early exit: call wildcard mode, then end the round.
+        void nextWildcard(c.label);
+        return;
+      }
+
       const nextTurn = turnNum + 1;
       setTurnNum(nextTurn);
       void next({ chosenCard: c.label, forTurn: nextTurn });
     }, 480);
+  }
+
+  async function nextWildcard(chosenCard: string) {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("advise", {
+        body: {
+          mode: "wildcard",
+          chosenCard,
+          history,
+          friendContext: friend.context,
+        },
+      });
+      if (error) throw error;
+      const friendMsgs: string[] = data.friend ?? ["yeah honestly maybe i should", "ok ill check that out"];
+      for (let i = 0; i < friendMsgs.length; i++) {
+        await new Promise((r) => setTimeout(r, i === 0 ? 700 : 500));
+        setChat((c) => [...c, { kind: "them", text: friendMsgs[i], ts: Date.now(), pop: true }]);
+      }
+      setLoading(false);
+      setIsFinished(true);
+      setHand([]);
+      window.setTimeout(() => {
+        onEnd({
+          transcript: buildTranscript([...chatRef.current]),
+          itoFirst: true,
+        });
+      }, 1100);
+    } catch (e) {
+      console.error(e);
+      setLoading(false);
+      onEnd({ transcript: buildTranscript(chatRef.current), itoFirst: true });
+    }
   }
 
   const groupedChat = useMemo(() => groupBubbles(chat), [chat]);
