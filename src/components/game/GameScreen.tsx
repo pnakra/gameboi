@@ -100,8 +100,8 @@ export function GameScreen({
 
       setHistory((h) => [
         ...h,
-        ...(opts.chosenCard
-          ? [{ role: "user" as const, content: `The player texted: "${opts.chosenCard}".` }]
+        ...(opts.chosenReply
+          ? [{ role: "user" as const, content: `The player texted: "${opts.chosenReply}".` }]
           : opts.start
           ? [{ role: "user" as const, content: "Open the convo." }]
           : []),
@@ -142,10 +142,18 @@ export function GameScreen({
 
   function pickCard(c: Card) {
     if (loading || isFinished || playingCardId) return;
+
+    // After exchange 4, cards are suggestions — populate the field instead of submitting.
+    if (exchange >= FREETEXT_FROM && !c.isWildcard) {
+      setActiveCardId(null);
+      setDraft(c.label);
+      return;
+    }
+
     setActiveCardId(null);
     setPlayingCardId(c.id);
 
-    // After the card's fly-up animation completes, push the bubble + clear hand + request next turn
+    // After the card's fly-up animation completes, push the bubble + clear hand + request next exchange
     window.setTimeout(() => {
       const ts = Date.now();
       setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
@@ -158,10 +166,23 @@ export function GameScreen({
         return;
       }
 
-      const nextTurn = turnNum + 1;
-      setTurnNum(nextTurn);
-      void next({ chosenCard: c.label, forTurn: nextTurn });
+      const nextEx = exchange + 1;
+      setExchange(nextEx);
+      void next({ chosenReply: c.label, forExchange: nextEx });
     }, 480);
+  }
+
+  function sendDraft() {
+    const text = draft.trim();
+    if (!text || loading || isFinished || playingCardId) return;
+    setDraft("");
+    setActiveCardId(null);
+    const ts = Date.now();
+    setChat((prev) => [...prev, { kind: "you", text, ts, pop: true }]);
+    setHand([]);
+    const nextEx = exchange + 1;
+    setExchange(nextEx);
+    void next({ chosenReply: text, forExchange: nextEx });
   }
 
   async function nextWildcard(chosenCard: string) {
