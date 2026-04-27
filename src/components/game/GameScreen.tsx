@@ -54,7 +54,7 @@ export function GameScreen({
     if (startedRef.current) return;
     startedRef.current = true;
     setChat([{ kind: "stamp", text: `today ${openTime}` }]);
-    void next({ start: true, forTurn: 1 });
+    void next({ start: true, forExchange: 1 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -76,16 +76,16 @@ export function GameScreen({
     }, 600);
   }
 
-  async function next(opts: { start?: boolean; chosenCard?: string; forTurn: number }) {
+  async function next(opts: { start?: boolean; chosenReply?: string; forExchange: number }) {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("advise", {
         body: {
           start: opts.start ?? false,
-          chosenCard: opts.chosenCard,
+          chosenReply: opts.chosenReply,
           history,
           friendContext: friend.context,
-          turn: opts.forTurn,
+          exchange: opts.forExchange,
         },
       });
       if (error) throw error;
