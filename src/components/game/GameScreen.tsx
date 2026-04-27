@@ -306,19 +306,31 @@ export function GameScreen({
                       active={active}
                       playing={playing}
                       entering={c.entering}
-                      onClick={() => pickCard(c)}
+                      onClick={() => {
+                        // First tap previews; second tap on the same card plays it.
+                        if (active) pickCard(c);
+                        else setActiveCardId(c.id);
+                      }}
                       disabled={loading || !!playingCardId}
                       style={{}}
                       {...{
                         onMouseEnter: () => !playingCardId && setActiveCardId(c.id),
                         onMouseLeave: () =>
                           activeCardId === c.id && setActiveCardId(null),
-                        onTouchStart: () => !playingCardId && setActiveCardId(c.id),
                       }}
                     />
                   );
                 })}
               </div>
+            )}
+
+            {/* Tap-outside dismisses the preview on mobile */}
+            {activeCardId && !playingCardId && (
+              <div
+                onClick={() => setActiveCardId(null)}
+                className="fixed inset-0 z-20"
+                aria-hidden
+              />
             )}
 
             {/* Persistent ito footer — always visible during play */}

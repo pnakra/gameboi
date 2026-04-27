@@ -56,9 +56,9 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
       aria-label={label}
       className={cn(
         "absolute left-1/2 bottom-0",
-        "w-[180px] h-[230px] rounded-[22px] p-3.5 text-left select-none",
+        "w-[180px] rounded-[22px] p-3.5 text-left select-none",
         "border border-white/10 ring-1 ring-white/5",
-        "transition-[transform,box-shadow,opacity] duration-300 ease-out",
+        "transition-[transform,box-shadow,opacity,height] duration-300 ease-out",
         "will-change-transform origin-bottom",
         "disabled:pointer-events-none",
         active && "z-30",
@@ -67,24 +67,23 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
         className,
       )}
       style={{
+        height: active ? 290 : 230,
         transform: playing
-          ? // Fly straight up off the hand
-            `translate(-50%, -120vh) rotate(0deg) scale(0.9)`
+          ? `translate(-50%, -120vh) rotate(0deg) scale(0.9)`
           : active
-          ? // Lift, straighten, scale up under finger
-            `translate(-50%, -28px) rotate(0deg) scale(1.06)`
+          ? // Lift higher so the taller card stays in view
+            `translate(-50%, -56px) rotate(0deg) scale(1.08)`
           : fanTransform,
         opacity: playing ? 0 : 1,
         zIndex: active ? 30 : 10 + fanIndex,
-        // Layered tint + radial highlight for tactile depth
         backgroundImage: `
           radial-gradient(120% 80% at 30% 0%, color-mix(in oklch, ${tint} 28%, transparent) 0%, transparent 55%),
           linear-gradient(160deg, color-mix(in oklch, ${tint} 22%, var(--surface-2)) 0%, var(--surface) 100%)
         `,
         boxShadow: active
-          ? `0 24px 50px -16px color-mix(in oklch, ${tint} 50%, transparent),
-             0 0 0 1.5px color-mix(in oklch, ${tint} 70%, transparent),
-             inset 0 1px 0 rgba(255,255,255,0.08)`
+          ? `0 30px 60px -16px color-mix(in oklch, ${tint} 55%, transparent),
+             0 0 0 1.5px color-mix(in oklch, ${tint} 75%, transparent),
+             inset 0 1px 0 rgba(255,255,255,0.1)`
           : `0 12px 24px -16px rgb(0 0 0 / 0.7),
              0 4px 10px -8px rgb(0 0 0 / 0.5),
              inset 0 1px 0 rgba(255,255,255,0.06)`,
@@ -106,9 +105,21 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
         />
       </div>
 
-      {/* Label */}
-      <div className="absolute inset-x-3.5 bottom-3.5 text-[14px] font-semibold leading-[1.25] text-foreground/95 text-balance">
-        {label}
+      {/* Label — fills card. Clamped when fanned; full text when active. */}
+      <div
+        className={cn(
+          "absolute inset-x-3.5 top-9 bottom-3.5 flex items-end",
+          "text-[14px] font-semibold leading-[1.3] text-foreground/95 text-balance",
+        )}
+      >
+        <span
+          className={cn(
+            "block w-full transition-all duration-200",
+            active ? "text-[15px] leading-[1.32]" : "line-clamp-5",
+          )}
+        >
+          {label}
+        </span>
       </div>
 
       {/* Subtle inner sheen */}
