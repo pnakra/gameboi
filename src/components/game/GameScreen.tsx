@@ -40,6 +40,10 @@ export function GameScreen({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
+  const chatRef = useRef<ChatItem[]>([]);
+  useEffect(() => {
+    chatRef.current = chat;
+  }, [chat]);
 
   const openTime = useMemo(() => formatTime(new Date()), []);
 
@@ -281,11 +285,10 @@ export function GameScreen({
 
           {/* HAND */}
           <div className="shrink-0 safe-bottom px-2 pt-2">
-            {!isFinished ? (
+            {!isFinished && (
               <div
                 className={cn(
                   "relative h-[260px] mx-auto",
-                  // Subtle ambient glow under the hand
                   "before:content-[''] before:absolute before:left-1/2 before:bottom-2 before:-translate-x-1/2",
                   "before:w-[340px] before:h-[40px] before:rounded-full before:bg-primary/10 before:blur-2xl before:pointer-events-none",
                 )}
@@ -305,9 +308,7 @@ export function GameScreen({
                       entering={c.entering}
                       onClick={() => pickCard(c)}
                       disabled={loading || !!playingCardId}
-                      // Hover-to-lift on desktop
                       style={{}}
-                      // Use pointer events for active feedback
                       {...{
                         onMouseEnter: () => !playingCardId && setActiveCardId(c.id),
                         onMouseLeave: () =>
@@ -318,16 +319,17 @@ export function GameScreen({
                   );
                 })}
               </div>
-            ) : (
-              <div className="pb-4 pt-2">
-                <button
-                  onClick={onExit}
-                  className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold tracking-tight active:scale-[0.98] transition-transform"
-                >
-                  pick another friend
-                </button>
-              </div>
             )}
+
+            {/* Persistent ito footer — always visible during play */}
+            <a
+              href="https://isthisok.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight"
+            >
+              got your own situation? isthisok.app
+            </a>
           </div>
         </div>
       </div>
