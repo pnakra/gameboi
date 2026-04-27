@@ -86,6 +86,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const history: Turn[] = Array.isArray(body.history) ? body.history : [];
     const chosenCard: string | undefined = body.chosenCard;
+    const friendContext: string | undefined = body.friendContext;
     const isStart: boolean = body.start === true || history.length === 0;
 
     let messages: Turn[];
@@ -96,12 +97,12 @@ Deno.serve(async (req) => {
         ...history,
         {
           role: "user",
-          content: `The player picked this card to advise me: "${chosenCard}". Continue the scene. Return JSON only.`,
+          content: `The player picked this card to advise me: "${chosenCard}". Continue the scene — stay in your voice and your situation. Return JSON only.`,
         },
       ];
     }
 
-    const raw = await callClaude(messages);
+    const raw = await callClaude(messages, buildSystem(friendContext));
     const parsed = extractJson(raw);
 
     // Add stable ids
