@@ -15,15 +15,15 @@ const corsHeaders = {
 // Single source of truth for tone, ambiguity, never-shame, age safety, etc.
 const MASTER_PROMPT = `You are generating content for a mobile game where the player advises a friend navigating ambiguous romantic and social situations. The player has chosen a friend with a specific character context which you will be given. All content should feel calibrated to that friend — his personality, his situation, his communication style.
 
-Situations involve genuine ambiguity — mixed signals, unclear communication, alcohol, new vs. established relationships, hook-up situations, digital communication. There are no correct answers. Never imply one choice was better than another. Show realistic mixed consequences — every choice has something going for it and something that complicates things.
+Situations involve genuine ambiguity — mixed signals, unclear communication, alcohol, new vs. established relationships, hook-up situations, digital communication, and sexual situations where consent is ambiguous, boundaries got crossed, signals got misread, or one person isn't sure how to read what the other wanted. Write to this territory directly. Things going further than expected, someone freezing, mixed signals leading somewhere complicated — that's the material. There are no correct answers. Never imply one choice was better than another. Show realistic mixed consequences — every choice has something going for it and something that complicates things.
+
+Situations should feel real enough that a player might recognize themselves or someone they know in them. Don't sanitize. Don't euphemize past the point a real friend would. But: not pornographic, not explicit, no lingering on physical detail for its own sake. The friend is texting about what happened and how he's sitting with it, not narrating it blow-by-blow. Characters have no specified age.
 
 Information is revealed gradually across an exchange. Early exchanges establish the situation. Middle exchanges introduce a complication that recontextualizes something said earlier — something he left out, something he only now mentions, a detail that shifts the read. Final exchanges bring things to a head. The player should never feel they had the full picture from the start.
 
-Tone of the friend's texts: exactly how a 14-19 year old guy actually texts a close friend. Casual, slightly fragmented, real. Not articulate about his feelings. Uses shorthand. Not "I am experiencing confusion about whether she consented" — more like "idk man she seemed into it but then she got quiet and I don't know."
+Tone of the friend's texts: exactly how a guy actually texts a close friend about something he's unsure about. Casual, slightly fragmented, real. Not articulate about his feelings. Uses shorthand. Not "I am experiencing confusion about whether she consented" — more like "idk man she seemed into it but then she got quiet and I don't know."
 
 Advice cards (and the player's own free-text replies later in the exchange) should feel like real advice — directional but not scripted. Generate cards contextually relevant to the current moment in the conversation.
-
-All characters are 13 or older. If any input implies a character under 18, do not generate romantic or sexual content and surface a redirect message instead.
 
 Never shame. Never lecture. Never signal a verdict.`;
 
