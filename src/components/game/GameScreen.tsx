@@ -5,7 +5,7 @@ import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
 import type { Friend } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
 
-type Card = { id: string; label: string; vibe: Vibe; entering?: boolean };
+type Card = { id: string; label: string; vibe: Vibe; entering?: boolean; isWildcard?: boolean };
 type ChatItem =
   | { kind: "them"; text: string; ts: number; pop?: boolean }
   | { kind: "you"; text: string; ts: number; pop?: boolean }
@@ -15,7 +15,20 @@ type ApiTurn = { role: "user" | "assistant"; content: string };
 const TOTAL_TURNS = 4;
 const HAND_SIZE = 4;
 
-export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => void }) {
+export type EndPayload = {
+  transcript: string;
+  itoFirst: boolean;
+};
+
+export function GameScreen({
+  friend,
+  onExit,
+  onEnd,
+}: {
+  friend: Friend;
+  onExit: () => void;
+  onEnd: (payload: EndPayload) => void;
+}) {
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [hand, setHand] = useState<Card[]>([]);
   const [history, setHistory] = useState<ApiTurn[]>([]);
@@ -27,6 +40,10 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
+  const chatRef = useRef<ChatItem[]>([]);
+  useEffect(() => {
+    chatRef.current = chat;
+  }, [chat]);
 
   const openTime = useMemo(() => formatTime(new Date()), []);
 
@@ -97,8 +114,20 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
       if (data.isFinal) {
         setIsFinished(true);
         setHand([]);
+        // Brief beat so the last bubble lands before the end card.
+        window.setTimeout(() => {
+          onEnd({
+            transcript: buildTranscript([...chatRef.current]),
+            itoFirst: !!data.earlyExit,
+          });
+        }, 1100);
       } else {
-        const incoming: Card[] = (data.cards ?? []).slice(0, HAND_SIZE);
+        const incoming: Card[] = (data.cards ?? []).slice(0, HAND_SIZE).map((c: any) => ({
+          id: c.id,
+          label: c.label,
+          vibe: c.vibe,
+          isWildcard: !!c.isWildcard,
+        }));
         await dealCards(incoming);
       }
     } catch (e) {
@@ -119,10 +148,50 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
       setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
+
+      if (c.isWildcard) {
+        // Early exit: call wildcard mode, then end the round.
+        void nextWildcard(c.label);
+        return;
+      }
+
       const nextTurn = turnNum + 1;
       setTurnNum(nextTurn);
       void next({ chosenCard: c.label, forTurn: nextTurn });
     }, 480);
+  }
+
+  async function nextWildcard(chosenCard: string) {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("advise", {
+        body: {
+          mode: "wildcard",
+          chosenCard,
+          history,
+          friendContext: friend.context,
+        },
+      });
+      if (error) throw error;
+      const friendMsgs: string[] = data.friend ?? ["yeah honestly maybe i should", "ok ill check that out"];
+      for (let i = 0; i < friendMsgs.length; i++) {
+        await new Promise((r) => setTimeout(r, i === 0 ? 700 : 500));
+        setChat((c) => [...c, { kind: "them", text: friendMsgs[i], ts: Date.now(), pop: true }]);
+      }
+      setLoading(false);
+      setIsFinished(true);
+      setHand([]);
+      window.setTimeout(() => {
+        onEnd({
+          transcript: buildTranscript([...chatRef.current]),
+          itoFirst: true,
+        });
+      }, 1100);
+    } catch (e) {
+      console.error(e);
+      setLoading(false);
+      onEnd({ transcript: buildTranscript(chatRef.current), itoFirst: true });
+    }
   }
 
   const groupedChat = useMemo(() => groupBubbles(chat), [chat]);
@@ -216,11 +285,10 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
 
           {/* HAND */}
           <div className="shrink-0 safe-bottom px-2 pt-2">
-            {!isFinished ? (
+            {!isFinished && (
               <div
                 className={cn(
                   "relative h-[260px] mx-auto",
-                  // Subtle ambient glow under the hand
                   "before:content-[''] before:absolute before:left-1/2 before:bottom-2 before:-translate-x-1/2",
                   "before:w-[340px] before:h-[40px] before:rounded-full before:bg-primary/10 before:blur-2xl before:pointer-events-none",
                 )}
@@ -240,9 +308,7 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
                       entering={c.entering}
                       onClick={() => pickCard(c)}
                       disabled={loading || !!playingCardId}
-                      // Hover-to-lift on desktop
                       style={{}}
-                      // Use pointer events for active feedback
                       {...{
                         onMouseEnter: () => !playingCardId && setActiveCardId(c.id),
                         onMouseLeave: () =>
@@ -253,16 +319,17 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
                   );
                 })}
               </div>
-            ) : (
-              <div className="pb-4 pt-2">
-                <button
-                  onClick={onExit}
-                  className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold tracking-tight active:scale-[0.98] transition-transform"
-                >
-                  pick another friend
-                </button>
-              </div>
             )}
+
+            {/* Persistent ito footer — always visible during play */}
+            <a
+              href="https://isthisok.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight"
+            >
+              got your own situation? isthisok.app
+            </a>
           </div>
         </div>
       </div>
@@ -305,6 +372,18 @@ function groupBubbles(chat: ChatItem[]): GroupedItem[] {
     });
   }
   return out;
+}
+
+function buildTranscript(chat: ChatItem[]): string {
+  return chat
+    .filter((c) => c.kind !== "stamp")
+    .map((c) => {
+      if (c.kind === "them") return `friend: ${c.text}`;
+      if (c.kind === "you") return `player advice: ${c.text}`;
+      return "";
+    })
+    .filter(Boolean)
+    .join("\n");
 }
 
 function formatTime(d: Date) {
