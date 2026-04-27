@@ -374,6 +374,18 @@ function groupBubbles(chat: ChatItem[]): GroupedItem[] {
   return out;
 }
 
+function buildTranscript(chat: ChatItem[]): string {
+  return chat
+    .filter((c) => c.kind !== "stamp")
+    .map((c) => {
+      if (c.kind === "them") return `friend: ${c.text}`;
+      if (c.kind === "you") return `player advice: ${c.text}`;
+      return "";
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
 function formatTime(d: Date) {
   return d
     .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
