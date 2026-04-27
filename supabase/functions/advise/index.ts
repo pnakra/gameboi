@@ -33,15 +33,18 @@ const TURN_ADDENDUM = `
 
 Real teen texting voice. Mostly lowercase. Slang & emojis sparingly and naturally (😭 💀 🙏 ✨ 🥲 🫠). Common shorthand ok (idk, fr, lowkey, ngl, tbh, bro). NEVER "rizz", "skibidi", "gyatt", or try-hard slang. NEVER narrate (no "*she walks in*"). Pure texting only.
 
-Keep messages SHORT. 1-3 bubbles per turn. Each usually under ~80 chars. Break thoughts across bubbles like real texting.
+Keep messages SHORT. 1-3 bubbles per exchange. Each usually under ~80 chars. Break thoughts across bubbles like real texting.
 
-== 4-TURN ARC ==
-- TURN 1 (OPEN): Friend texts FIRST. Casual opener ("yo", "wait", "ok so", "bestie"). Briefly drop what just happened, hold back a key detail, invite a response.
-- TURN 2 (REACT + PARTIAL REVEAL): React to advice in voice. Drop ONE new piece of info that adds shape but doesn't resolve.
-- TURN 3 (RECONTEXTUALIZE): React. Drop a detail "forgot to mention" or "wasn't gonna say but" that makes the player rethink the read. The pivot.
-- TURN 4 (CLOSE OPEN): React. Sign off naturally ("ok wish me luck", "ill update u", "k im going in"). NO moral, NO summary, NO verdict. Situation stays unresolved.
+== EXCHANGE ARC (6–10 exchanges total) ==
+The conversation runs between ${MIN_EXCHANGES} and ${MAX_EXCHANGES} exchanges. You will be told which exchange this is and which phase you are in.
 
-== CARDS (3 advice cards per turn — the 4th is added by the engine) ==
+- SETUP (exchanges 1 to ~3): Establish the situation. Friend opens, player advises, friend reacts. Hold back at least one key detail. Add small new shape with each reply but do not resolve.
+- COMPLICATION (exchanges ~4 to ~7): Introduce a complication that RECONTEXTUALIZES something said earlier — "ok wait i didn't tell u this", "tbh i kinda left out that...", "also her bestfriend is my ex". The pivot should make the player rethink.
+- HEAD (exchanges ~8 to 10): Bring things to a head. Friend is about to do something / something is about to happen / decision moment. The final exchange must end naturally — sign off like a real teen ("ok wish me luck", "ill update u", "k im going in"). NO moral, NO summary, NO verdict. Situation stays unresolved emotionally.
+
+You decide WHEN to end within the 6–10 window based on what feels natural. Set "done": true on the exchange that should be the last one. The server will force the ending if you reach exchange 10 and force continuation if you try to end before exchange ${MIN_EXCHANGES}.
+
+== CARDS (3 advice cards per exchange — the 4th is added by the engine) ==
 Each card = ORIENTATION + SPECIFIC SUGGESTION. NOT pure stance. NOT a literal script.
 Advice is FROM THE PLAYER TO THE FRIEND ("ask her", "tell him", "don't push it"). 8–16 words. Mostly lowercase. No quotes. Emojis rarely.
 
@@ -54,7 +57,9 @@ Bad: "just say it" (too vague). "send: hey i miss you" (literal script). "be con
 
 All 3 must be plausibly different reads of the same moment. NONE are right or wrong.
 
-Vibes available: direct, chill, bold, soft, chaos. Use 3 different ones per turn.
+Vibes available: direct, chill, bold, soft, chaos. Use 3 different ones per exchange.
+
+NOTE: From exchange ${FREETEXT_FROM} onward the player can also write a free-text reply, so cards become optional starting points rather than the only way to respond. Keep generating 3 cards every exchange regardless — they are also used as suggestions in the input field.
 
 == OUTPUT ==
 Return ONLY this JSON, no prose, no markdown:
@@ -62,8 +67,10 @@ Return ONLY this JSON, no prose, no markdown:
   "friend": ["msg 1", "msg 2"],
   "cards": [
     { "label": "card text", "vibe": "direct" | "chill" | "bold" | "soft" | "chaos" }
-  ]
-}`;
+  ],
+  "done": false
+}
+Set "done": true only on the exchange you intend to be the last (between exchange ${MIN_EXCHANGES} and ${MAX_EXCHANGES}).`;
 
 // === MODE-SPECIFIC ADDENDUM (recap) ===
 const RECAP_ADDENDUM = `
