@@ -12,7 +12,9 @@ type ChatItem =
   | { kind: "stamp"; text: string };
 type ApiTurn = { role: "user" | "assistant"; content: string };
 
-const TOTAL_TURNS = 4;
+const MIN_EXCHANGES = 6;
+const MAX_EXCHANGES = 10;
+const FREETEXT_FROM = 5;
 const HAND_SIZE = 4;
 
 export type EndPayload = {
@@ -33,10 +35,11 @@ export function GameScreen({
   const [hand, setHand] = useState<Card[]>([]);
   const [history, setHistory] = useState<ApiTurn[]>([]);
   const [loading, setLoading] = useState(true);
-  const [turnNum, setTurnNum] = useState(1);
+  const [exchange, setExchange] = useState(1);
   const [isFinished, setIsFinished] = useState(false);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
@@ -51,7 +54,7 @@ export function GameScreen({
     if (startedRef.current) return;
     startedRef.current = true;
     setChat([{ kind: "stamp", text: `today ${openTime}` }]);
-    void next({ start: true, forTurn: 1 });
+    void next({ start: true, forExchange: 1 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -73,16 +76,16 @@ export function GameScreen({
     }, 600);
   }
 
-  async function next(opts: { start?: boolean; chosenCard?: string; forTurn: number }) {
+  async function next(opts: { start?: boolean; chosenReply?: string; forExchange: number }) {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("advise", {
         body: {
           start: opts.start ?? false,
-          chosenCard: opts.chosenCard,
+          chosenReply: opts.chosenReply,
           history,
           friendContext: friend.context,
-          turn: opts.forTurn,
+          exchange: opts.forExchange,
         },
       });
       if (error) throw error;
@@ -97,8 +100,8 @@ export function GameScreen({
 
       setHistory((h) => [
         ...h,
-        ...(opts.chosenCard
-          ? [{ role: "user" as const, content: `The player texted: "${opts.chosenCard}".` }]
+        ...(opts.chosenReply
+          ? [{ role: "user" as const, content: `The player texted: "${opts.chosenReply}".` }]
           : opts.start
           ? [{ role: "user" as const, content: "Open the convo." }]
           : []),
@@ -139,10 +142,18 @@ export function GameScreen({
 
   function pickCard(c: Card) {
     if (loading || isFinished || playingCardId) return;
+
+    // After exchange 4, cards are suggestions — populate the field instead of submitting.
+    if (exchange >= FREETEXT_FROM && !c.isWildcard) {
+      setActiveCardId(null);
+      setDraft(c.label);
+      return;
+    }
+
     setActiveCardId(null);
     setPlayingCardId(c.id);
 
-    // After the card's fly-up animation completes, push the bubble + clear hand + request next turn
+    // After the card's fly-up animation completes, push the bubble + clear hand + request next exchange
     window.setTimeout(() => {
       const ts = Date.now();
       setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
@@ -155,10 +166,23 @@ export function GameScreen({
         return;
       }
 
-      const nextTurn = turnNum + 1;
-      setTurnNum(nextTurn);
-      void next({ chosenCard: c.label, forTurn: nextTurn });
+      const nextEx = exchange + 1;
+      setExchange(nextEx);
+      void next({ chosenReply: c.label, forExchange: nextEx });
     }, 480);
+  }
+
+  function sendDraft() {
+    const text = draft.trim();
+    if (!text || loading || isFinished || playingCardId) return;
+    setDraft("");
+    setActiveCardId(null);
+    const ts = Date.now();
+    setChat((prev) => [...prev, { kind: "you", text, ts, pop: true }]);
+    setHand([]);
+    const nextEx = exchange + 1;
+    setExchange(nextEx);
+    void next({ chosenReply: text, forExchange: nextEx });
   }
 
   async function nextWildcard(chosenCard: string) {
@@ -249,7 +273,7 @@ export function GameScreen({
               </div>
             </div>
             <div className="ml-auto text-[11px] uppercase tracking-widest text-muted-foreground/70 font-semibold">
-              {Math.min(turnNum, TOTAL_TURNS)}/{TOTAL_TURNS}
+              {Math.min(exchange, MAX_EXCHANGES)}/{MAX_EXCHANGES}
             </div>
           </header>
 
@@ -283,9 +307,10 @@ export function GameScreen({
             <div className="h-3" />
           </div>
 
-          {/* HAND */}
+          {/* INPUT AREA */}
           <div className="shrink-0 safe-bottom px-2 pt-2">
-            {!isFinished && (
+            {!isFinished && exchange < FREETEXT_FROM && (
+              // PHASE 1: fanned hand of cards (exchanges 1–4)
               <div
                 className={cn(
                   "relative h-[260px] mx-auto",
@@ -307,7 +332,6 @@ export function GameScreen({
                       playing={playing}
                       entering={c.entering}
                       onClick={() => {
-                        // First tap previews; second tap on the same card plays it.
                         if (active) pickCard(c);
                         else setActiveCardId(c.id);
                       }}
@@ -324,8 +348,25 @@ export function GameScreen({
               </div>
             )}
 
+            {!isFinished && exchange >= FREETEXT_FROM && (
+              // PHASE 2: free-text input + cards as suggestion chips below
+              <div className="px-1 pt-1 animate-fade-in">
+                <ComposeBar
+                  value={draft}
+                  onChange={setDraft}
+                  onSend={sendDraft}
+                  disabled={loading || !!playingCardId}
+                />
+                <SuggestionStrip
+                  cards={hand}
+                  disabled={loading || !!playingCardId}
+                  onPick={pickCard}
+                />
+              </div>
+            )}
+
             {/* Tap-outside dismisses the preview on mobile */}
-            {activeCardId && !playingCardId && (
+            {activeCardId && !playingCardId && exchange < FREETEXT_FROM && (
               <div
                 onClick={() => setActiveCardId(null)}
                 className="fixed inset-0 z-20"
@@ -345,6 +386,117 @@ export function GameScreen({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---------- input components ---------- */
+
+function ComposeBar({
+  value,
+  onChange,
+  onSend,
+  disabled,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onSend: () => void;
+  disabled?: boolean;
+}) {
+  const canSend = value.trim().length > 0 && !disabled;
+  return (
+    <div className="flex items-end gap-2">
+      <div className="flex-1 min-h-[44px] rounded-[22px] bg-surface border border-white/[0.08] px-4 py-2.5 focus-within:border-white/20 transition-colors">
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              if (canSend) onSend();
+            }
+          }}
+          placeholder="iMessage"
+          rows={1}
+          className="w-full resize-none bg-transparent outline-none text-[15px] leading-[1.35] placeholder:text-muted-foreground/60 max-h-[120px]"
+          style={{ fieldSizing: "content" } as React.CSSProperties}
+        />
+      </div>
+      <button
+        onClick={onSend}
+        disabled={!canSend}
+        aria-label="Send"
+        className={cn(
+          "shrink-0 w-10 h-10 rounded-full grid place-items-center transition-all",
+          canSend
+            ? "bg-primary text-primary-foreground active:scale-90"
+            : "bg-surface text-muted-foreground/40 cursor-not-allowed",
+        )}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M5 12h14M13 6l6 6-6 6"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+function SuggestionStrip({
+  cards,
+  disabled,
+  onPick,
+}: {
+  cards: Card[];
+  disabled?: boolean;
+  onPick: (c: Card) => void;
+}) {
+  if (!cards.length) return <div className="h-12 mt-3" />;
+  return (
+    <div className="mt-3 -mx-2 px-2 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+      {cards.map((c) => {
+        const isWild = !!c.isWildcard;
+        const tintVar = isWild
+          ? "--card-ito"
+          : c.vibe === "direct"
+          ? "--card-direct"
+          : c.vibe === "chill"
+          ? "--card-chill"
+          : c.vibe === "bold"
+          ? "--card-bold"
+          : c.vibe === "soft"
+          ? "--card-soft"
+          : c.vibe === "chaos"
+          ? "--card-chaos"
+          : "--card-chill";
+        return (
+          <button
+            key={c.id}
+            disabled={disabled}
+            onClick={() => onPick(c)}
+            className={cn(
+              "shrink-0 max-w-[260px] text-left text-[12.5px] leading-[1.3] font-medium",
+              "px-3 py-2 rounded-2xl border transition-all active:scale-[0.97]",
+              "disabled:opacity-50",
+            )}
+            style={{
+              borderColor: `color-mix(in oklch, var(${tintVar}) 40%, transparent)`,
+              backgroundColor: `color-mix(in oklch, var(${tintVar}) 10%, var(--surface))`,
+              color: "var(--foreground)",
+            }}
+          >
+            <span className="block text-[9px] uppercase tracking-[0.18em] mb-0.5" style={{ color: `var(${tintVar})` }}>
+              {isWild ? "isthisok.app" : c.vibe}
+            </span>
+            <span className="line-clamp-2">{c.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
