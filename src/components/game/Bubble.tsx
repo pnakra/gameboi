@@ -10,33 +10,36 @@ export function Bubble({
   children,
   tight = false,
   last = true,
+  pop = false,
   delay = 0,
 }: {
   from: "them" | "you";
   children: React.ReactNode;
   tight?: boolean;
   last?: boolean;
+  /** When true, use the punchy bubble-pop entrance (real-time arrival). */
+  pop?: boolean;
   delay?: number;
 }) {
   const isYou = from === "you";
   return (
     <div
       className={cn(
-        "flex w-full animate-float-in",
+        "flex w-full",
         isYou ? "justify-end" : "justify-start",
         tight ? "mt-[3px]" : "mt-2",
+        pop ? "animate-bubble-pop" : "animate-float-in",
       )}
-      style={{ animationDelay: `${delay}ms` }}
+      style={{ animationDelay: `${delay}ms`, transformOrigin: isYou ? "bottom right" : "bottom left" }}
     >
       <div
         className={cn(
-          // iOS bubble proportions: ~17px text, ~75% max width, ~18px radius
+          // iOS bubble proportions: ~16.5px text, ~75% max width, ~20px radius
           "relative max-w-[75%] px-[14px] py-[7px] text-[16.5px] leading-[1.25] tracking-[-0.01em]",
           "rounded-[20px] whitespace-pre-wrap break-words",
           isYou
             ? "bg-bubble-you text-bubble-you-foreground"
             : "bg-bubble-them text-bubble-them-foreground",
-          // Pin the corner closest to the tail when this is the last bubble in the group
           last && (isYou ? "rounded-br-[6px]" : "rounded-bl-[6px]"),
         )}
       >
