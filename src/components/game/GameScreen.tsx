@@ -12,7 +12,9 @@ type ChatItem =
   | { kind: "stamp"; text: string };
 type ApiTurn = { role: "user" | "assistant"; content: string };
 
-const TOTAL_TURNS = 4;
+const MIN_EXCHANGES = 6;
+const MAX_EXCHANGES = 10;
+const FREETEXT_FROM = 5;
 const HAND_SIZE = 4;
 
 export type EndPayload = {
@@ -33,10 +35,11 @@ export function GameScreen({
   const [hand, setHand] = useState<Card[]>([]);
   const [history, setHistory] = useState<ApiTurn[]>([]);
   const [loading, setLoading] = useState(true);
-  const [turnNum, setTurnNum] = useState(1);
+  const [exchange, setExchange] = useState(1);
   const [isFinished, setIsFinished] = useState(false);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
