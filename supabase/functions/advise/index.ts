@@ -239,10 +239,16 @@ Deno.serve(async (req) => {
     }
 
     // ---------- NORMAL TURN MODE ----------
+    // The client sends `exchange` (1..MAX). For backward compatibility also accept `turn`.
+    // `chosenReply` is what the player sent (card label OR free-text). Falls back to chosenCard.
     const isStart: boolean = body.start === true || history.length === 0;
-    const turnNum: number = Math.max(1, Math.min(4, Number(body.turn) || (isStart ? 1 : history.length / 2 + 1)));
+    const rawExchange = Number(body.exchange ?? body.turn ?? 0);
+    const exchange: number = isStart
+      ? 1
+      : Math.max(1, Math.min(MAX_EXCHANGES, rawExchange || Math.floor(history.length / 2) + 1));
+    const chosenReply: string | undefined = body.chosenReply ?? chosenCard;
 
-    const userTurn = turnInstruction(turnNum, chosenCard);
+    const userTurn = turnInstruction(exchange, chosenReply);
     const messages: AnthropicMsg[] = isStart
       ? [{ role: "user", content: userTurn }]
       : [...history, { role: "user", content: userTurn }];
@@ -263,13 +269,22 @@ Deno.serve(async (req) => {
       { id: `${Date.now()}-w`, ...WILDCARD_CARD },
     ];
 
+    // Decide whether this exchange is final.
+    // Force continue before MIN, force end at MAX, otherwise honor model's `done`.
+    const aiDone = parsed.done === true;
+    const isFinal = exchange >= MAX_EXCHANGES || (exchange >= MIN_EXCHANGES && aiDone);
+
     return new Response(
       JSON.stringify({
         friend: parsed.friend || [],
         cards,
         assistantRaw: raw,
-        turn: turnNum,
-        isFinal: turnNum >= 4,
+        exchange,
+        phase: phaseFor(exchange),
+        freeTextEnabled: exchange >= FREETEXT_FROM,
+        isFinal,
+        minExchanges: MIN_EXCHANGES,
+        maxExchanges: MAX_EXCHANGES,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
