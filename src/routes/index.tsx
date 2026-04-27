@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { GameScreen } from "@/components/game/GameScreen";
+import { GameScreen, type EndPayload } from "@/components/game/GameScreen";
 import { FriendSelect } from "@/components/game/FriendSelect";
+import { EndCard } from "@/components/game/EndCard";
+import { Interstitial } from "@/components/game/Interstitial";
 import type { Friend } from "@/components/game/friends";
 
 export const Route = createFileRoute("/")({
@@ -16,19 +18,55 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Stage = "landing" | "select" | "play";
+type Stage = "landing" | "select" | "play" | "end" | "interstitial";
 
 function Index() {
   const [stage, setStage] = useState<Stage>("landing");
   const [friend, setFriend] = useState<Friend | null>(null);
+  const [endPayload, setEndPayload] = useState<EndPayload | null>(null);
+  // Bump to remount GameScreen on "play again"
+  const [playKey, setPlayKey] = useState(0);
 
   if (stage === "play" && friend) {
     return (
       <GameScreen
+        key={playKey}
         friend={friend}
         onExit={() => {
           setFriend(null);
           setStage("select");
+        }}
+        onEnd={(payload) => {
+          setEndPayload(payload);
+          setStage("end");
+        }}
+      />
+    );
+  }
+
+  if (stage === "end" && friend && endPayload) {
+    return (
+      <EndCard
+        friend={friend}
+        transcript={endPayload.transcript}
+        itoFirst={endPayload.itoFirst}
+        onPlayAgain={() => setStage("interstitial")}
+        onSwitchFriend={() => {
+          setEndPayload(null);
+          setFriend(null);
+          setStage("select");
+        }}
+      />
+    );
+  }
+
+  if (stage === "interstitial" && friend) {
+    return (
+      <Interstitial
+        onContinue={() => {
+          setEndPayload(null);
+          setPlayKey((k) => k + 1);
+          setStage("play");
         }}
       />
     );
