@@ -307,9 +307,10 @@ export function GameScreen({
             <div className="h-3" />
           </div>
 
-          {/* HAND */}
+          {/* INPUT AREA */}
           <div className="shrink-0 safe-bottom px-2 pt-2">
-            {!isFinished && (
+            {!isFinished && exchange < FREETEXT_FROM && (
+              // PHASE 1: fanned hand of cards (exchanges 1–4)
               <div
                 className={cn(
                   "relative h-[260px] mx-auto",
@@ -331,7 +332,6 @@ export function GameScreen({
                       playing={playing}
                       entering={c.entering}
                       onClick={() => {
-                        // First tap previews; second tap on the same card plays it.
                         if (active) pickCard(c);
                         else setActiveCardId(c.id);
                       }}
@@ -348,8 +348,25 @@ export function GameScreen({
               </div>
             )}
 
+            {!isFinished && exchange >= FREETEXT_FROM && (
+              // PHASE 2: free-text input + cards as suggestion chips below
+              <div className="px-1 pt-1 animate-fade-in">
+                <ComposeBar
+                  value={draft}
+                  onChange={setDraft}
+                  onSend={sendDraft}
+                  disabled={loading || !!playingCardId}
+                />
+                <SuggestionStrip
+                  cards={hand}
+                  disabled={loading || !!playingCardId}
+                  onPick={pickCard}
+                />
+              </div>
+            )}
+
             {/* Tap-outside dismisses the preview on mobile */}
-            {activeCardId && !playingCardId && (
+            {activeCardId && !playingCardId && exchange < FREETEXT_FROM && (
               <div
                 onClick={() => setActiveCardId(null)}
                 className="fixed inset-0 z-20"
