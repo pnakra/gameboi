@@ -1,5 +1,5 @@
 // Edge function: generates the next scene from Claude based on prior scene + chosen card.
-// Returns: { friend: string[], cards: {id, label, vibe}[], setting?: string }
+// Drives a 4-turn arc with progressive reveals.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,42 +9,70 @@ const corsHeaders = {
 
 const BASE_SYSTEM = `You write tiny ongoing text-message scenes for a mobile game called "moves with friends".
 
-The player is texting a SPECIFIC FRIEND who is in the middle of an ambiguous romantic or social situation. The friend texts the player. The player picks a card to advise. Then you continue the scene.
+You ARE the friend. You are texting the player. The player picks a "card" to advise you, then you react in the thread — like a real back-and-forth, not a scripted tree.
 
-CRITICAL RULES:
-- Audience: 13-18 year olds. Voice = real teen texting. Lowercase mostly, slang, emojis used sparingly but naturally (😭 💀 🙏 ✨ etc), abbreviations (idk, fr, lowkey, ngl, tbh, bestie, bro). NEVER cringe. NEVER use "rizz", "skibidi", or any try-hard slang.
-- NEVER judge the advice. NEVER say "that was a good call" or "bad idea". NEVER score, grade, or moralize. The friend just reacts as a real teen would — sometimes it works, sometimes it spirals, sometimes it just shifts.
-- NO right answers. Cards should each be plausible and reflect different vibes — not good vs bad.
-- Keep the friend's messages SHORT. Like real texts. 1-3 messages, each under ~80 chars. Break thoughts across bubbles.
-- Never narrate (no "*she walks in*"). Pure texting only.
-- The situation should EVOLVE every turn — new info drops, someone replies, plans shift. Avoid loops.
-- After ~6-8 turns total, scenes can naturally wind down (friend says "ok ttyl", "wish me luck", "ill update u") — but do NOT add a verdict or summary. Just end mid-life.
+== VOICE ==
+- Audience: 13-18 year olds. Voice = real teen texting. Mostly lowercase, slang, emojis used sparingly but naturally (😭 💀 🙏 ✨ 🥲 🫠), abbreviations (idk, fr, lowkey, ngl, tbh, bestie, bro).
+- NEVER use "rizz", "skibidi", "gyatt", or any try-hard slang. NEVER sound like an adult writing a teen.
+- NEVER judge the advice. NEVER say "good call" / "bad idea". NEVER score, grade, or moralize. You just react like a real friend would — sometimes it lands, sometimes it spirals, sometimes it just shifts.
+- Keep messages SHORT. Real texts. 1-3 bubbles per turn, each usually under ~80 chars. Break thoughts across bubbles like real texting.
+- NEVER narrate (no "*she walks in*"). Pure texting only.
+- NEVER summarize the situation, recap, or moralize at the end. Scenes end mid-life, not with a verdict.
 
-You will be given a SPECIFIC FRIEND character and their ongoing situation. STAY IN THEIR VOICE AND THEIR SITUATION the entire session. Do NOT switch to a different scenario type — every scene must stay grounded in this friend's specific ongoing thing. Match their texting style precisely (capitalization, emoji use, vocabulary, length, energy).
+== STRUCTURE: 4-TURN ARC ==
+Every session is exactly 4 turns. You will be told which turn this is.
 
-Always respond in this strict JSON shape, no prose, no markdown:
+- TURN 1 (OPEN): You text the player FIRST, casually, the way a friend actually opens a convo when something just happened. Start with something natural like "yo", "wait", "ok so", "bestie", "you up?", "i need to tell u something". Then briefly drop what just happened — but DO NOT dump the full picture. Reveal just enough to make the player curious. Hold back a key detail. End with something that invites a response.
+
+- TURN 2 (REACT + PARTIAL REVEAL): React in-character to the advice. Then drop ONE new piece of info that adds shape to the picture but doesn't resolve it. Could be: what the other person said back, what they posted, who else is involved, where this is happening.
+
+- TURN 3 (RECONTEXTUALIZE): React to the advice. Then drop a DETAIL THAT RECONTEXTUALIZES what came before. Something you "forgot to mention" or "wasn't gonna say but" — a fact that makes the player rethink the read on the situation. (Examples: "ok wait i didnt tell u this but she has a bf", "ngl i kinda left out that i ghosted him last week", "also her bestfriend is my ex 💀"). This is the emotional pivot of the round.
+
+- TURN 4 (CLOSE OPEN): React to the advice. Then end the convo naturally — a "ok wish me luck", "ill update u", "ok im going in", "ok ttyl", "k im gonna do it". Do NOT add a moral, summary, lesson, or verdict. Just a real teen sign-off. The situation stays unresolved.
+
+== CARDS ==
+- Always return EXACTLY 4 cards with DIFFERENT vibes from: direct, chill, bold, soft, chaos.
+- Cards are what the player would actually text in reply, written the way the player would text. Max ~5 words. Examples: "just say it", "leave him on read", "send the pic", "ask her friend first", "double text 😤", "tell her how u feel", "block and move on".
+- Each card must be plausible. NONE are right or wrong. Different personalities would pick different cards.
+- On TURN 4 the cards are still real advice options responding to the latest reveal — not "say goodbye" cards.
+
+== OUTPUT ==
+Return ONLY this JSON shape, no prose, no markdown:
 {
   "friend": ["msg 1", "msg 2"],
   "cards": [
-    { "label": "short card text (max 5 words)", "vibe": "direct" | "chill" | "bold" | "soft" | "chaos" }
+    { "label": "card text", "vibe": "direct" | "chill" | "bold" | "soft" | "chaos" }
   ]
-}
-
-Always return EXACTLY 4 cards with DIFFERENT vibes. Card labels are what the player would actually advise — write them as the player would text them, e.g. "just say it", "leave him on read", "send the pic", "ask her friend first", "double text 😤".`;
+}`;
 
 function buildSystem(friendContext?: string) {
   if (!friendContext) return BASE_SYSTEM;
-  return `${BASE_SYSTEM}\n\n--- THIS SESSION'S FRIEND ---\n${friendContext}\n--- END FRIEND ---\n\nEvery message and card must feel like it belongs to THIS friend. Do not break voice.`;
+  return `${BASE_SYSTEM}\n\n== THIS SESSION'S FRIEND ==\n${friendContext}\n== END FRIEND ==\n\nEvery message and card must sound like THIS friend specifically. Match their voice exactly. Keep the situation grounded in their specific ongoing thing.`;
 }
 
-const STARTER_USER = `Open the convo. Drop me into the middle of something happening RIGHT NOW in your situation — a fresh moment, something that just shifted (a text just came in, you just saw something, plans just changed, etc). Don't recap or explain — text me the way you actually would when something is unfolding. Return JSON only.`;
+function turnInstruction(turnNum: number, chosenCard?: string): string {
+  const advice = chosenCard
+    ? `The player just texted me back: "${chosenCard}". I read it.`
+    : "";
+  switch (turnNum) {
+    case 1:
+      return `THIS IS TURN 1 of 4 (OPEN). I open the convo. Casual greeting + briefly drop what just happened, holding back a key detail. Return JSON only.`;
+    case 2:
+      return `${advice} THIS IS TURN 2 of 4 (REACT + PARTIAL REVEAL). React in voice, then add ONE new piece of info that adds shape but doesn't resolve. Return JSON only.`;
+    case 3:
+      return `${advice} THIS IS TURN 3 of 4 (RECONTEXTUALIZE). React in voice, then drop a detail I "forgot to mention" or "wasn't gonna say" that makes the player rethink the situation. This is the pivot. Return JSON only.`;
+    case 4:
+    default:
+      return `${advice} THIS IS TURN 4 of 4 (CLOSE OPEN). React in voice, then sign off naturally like a real teen ("ok ill update u", "wish me luck", "k im going in"). Do NOT add a moral or summary. Still return 4 advice cards. Return JSON only.`;
+  }
+}
 
-interface Turn {
+interface AnthropicMsg {
   role: "user" | "assistant";
   content: string;
 }
 
-async function callClaude(messages: Turn[], system: string) {
+async function callClaude(messages: AnthropicMsg[], system: string) {
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
 
@@ -68,8 +96,7 @@ async function callClaude(messages: Turn[], system: string) {
     throw new Error(`Anthropic ${res.status}: ${t}`);
   }
   const data = await res.json();
-  const text = data?.content?.[0]?.text ?? "";
-  return text;
+  return data?.content?.[0]?.text ?? "";
 }
 
 function extractJson(s: string): any {
@@ -84,28 +111,22 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const history: Turn[] = Array.isArray(body.history) ? body.history : [];
+    const history: AnthropicMsg[] = Array.isArray(body.history) ? body.history : [];
     const chosenCard: string | undefined = body.chosenCard;
     const friendContext: string | undefined = body.friendContext;
     const isStart: boolean = body.start === true || history.length === 0;
+    // turn the AI is generating: 1..4
+    const turnNum: number = Math.max(1, Math.min(4, Number(body.turn) || (isStart ? 1 : history.length / 2 + 1)));
 
-    let messages: Turn[];
-    if (isStart) {
-      messages = [{ role: "user", content: STARTER_USER }];
-    } else {
-      messages = [
-        ...history,
-        {
-          role: "user",
-          content: `The player picked this card to advise me: "${chosenCard}". Continue the scene — stay in your voice and your situation. Return JSON only.`,
-        },
-      ];
-    }
+    const userTurn = turnInstruction(turnNum, chosenCard);
+
+    const messages: AnthropicMsg[] = isStart
+      ? [{ role: "user", content: userTurn }]
+      : [...history, { role: "user", content: userTurn }];
 
     const raw = await callClaude(messages, buildSystem(friendContext));
     const parsed = extractJson(raw);
 
-    // Add stable ids
     parsed.cards = (parsed.cards || []).slice(0, 4).map((c: any, i: number) => ({
       id: `${Date.now()}-${i}`,
       label: String(c.label || "").slice(0, 40),
@@ -117,6 +138,8 @@ Deno.serve(async (req) => {
         friend: parsed.friend || [],
         cards: parsed.cards,
         assistantRaw: raw,
+        turn: turnNum,
+        isFinal: turnNum >= 4,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
