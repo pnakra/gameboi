@@ -5,23 +5,26 @@ import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
 import type { Friend } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
 
-type Card = { id: string; label: string; vibe: Vibe };
+type Card = { id: string; label: string; vibe: Vibe; entering?: boolean };
 type ChatItem =
-  | { kind: "them"; text: string; ts: number }
-  | { kind: "you"; text: string; ts: number }
+  | { kind: "them"; text: string; ts: number; pop?: boolean }
+  | { kind: "you"; text: string; ts: number; pop?: boolean }
   | { kind: "stamp"; text: string };
-type Turn = { role: "user" | "assistant"; content: string };
+type ApiTurn = { role: "user" | "assistant"; content: string };
 
 const TOTAL_TURNS = 4;
+const HAND_SIZE = 4;
 
 export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => void }) {
   const [chat, setChat] = useState<ChatItem[]>([]);
-  const [cards, setCards] = useState<Card[]>([]);
-  const [history, setHistory] = useState<Turn[]>([]);
+  const [hand, setHand] = useState<Card[]>([]);
+  const [history, setHistory] = useState<ApiTurn[]>([]);
   const [loading, setLoading] = useState(true);
-  // turnNum tracks which turn the AI will generate next: 1..4
   const [turnNum, setTurnNum] = useState(1);
   const [isFinished, setIsFinished] = useState(false);
+  const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [playingCardId, setPlayingCardId] = useState<string | null>(null);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
 
@@ -39,9 +42,22 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [chat, loading]);
 
+  /** Stream new cards into the hand one-by-one (deal animation). */
+  async function dealCards(newCards: Card[]) {
+    // Clear any leftover (e.g. after first turn there is nothing to clear)
+    setHand([]);
+    for (let i = 0; i < newCards.length; i++) {
+      await new Promise((r) => setTimeout(r, 90));
+      setHand((h) => [...h, { ...newCards[i], entering: true }]);
+    }
+    // After entry animation, drop the entering flag
+    window.setTimeout(() => {
+      setHand((h) => h.map((c) => ({ ...c, entering: false })));
+    }, 600);
+  }
+
   async function next(opts: { start?: boolean; chosenCard?: string; forTurn: number }) {
     setLoading(true);
-    setCards([]);
     try {
       const { data, error } = await supabase.functions.invoke("advise", {
         body: {
@@ -55,11 +71,11 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
       if (error) throw error;
 
       const friendMsgs: string[] = data.friend ?? [];
-      // stagger reveal — first message has a "thinking" pause, subsequent ones are quicker
+      // Stagger reveal — first message has a "thinking" pause, subsequent ones are quicker
       for (let i = 0; i < friendMsgs.length; i++) {
         await new Promise((r) => setTimeout(r, i === 0 ? 750 : 550));
         const ts = Date.now();
-        setChat((c) => [...c, { kind: "them", text: friendMsgs[i], ts }]);
+        setChat((c) => [...c, { kind: "them", text: friendMsgs[i], ts, pop: true }]);
       }
 
       setHistory((h) => [
@@ -76,48 +92,50 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
         },
       ]);
 
+      setLoading(false);
+
       if (data.isFinal) {
         setIsFinished(true);
-        setCards([]);
+        setHand([]);
       } else {
-        setCards(data.cards ?? []);
+        const incoming: Card[] = (data.cards ?? []).slice(0, HAND_SIZE);
+        await dealCards(incoming);
       }
     } catch (e) {
       console.error(e);
-      setChat((c) => [
-        ...c,
-        { kind: "them", text: "ugh wifi just died one sec", ts: Date.now() },
-      ]);
-    } finally {
+      setChat((c) => [...c, { kind: "them", text: "ugh wifi just died one sec", ts: Date.now(), pop: true }]);
       setLoading(false);
     }
   }
 
   function pickCard(c: Card) {
-    if (loading || isFinished) return;
-    const ts = Date.now();
-    setChat((prev) => [...prev, { kind: "you", text: c.label, ts }]);
-    setCards([]);
-    const nextTurn = turnNum + 1;
-    setTurnNum(nextTurn);
-    void next({ chosenCard: c.label, forTurn: nextTurn });
+    if (loading || isFinished || playingCardId) return;
+    setActiveCardId(null);
+    setPlayingCardId(c.id);
+
+    // After the card's fly-up animation completes, push the bubble + clear hand + request next turn
+    window.setTimeout(() => {
+      const ts = Date.now();
+      setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
+      setHand([]);
+      setPlayingCardId(null);
+      const nextTurn = turnNum + 1;
+      setTurnNum(nextTurn);
+      void next({ chosenCard: c.label, forTurn: nextTurn });
+    }, 480);
   }
 
-  // Group consecutive bubbles from the same sender for tail/spacing
   const groupedChat = useMemo(() => groupBubbles(chat), [chat]);
 
   return (
     <div className="relative min-h-[100dvh] w-full bg-background flex items-stretch sm:items-center justify-center sm:py-6">
-      {/* PHONE FRAME */}
       <div
         className={cn(
           "relative w-full sm:max-w-[400px] flex flex-col",
-          // On desktop: render with phone bezel. On mobile: fill viewport.
           "sm:rounded-[44px] sm:border sm:border-white/10 sm:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]",
           "sm:bg-black sm:p-[10px] sm:h-[820px] sm:max-h-[90dvh]",
         )}
       >
-        {/* SCREEN */}
         <div
           className={cn(
             "relative flex flex-col flex-1 overflow-hidden bg-background",
@@ -125,7 +143,7 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
             "h-[100dvh] sm:h-auto",
           )}
         >
-          {/* iOS-style status bar (decorative) */}
+          {/* iOS status bar (decorative, desktop only) */}
           <div className="hidden sm:flex items-center justify-between px-7 pt-3 pb-1 text-[12px] font-semibold text-foreground/90 select-none">
             <span>{openTime}</span>
             <span className="absolute left-1/2 -translate-x-1/2 top-2 w-[110px] h-[28px] bg-black rounded-full" />
@@ -185,6 +203,7 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
                   from={item.from}
                   tight={item.tight}
                   last={item.last}
+                  pop={item.pop}
                 >
                   {item.text}
                 </Bubble>
@@ -195,42 +214,47 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
             <div className="h-3" />
           </div>
 
-          {/* Card hand */}
-          <div
-            className={cn(
-              "shrink-0 px-3 pt-2 safe-bottom",
-              "bg-gradient-to-t from-background via-background to-background/0",
-            )}
-          >
-            {cards.length > 0 ? (
-              <>
-                <div className="flex items-center justify-between px-1 pb-2">
-                  <span className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold">
-                    your move
-                  </span>
-                  <span className="text-[11px] text-muted-foreground/60">
-                    swipe →
-                  </span>
-                </div>
-                <div className="flex gap-3 overflow-x-auto pb-3 -mx-3 px-3 snap-x snap-mandatory">
-                  {cards.map((c, i) => (
-                    <div
+          {/* HAND */}
+          <div className="shrink-0 safe-bottom px-2 pt-2">
+            {!isFinished ? (
+              <div
+                className={cn(
+                  "relative h-[260px] mx-auto",
+                  // Subtle ambient glow under the hand
+                  "before:content-[''] before:absolute before:left-1/2 before:bottom-2 before:-translate-x-1/2",
+                  "before:w-[340px] before:h-[40px] before:rounded-full before:bg-primary/10 before:blur-2xl before:pointer-events-none",
+                )}
+              >
+                {hand.map((c, i) => {
+                  const active = activeCardId === c.id && playingCardId == null;
+                  const playing = playingCardId === c.id;
+                  return (
+                    <AdviceCard
                       key={c.id}
-                      className="snap-center animate-float-in"
-                      style={{ animationDelay: `${i * 70}ms` }}
-                    >
-                      <AdviceCard
-                        label={c.label}
-                        vibe={c.vibe}
-                        index={i}
-                        onClick={() => pickCard(c)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : isFinished && !loading ? (
-              <div className="pb-4 pt-2 flex flex-col gap-2">
+                      label={c.label}
+                      vibe={c.vibe}
+                      fanIndex={i}
+                      fanTotal={hand.length}
+                      active={active}
+                      playing={playing}
+                      entering={c.entering}
+                      onClick={() => pickCard(c)}
+                      disabled={loading || !!playingCardId}
+                      // Hover-to-lift on desktop
+                      style={{}}
+                      // Use pointer events for active feedback
+                      {...{
+                        onMouseEnter: () => !playingCardId && setActiveCardId(c.id),
+                        onMouseLeave: () =>
+                          activeCardId === c.id && setActiveCardId(null),
+                        onTouchStart: () => !playingCardId && setActiveCardId(c.id),
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="pb-4 pt-2">
                 <button
                   onClick={onExit}
                   className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold tracking-tight active:scale-[0.98] transition-transform"
@@ -238,8 +262,6 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
                   pick another friend
                 </button>
               </div>
-            ) : (
-              <div className="h-[228px]" />
             )}
           </div>
         </div>
@@ -252,7 +274,14 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
 
 type GroupedItem =
   | { kind: "stamp"; text: string }
-  | { kind: "bubble"; from: "them" | "you"; text: string; tight: boolean; last: boolean };
+  | {
+      kind: "bubble";
+      from: "them" | "you";
+      text: string;
+      tight: boolean;
+      last: boolean;
+      pop?: boolean;
+    };
 
 function groupBubbles(chat: ChatItem[]): GroupedItem[] {
   const out: GroupedItem[] = [];
@@ -272,6 +301,7 @@ function groupBubbles(chat: ChatItem[]): GroupedItem[] {
       text: c.text,
       tight: !!samePrev,
       last: !sameNext,
+      pop: c.pop,
     });
   }
   return out;

@@ -1,52 +1,123 @@
 import { cn } from "@/lib/utils";
+import { forwardRef } from "react";
 
 export type Vibe = "direct" | "chill" | "bold" | "soft" | "chaos";
 
-const vibeStyles: Record<Vibe, { bg: string; ring: string; tag: string }> = {
-  direct: { bg: "from-card-direct/30 to-card-direct/5", ring: "ring-card-direct/40", tag: "text-card-direct" },
-  chill:  { bg: "from-card-chill/30 to-card-chill/5",   ring: "ring-card-chill/40",  tag: "text-card-chill" },
-  bold:   { bg: "from-card-bold/30 to-card-bold/5",     ring: "ring-card-bold/40",   tag: "text-card-bold" },
-  soft:   { bg: "from-card-soft/30 to-card-soft/5",     ring: "ring-card-soft/40",   tag: "text-card-soft" },
-  chaos:  { bg: "from-card-chaos/30 to-card-chaos/5",   ring: "ring-card-chaos/40",  tag: "text-card-chaos" },
+const vibeStyles: Record<Vibe, { tag: string; tintVar: string }> = {
+  direct: { tag: "direct", tintVar: "--card-direct" },
+  chill:  { tag: "chill",  tintVar: "--card-chill" },
+  bold:   { tag: "bold",   tintVar: "--card-bold" },
+  soft:   { tag: "soft",   tintVar: "--card-soft" },
+  chaos:  { tag: "chaos",  tintVar: "--card-chaos" },
 };
 
-export function AdviceCard({
-  label,
-  vibe,
-  onClick,
-  disabled,
-  index = 0,
-}: {
+type Props = {
   label: string;
   vibe: Vibe;
-  onClick: () => void;
+  onClick?: () => void;
   disabled?: boolean;
-  index?: number;
-}) {
+  /** -1, 0, 1, 2 etc — used for fan rotation/translation */
+  fanIndex?: number;
+  /** total cards in the hand, for fan math */
+  fanTotal?: number;
+  /** Visually highlight (the card under the user's finger / hover) */
+  active?: boolean;
+  /** Animation state for play-out */
+  playing?: boolean;
+  /** Animation state for entering the hand */
+  entering?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+};
+
+export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCard(
+  { label, vibe, onClick, disabled, fanIndex = 0, fanTotal = 1, active, playing, entering, className, style },
+  ref,
+) {
   const s = vibeStyles[vibe];
+  const tint = `var(${s.tintVar})`;
+
+  // Fan math: spread cards in an arc.
+  // Center index sits at the middle.
+  const center = (fanTotal - 1) / 2;
+  const offset = fanIndex - center; // -1.5 ... +1.5 for 4 cards
+  const rotateDeg = offset * 6; // ±9° max
+  const translateX = offset * 56; // px horizontal spread
+  const translateY = Math.abs(offset) * 8; // arc dip (further from center = lower)
+
+  const fanTransform = `translate(calc(-50% + ${translateX}px), ${translateY}px) rotate(${rotateDeg}deg)`;
+
   return (
     <button
+      ref={ref}
       onClick={onClick}
       disabled={disabled}
+      aria-label={label}
       className={cn(
-        "group relative shrink-0 w-[150px] h-[200px] rounded-2xl p-3 text-left",
-        "bg-gradient-to-br border border-white/10 ring-1",
-        "transition-all duration-200 ease-out",
-        "active:scale-95 active:translate-y-1",
-        "hover:-translate-y-2 hover:shadow-card",
-        "disabled:opacity-40 disabled:pointer-events-none",
-        s.bg,
-        s.ring,
+        "absolute left-1/2 bottom-0",
+        "w-[180px] h-[230px] rounded-[22px] p-3.5 text-left select-none",
+        "border border-white/10 ring-1 ring-white/5",
+        "transition-[transform,box-shadow,opacity] duration-300 ease-out",
+        "will-change-transform origin-bottom",
+        "disabled:pointer-events-none",
+        active && "z-30",
+        playing && "pointer-events-none",
+        entering && "animate-card-deal",
+        className,
       )}
-      style={{ animationDelay: `${index * 60}ms` }}
+      style={{
+        transform: playing
+          ? // Fly straight up off the hand
+            `translate(-50%, -120vh) rotate(0deg) scale(0.9)`
+          : active
+          ? // Lift, straighten, scale up under finger
+            `translate(-50%, -28px) rotate(0deg) scale(1.06)`
+          : fanTransform,
+        opacity: playing ? 0 : 1,
+        zIndex: active ? 30 : 10 + fanIndex,
+        // Layered tint + radial highlight for tactile depth
+        backgroundImage: `
+          radial-gradient(120% 80% at 30% 0%, color-mix(in oklch, ${tint} 28%, transparent) 0%, transparent 55%),
+          linear-gradient(160deg, color-mix(in oklch, ${tint} 22%, var(--surface-2)) 0%, var(--surface) 100%)
+        `,
+        boxShadow: active
+          ? `0 24px 50px -16px color-mix(in oklch, ${tint} 50%, transparent),
+             0 0 0 1.5px color-mix(in oklch, ${tint} 70%, transparent),
+             inset 0 1px 0 rgba(255,255,255,0.08)`
+          : `0 12px 24px -16px rgb(0 0 0 / 0.7),
+             0 4px 10px -8px rgb(0 0 0 / 0.5),
+             inset 0 1px 0 rgba(255,255,255,0.06)`,
+        transitionDuration: playing ? "550ms" : undefined,
+        ...style,
+      }}
     >
-      <div className={cn("text-[10px] font-bold uppercase tracking-widest", s.tag)}>
-        {vibe}
+      {/* Vibe tag */}
+      <div className="flex items-center justify-between">
+        <span
+          className="text-[10px] font-bold uppercase tracking-[0.18em]"
+          style={{ color: tint }}
+        >
+          {s.tag}
+        </span>
+        <span
+          className="w-2 h-2 rounded-full"
+          style={{ backgroundColor: tint, boxShadow: `0 0 12px ${tint}` }}
+        />
       </div>
-      <div className="absolute inset-x-3 bottom-3 text-[15px] font-semibold leading-tight text-balance">
+
+      {/* Label */}
+      <div className="absolute inset-x-3.5 bottom-3.5 text-[14px] font-semibold leading-[1.25] text-foreground/95 text-balance">
         {label}
       </div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white/5 blur-xl" />
+
+      {/* Subtle inner sheen */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-[22px] opacity-60"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.15) 100%)",
+        }}
+      />
     </button>
   );
-}
+});
