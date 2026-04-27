@@ -5,7 +5,7 @@ import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
 import type { Friend } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
 
-type Card = { id: string; label: string; vibe: Vibe; entering?: boolean };
+type Card = { id: string; label: string; vibe: Vibe; entering?: boolean; isWildcard?: boolean };
 type ChatItem =
   | { kind: "them"; text: string; ts: number; pop?: boolean }
   | { kind: "you"; text: string; ts: number; pop?: boolean }
@@ -15,7 +15,20 @@ type ApiTurn = { role: "user" | "assistant"; content: string };
 const TOTAL_TURNS = 4;
 const HAND_SIZE = 4;
 
-export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => void }) {
+export type EndPayload = {
+  transcript: string;
+  itoFirst: boolean;
+};
+
+export function GameScreen({
+  friend,
+  onExit,
+  onEnd,
+}: {
+  friend: Friend;
+  onExit: () => void;
+  onEnd: (payload: EndPayload) => void;
+}) {
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [hand, setHand] = useState<Card[]>([]);
   const [history, setHistory] = useState<ApiTurn[]>([]);
