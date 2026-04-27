@@ -106,21 +106,42 @@ function buildSystem(mode: "turn" | "recap" | "wildcard", friendContext?: string
   return `${MASTER_PROMPT}\n${addendum}${friendBlock}`;
 }
 
-function turnInstruction(turnNum: number, chosenCard?: string): string {
-  const advice = chosenCard
-    ? `The player just texted me back: "${chosenCard}". I read it.`
+function phaseFor(exchange: number): "setup" | "complication" | "head" {
+  if (exchange <= 3) return "setup";
+  if (exchange <= 7) return "complication";
+  return "head";
+}
+
+function turnInstruction(exchange: number, chosenReply?: string): string {
+  const reply = chosenReply
+    ? `The player just texted me back: "${chosenReply}". I read it.`
     : "";
-  switch (turnNum) {
-    case 1:
-      return `THIS IS TURN 1 of 4 (OPEN). I open the convo. Casual greeting + briefly drop what just happened, holding back a key detail. Return JSON with "friend" and 3 "cards" only.`;
-    case 2:
-      return `${advice} THIS IS TURN 2 of 4 (REACT + PARTIAL REVEAL). React in voice, then add ONE new piece of info that adds shape but doesn't resolve. Return JSON with "friend" and 3 "cards".`;
-    case 3:
-      return `${advice} THIS IS TURN 3 of 4 (RECONTEXTUALIZE). React in voice, then drop a detail I "forgot to mention" or "wasn't gonna say" that makes the player rethink. The pivot. Return JSON with "friend" and 3 "cards".`;
-    case 4:
-    default:
-      return `${advice} THIS IS TURN 4 of 4 (CLOSE OPEN). React in voice, then sign off naturally like a real teen ("ok ill update u", "wish me luck", "k im going in"). Do NOT add a moral or summary. Return JSON with "friend" and 3 "cards".`;
+  const phase = phaseFor(exchange);
+  const isOpener = exchange === 1;
+  const mustEnd = exchange >= MAX_EXCHANGES;
+  const canEnd = exchange >= MIN_EXCHANGES;
+
+  let phaseGuidance = "";
+  if (phase === "setup") {
+    phaseGuidance = isOpener
+      ? `Open the convo. Casual greeting + briefly drop what just happened, holding back a key detail.`
+      : `We're still in SETUP. React in voice, add small new shape, hold back the bigger detail.`;
+  } else if (phase === "complication") {
+    phaseGuidance = `We're in COMPLICATION. React in voice, then either drop or build on a recontextualizing detail — something you "forgot to mention" / "wasn't gonna say but" — that makes the player rethink the read. This is the pivot phase.`;
+  } else {
+    phaseGuidance = `We're in HEAD. Things are coming to a point. React in voice. Either escalate toward a decision or sign off naturally if this is the last exchange.`;
   }
+
+  let endingGuidance = "";
+  if (mustEnd) {
+    endingGuidance = `THIS IS EXCHANGE ${exchange} OF MAX ${MAX_EXCHANGES}. You MUST end here. Sign off naturally ("ok wish me luck", "ill update u", "k im going in"). NO moral, NO summary. Set "done": true.`;
+  } else if (canEnd) {
+    endingGuidance = `You may set "done": true if this exchange feels like a natural sign-off (decision moment, friend going to do the thing, friend logging off). Otherwise keep it going. Don't end artificially — only end if it lands.`;
+  } else {
+    endingGuidance = `Set "done": false. We're still before the minimum exchange count.`;
+  }
+
+  return `${reply} EXCHANGE ${exchange} of ${MAX_EXCHANGES} (phase: ${phase.toUpperCase()}). ${phaseGuidance} ${endingGuidance} Return JSON with "friend", 3 "cards", and "done".`;
 }
 
 interface AnthropicMsg {
