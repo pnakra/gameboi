@@ -273,7 +273,7 @@ export function GameScreen({
               </div>
             </div>
             <div className="ml-auto text-[11px] uppercase tracking-widest text-muted-foreground/70 font-semibold">
-              {Math.min(turnNum, TOTAL_TURNS)}/{TOTAL_TURNS}
+              {Math.min(exchange, MAX_EXCHANGES)}/{MAX_EXCHANGES}
             </div>
           </header>
 
