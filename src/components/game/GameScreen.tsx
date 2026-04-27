@@ -37,6 +37,7 @@ export function GameScreen({ friend, onExit }: { friend: Friend; onExit: () => v
           start: opts.start ?? false,
           chosenCard: opts.chosenCard,
           history,
+          friendContext: friend.context,
         },
       });
       if (error) throw error;
