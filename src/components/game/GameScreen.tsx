@@ -300,8 +300,15 @@ export function GameScreen({
             </div>
           </header>
 
-          {/* Thread */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 pt-3 pb-2">
+          {/* Thread — sizes to its content so on short threads (early turns)
+              the cards float right below the last bubble instead of being
+              pushed to the bottom of the screen. Once the thread overflows
+              the available space it scrolls and the cards stay anchored. */}
+          <div
+            ref={scrollRef}
+            className="min-h-0 overflow-y-auto px-3 pt-3 pb-0"
+            style={{ flex: "0 1 auto" }}
+          >
             {groupedChat.map((item, i) => {
               if (item.kind === "stamp") {
                 return (
@@ -330,8 +337,9 @@ export function GameScreen({
             <div className="h-3" />
           </div>
 
-          {/* INPUT AREA */}
-          <div className="shrink-0 safe-bottom px-2 pt-2">
+          {/* CARD HAND / CONTINUE — sits directly below the thread so on
+              early turns it floats up to meet the last bubble. */}
+          <div className="shrink-0 px-2 pt-2">
             {isFinished && (
               <div className="px-2 py-3 animate-fade-in">
                 <button
@@ -388,9 +396,6 @@ export function GameScreen({
               </div>
             )}
 
-            {/* Free-text input intentionally removed — cards are the only way to reply
-                during the exchange. The reflection box lives on the post-game handoff. */}
-
             {/* Tap-outside dismisses the preview on mobile */}
             {activeCardId && !playingCardId && (
               <div
@@ -399,7 +404,11 @@ export function GameScreen({
                 aria-hidden
               />
             )}
+          </div>
 
+          {/* Bottom-anchored handoff link — mt-auto pins it to the bottom even
+              when the cards have floated up to meet a short thread. */}
+          <div className="shrink-0 mt-auto safe-bottom px-2">
             {/* Handoff CTA — appears once the complication has landed, plus on end */}
             {(exchange >= FREETEXT_FROM || isFinished) ? (
               <button
