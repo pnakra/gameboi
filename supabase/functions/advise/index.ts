@@ -78,13 +78,15 @@ const RECAP_ADDENDUM = `
 
 Generate a brief end-of-round reflection for the player. You will be given the full thread. In the thread, lines prefixed "player advice:" are what the PLAYER ("you") said back to the friend. Lines prefixed with the friend's name are the friend.
 
-The recap MUST reflect what the player actually chose to say (and importantly, what they DIDN'T bring up that maybe was sitting there). Address the player as "you". Name 1-2 specific moves they made or noticeably skipped — quote a short fragment of their wording when it lands. Don't praise or criticize the choice. Just hold it up.
+The recap has TWO beats and MUST contain BOTH:
+1. SITUATION (1-2 sentences): briefly recap the friend's situation as it landed — name the friend, name the other person if mentioned, and the core ambiguity or thing he was sitting with. Past tense.
+2. WHAT YOU DID (1-2 sentences): what the PLAYER ("you") specifically said or pointedly DIDN'T say back. Quote a short fragment of the player's actual wording when it lands. Name 1-2 specific moves or notable omissions. Don't praise or criticize. Just hold it up.
 
-The question at the end should pivot off one of those choices — turning the lens back on the player. Not "what would you do differently" — more like "you didn't bring up the phone thing — what would it have cost you to?" or "you called her messy — is that the read or the easier read?"
+The question at the end should pivot off one of those player choices — turning the lens back on the player. Not "what would you do differently" — more like "you didn't bring up the phone thing — what would it have cost you to?" or "you called her messy — is that the read or the easier read?"
 
 Output JSON ONLY:
 {
-  "recap": "2-3 sentences. Past tense. Lowercase ok. References at least one specific thing the player said or pointedly didn't say. Neutral — no 'good'/'bad'/'should have'. No verdict on the friend.",
+  "recap": "3-4 sentences total. First the situation (friend + other person + core tension). Then what you said/didn't say with a short quoted fragment. Past tense. Lowercase ok. Neutral — no 'good'/'bad'/'should have'. No verdict on the friend.",
   "question": "ONE genuine open question that turns one of the player's specific choices back on them. Not rhetorical. Not leading. One sentence."
 }
 
