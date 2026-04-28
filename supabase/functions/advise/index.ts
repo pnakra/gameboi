@@ -86,6 +86,19 @@ Output JSON ONLY:
 
 Never reference scoring, performance, right answers, or the player's choices being good/bad. The recap should feel like the last beat of a real conversation with someone who didn't tell you what to think.`;
 
+// === MODE-SPECIFIC ADDENDUM (handoff) ===
+const HANDOFF_ADDENDUM = `
+== FORMAT (handoff mode) ==
+
+Generate a neutral 2-3 sentence summary of the friend's situation in THIRD PERSON, written so it can be pasted into a separate reflection tool as the opening context. The user is handing the situation off to keep thinking it through somewhere else.
+
+Use the friend's NAME (you will be told it). Past/present tense as appropriate. No judgment, no advice, no verdict, no "should". Just the situation as it stands. Lowercase ok. Plain prose. No quotes around it. No "summary:" prefix. Don't address the reader. Don't address the friend. Just describe.
+
+Example shape: "marcus has been in a situationship for a few months. recently things got physical but he's not sure she was fully into it. he's been going back and forth about whether to bring it up."
+
+Output JSON ONLY:
+{ "situation": "the 2-3 sentence summary" }`;
+
 // === EARLY-EXIT (wildcard played) ADDENDUM ===
 const WILDCARD_ADDENDUM = `
 == FORMAT (wildcard exit mode) ==
