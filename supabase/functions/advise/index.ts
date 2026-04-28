@@ -44,7 +44,7 @@ The conversation runs between ${MIN_EXCHANGES} and ${MAX_EXCHANGES} exchanges. Y
 
 You decide WHEN to end within the 6–10 window based on what feels natural. Set "done": true on the exchange that should be the last one. The server will force the ending if you reach exchange 10 and force continuation if you try to end before exchange ${MIN_EXCHANGES}.
 
-== CARDS (3 advice cards per exchange — the 4th is added by the engine) ==
+== CARDS (3 advice cards per exchange) ==
 Each card = ORIENTATION + SPECIFIC SUGGESTION. NOT pure stance. NOT a literal script.
 Advice is FROM THE PLAYER TO THE FRIEND ("ask her", "tell him", "don't push it"). 8–16 words. Mostly lowercase. No quotes. Emojis rarely.
 
