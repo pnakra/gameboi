@@ -86,6 +86,19 @@ Output JSON ONLY:
 
 Never reference scoring, performance, right answers, or the player's choices being good/bad. The recap should feel like the last beat of a real conversation with someone who didn't tell you what to think.`;
 
+// === MODE-SPECIFIC ADDENDUM (handoff) ===
+const HANDOFF_ADDENDUM = `
+== FORMAT (handoff mode) ==
+
+Generate a neutral 2-3 sentence summary of the friend's situation in THIRD PERSON, written so it can be pasted into a separate reflection tool as the opening context. The user is handing the situation off to keep thinking it through somewhere else.
+
+Use the friend's NAME (you will be told it). Past/present tense as appropriate. No judgment, no advice, no verdict, no "should". Just the situation as it stands. Lowercase ok. Plain prose. No quotes around it. No "summary:" prefix. Don't address the reader. Don't address the friend. Just describe.
+
+Example shape: "marcus has been in a situationship for a few months. recently things got physical but he's not sure she was fully into it. he's been going back and forth about whether to bring it up."
+
+Output JSON ONLY:
+{ "situation": "the 2-3 sentence summary" }`;
+
 // === EARLY-EXIT (wildcard played) ADDENDUM ===
 const WILDCARD_ADDENDUM = `
 == FORMAT (wildcard exit mode) ==
@@ -97,9 +110,15 @@ React in the friend's voice. 1-2 short bubbles. Acknowledge it's actually maybe 
 Output JSON ONLY:
 { "friend": ["msg 1", "msg 2"] }`;
 
-function buildSystem(mode: "turn" | "recap" | "wildcard", friendContext?: string) {
+function buildSystem(mode: "turn" | "recap" | "wildcard" | "handoff", friendContext?: string) {
   const addendum =
-    mode === "recap" ? RECAP_ADDENDUM : mode === "wildcard" ? WILDCARD_ADDENDUM : TURN_ADDENDUM;
+    mode === "recap"
+      ? RECAP_ADDENDUM
+      : mode === "wildcard"
+      ? WILDCARD_ADDENDUM
+      : mode === "handoff"
+      ? HANDOFF_ADDENDUM
+      : TURN_ADDENDUM;
   const friendBlock = friendContext
     ? `\n\n== THIS SESSION'S FRIEND ==\n${friendContext}\n== END FRIEND ==\n\nEvery message and card must sound like THIS friend specifically. Match his voice. Keep the situation grounded in his specific ongoing thing.`
     : "";
@@ -195,8 +214,14 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const mode: "turn" | "recap" | "wildcard" =
-      body.mode === "recap" ? "recap" : body.mode === "wildcard" ? "wildcard" : "turn";
+    const mode: "turn" | "recap" | "wildcard" | "handoff" =
+      body.mode === "recap"
+        ? "recap"
+        : body.mode === "wildcard"
+        ? "wildcard"
+        : body.mode === "handoff"
+        ? "handoff"
+        : "turn";
     const history: AnthropicMsg[] = Array.isArray(body.history) ? body.history : [];
     const chosenCard: string | undefined = body.chosenCard;
     const friendContext: string | undefined = body.friendContext;
@@ -214,6 +239,24 @@ Deno.serve(async (req) => {
         JSON.stringify({
           recap: String(parsed.recap || "").slice(0, 600),
           question: String(parsed.question || "").slice(0, 240),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ---------- HANDOFF MODE (third-person situation summary for ito) ----------
+    if (mode === "handoff") {
+      const transcript: string = String(body.transcript || "");
+      const friendName: string = String(body.friendName || "your friend");
+      const userTurn = `The friend's name is "${friendName}". Here is the thread so far. Generate the third-person situation summary that will be passed into a separate reflection tool.\n\n${transcript}`;
+      const raw = await callClaude(
+        [{ role: "user", content: userTurn }],
+        buildSystem("handoff", friendContext),
+      );
+      const parsed = extractJson(raw);
+      return new Response(
+        JSON.stringify({
+          situation: String(parsed.situation || "").slice(0, 800),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );

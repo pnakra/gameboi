@@ -185,6 +185,35 @@ export function GameScreen({
     void next({ chosenReply: text, forExchange: nextEx });
   }
 
+  const [handoffLoading, setHandoffLoading] = useState(false);
+  async function handoffToIto() {
+    if (handoffLoading) return;
+    setHandoffLoading(true);
+    try {
+      const transcript = buildTranscript(chatRef.current);
+      const { data, error } = await supabase.functions.invoke("advise", {
+        body: {
+          mode: "handoff",
+          transcript,
+          friendContext: friend.context,
+          friendName: friend.name,
+        },
+      });
+      if (error) throw error;
+      const situation: string =
+        data?.situation ||
+        `${friend.name.toLowerCase()} is working through something and wants to think it through.`;
+      const url = `https://isthisok.app/?situation=${encodeURIComponent(situation)}`;
+      window.location.href = url;
+    } catch (e) {
+      console.error(e);
+      // Fail-safe: still send them over with no prefill.
+      window.location.href = "https://isthisok.app";
+    } finally {
+      setHandoffLoading(false);
+    }
+  }
+
   async function nextWildcard(chosenCard: string) {
     setLoading(true);
     try {
@@ -374,15 +403,25 @@ export function GameScreen({
               />
             )}
 
-            {/* Persistent ito footer — always visible during play */}
-            <a
-              href="https://isthisok.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight"
-            >
-              got your own situation? isthisok.app
-            </a>
+            {/* Handoff CTA — subtle, appears from exchange 5 onward, also when finished */}
+            {(exchange >= FREETEXT_FROM || isFinished) ? (
+              <button
+                onClick={handoffToIto}
+                disabled={handoffLoading}
+                className="block w-full text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight disabled:opacity-50"
+              >
+                {handoffLoading ? "one sec..." : "want to keep talking this through?"}
+              </button>
+            ) : (
+              <a
+                href="https://isthisok.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight"
+              >
+                got your own situation? isthisok.app
+              </a>
+            )}
           </div>
         </div>
       </div>

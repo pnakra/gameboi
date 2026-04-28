@@ -16,6 +16,7 @@ export function EndCard({ friend, transcript, itoFirst, onPlayAgain, onSwitchFri
   const [recap, setRecap] = useState<string | null>(null);
   const [question, setQuestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [handoffLoading, setHandoffLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +42,29 @@ export function EndCard({ friend, transcript, itoFirst, onPlayAgain, onSwitchFri
       cancelled = true;
     };
   }, [transcript, friend.context]);
+
+  async function handoffToIto() {
+    if (handoffLoading) return;
+    setHandoffLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("advise", {
+        body: {
+          mode: "handoff",
+          transcript,
+          friendContext: friend.context,
+          friendName: friend.name,
+        },
+      });
+      if (error) throw error;
+      const situation: string =
+        data?.situation ||
+        `${friend.name.toLowerCase()} is working through something and wants to think it through.`;
+      window.location.href = `https://isthisok.app/?situation=${encodeURIComponent(situation)}`;
+    } catch (e) {
+      console.error(e);
+      window.location.href = "https://isthisok.app";
+    }
+  }
 
   return (
     <div className="relative min-h-[100dvh] w-full bg-background flex items-stretch sm:items-center justify-center sm:py-6 grain overflow-hidden">
@@ -70,6 +94,13 @@ export function EndCard({ friend, transcript, itoFirst, onPlayAgain, onSwitchFri
         )}
 
         <div className="mt-auto pt-10 space-y-3">
+          <button
+            onClick={handoffToIto}
+            disabled={handoffLoading || loading}
+            className="w-full h-13 py-3.5 rounded-2xl bg-[var(--ito)]/15 border border-[var(--ito)]/40 text-[var(--ito)] font-bold tracking-tight active:scale-[0.98] transition-transform disabled:opacity-50"
+          >
+            {handoffLoading ? "one sec..." : "want to keep talking this through?"}
+          </button>
           <button
             onClick={onPlayAgain}
             className="w-full h-13 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold tracking-tight active:scale-[0.98] transition-transform"
