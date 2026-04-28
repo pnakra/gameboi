@@ -155,6 +155,7 @@ function RecapFirstLayout({
         >
           {loading ? "..." : question}
         </p>
+      </div>
     </>
   );
 }
