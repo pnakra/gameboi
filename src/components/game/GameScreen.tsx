@@ -273,7 +273,10 @@ export function GameScreen({
           {/* Conversation header */}
           <header className="relative flex items-center px-3 pt-2 pb-2.5 border-b border-white/[0.06] bg-background">
             <button
-              onClick={onExit}
+              onClick={() => {
+                track("exit_clicked", { friend_id: friend.id, exchange, finished: isFinished });
+                onExit();
+              }}
               aria-label="Back"
               className="text-accent text-[26px] leading-none w-9 h-9 grid place-items-center -ml-1 active:opacity-60"
             >
