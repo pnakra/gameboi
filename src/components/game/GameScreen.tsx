@@ -169,6 +169,12 @@ export function GameScreen({
 
     setActiveCardId(null);
     setPlayingCardId(c.id);
+    track("card_played", {
+      friend_id: friend.id,
+      exchange,
+      vibe: c.vibe,
+      label: c.label,
+    });
 
     // After the card's fly-up animation completes, push the bubble + clear hand + request next exchange
     window.setTimeout(() => {
@@ -179,13 +185,18 @@ export function GameScreen({
 
       const nextEx = exchange + 1;
       setExchange(nextEx);
-      void next({ chosenReply: c.label, forExchange: nextEx });
+      void next({ chosenReply: c.label, replySource: "card", forExchange: nextEx });
     }, 480);
   }
 
   function sendDraft() {
     const text = draft.trim();
     if (!text || loading || isFinished || playingCardId) return;
+    track("freetext_sent", {
+      friend_id: friend.id,
+      exchange,
+      length: text.length,
+    });
     setDraft("");
     setActiveCardId(null);
     const ts = Date.now();
@@ -193,12 +204,18 @@ export function GameScreen({
     setHand([]);
     const nextEx = exchange + 1;
     setExchange(nextEx);
-    void next({ chosenReply: text, forExchange: nextEx });
+    void next({ chosenReply: text, replySource: "freetext", forExchange: nextEx });
   }
 
   const [handoffLoading, setHandoffLoading] = useState(false);
   async function handoffToIto() {
     if (handoffLoading) return;
+    track("handoff_clicked", {
+      source: "game_screen",
+      friend_id: friend.id,
+      exchange,
+      finished: isFinished,
+    });
     setHandoffLoading(true);
     try {
       const transcript = buildTranscript(chatRef.current);
