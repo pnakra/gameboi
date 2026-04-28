@@ -9,14 +9,13 @@ import {
 } from "remotion";
 import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
 import { loadFont as loadSpaceGrotesk } from "@remotion/google-fonts/SpaceGrotesk";
+loadInter("normal", { weights: ["400", "600", "700", "800"], subsets: ["latin"] });
+loadSpaceGrotesk("normal", { weights: ["700"], subsets: ["latin"] });
 import { BrandBackdrop } from "../components/BrandBackdrop";
 import { Bubble } from "../components/Bubble";
 import { CardFan, type CardData } from "../components/CardFan";
 import { theme } from "../theme";
 import devAvatar from "../../public/images/friend-dev.jpg";
-
-loadInter();
-loadSpaceGrotesk();
 
 /**
  * 1080x1920, 30fps, 255 frames = 8.5 seconds.

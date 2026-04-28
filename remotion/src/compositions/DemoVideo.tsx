@@ -9,6 +9,8 @@ import {
 } from "remotion";
 import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
 import { loadFont as loadSpaceGrotesk } from "@remotion/google-fonts/SpaceGrotesk";
+loadInter("normal", { weights: ["400", "600", "700", "800"], subsets: ["latin"] });
+loadSpaceGrotesk("normal", { weights: ["700"], subsets: ["latin"] });
 import { BrandBackdrop } from "../components/BrandBackdrop";
 import { PhoneFrame } from "../components/PhoneFrame";
 import { Bubble, TypingBubble } from "../components/Bubble";
@@ -18,9 +20,6 @@ import devAvatar from "../../public/images/friend-dev.jpg";
 import marcusAvatar from "../../public/images/friend-marcus.jpg";
 import jordanAvatar from "../../public/images/friend-jordan.jpg";
 import theoAvatar from "../../public/images/friend-theo.jpg";
-
-loadInter();
-loadSpaceGrotesk();
 
 const PHONE_W = 540;
 const PHONE_H = 1100;
