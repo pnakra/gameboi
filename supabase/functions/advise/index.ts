@@ -196,16 +196,13 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const mode: "turn" | "recap" | "wildcard" | "handoff" =
+    const mode: "turn" | "recap" | "handoff" =
       body.mode === "recap"
         ? "recap"
-        : body.mode === "wildcard"
-        ? "wildcard"
         : body.mode === "handoff"
         ? "handoff"
         : "turn";
     const history: AnthropicMsg[] = Array.isArray(body.history) ? body.history : [];
-    const chosenCard: string | undefined = body.chosenCard;
     const friendContext: string | undefined = body.friendContext;
 
     // ---------- RECAP MODE ----------
