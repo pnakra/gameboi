@@ -244,6 +244,24 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ---------- HANDOFF MODE (third-person situation summary for ito) ----------
+    if (mode === "handoff") {
+      const transcript: string = String(body.transcript || "");
+      const friendName: string = String(body.friendName || "your friend");
+      const userTurn = `The friend's name is "${friendName}". Here is the thread so far. Generate the third-person situation summary that will be passed into a separate reflection tool.\n\n${transcript}`;
+      const raw = await callClaude(
+        [{ role: "user", content: userTurn }],
+        buildSystem("handoff", friendContext),
+      );
+      const parsed = extractJson(raw);
+      return new Response(
+        JSON.stringify({
+          situation: String(parsed.situation || "").slice(0, 800),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // ---------- WILDCARD EARLY-EXIT MODE ----------
     if (mode === "wildcard") {
       const userTurn = `The player just played the wildcard: "${chosenCard}". React briefly in voice, acknowledge it, sign off. Return JSON.`;
