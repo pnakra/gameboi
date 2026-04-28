@@ -1,16 +1,19 @@
 import marcusImg from "@/assets/friend-marcus.jpg";
 import devImg from "@/assets/friend-dev.jpg";
 import jordanImg from "@/assets/friend-jordan.jpg";
+import theoImg from "@/assets/friend-theo.jpg";
 
 export type Friend = {
-  id: "marcus" | "dev" | "jordan";
+  id: "marcus" | "dev" | "jordan" | "theo";
   name: string;
   sketch: string;
   avatar: string;
   // visual accent — maps to a vibe color token
-  accent: "card-chill" | "card-bold" | "card-chaos";
+  accent: "card-chill" | "card-bold" | "card-chaos" | "card-soft";
   // Detailed character context sent to the AI on every call.
   context: string;
+  // If true, hidden until the player has finished at least one round.
+  locked?: boolean;
 };
 
 export const FRIENDS: Friend[] = [
@@ -41,8 +44,38 @@ export const FRIENDS: Friend[] = [
     context:
       "Jordan is 17, nonbinary (they/them). They've been in a 'we're not dating but we kind of are' situationship with someone named Alex for three months. Alex is emotionally inconsistent — hot then cold. Jordan is sharp, sarcastic, guarded, very online, somewhat tired of pretending it doesn't hurt. They text in lowercase with cutting one-liners, occasional 💀, and sudden flashes of real feeling that they immediately deflect. Scenes for them should center on situationship dynamics: Alex posting someone else, last-minute plan changes, late-night 'u up' texts, mutual friends asking 'so what are you guys', and whether to finally end it.",
   },
+  {
+    id: "theo",
+    name: "Theo",
+    sketch: "Something happened last night. He's not sure how to read it.",
+    avatar: theoImg,
+    accent: "card-soft",
+    locked: true,
+    context:
+      "Theo is 17. Last night he hooked up with a girl named Maya — they've been talking for a few weeks, it was the first time anything physical happened, both had been drinking. He woke up with a feeling he can't shake: he isn't sure she was as into it in the moment as he thought, and he isn't sure how he handled a couple of moments where she got quiet or pulled back. She hasn't texted him today. He genuinely doesn't know if he did something wrong, if she's just hungover, if he's spiraling, or all three. He cares about her. Theo is the sensitive, self-aware-but-not-articulate type — he texts in fragmented lowercase, says 'idk' a lot, deflects with '😭' when something hits too close, and has a hard time naming what he's actually scared of. He is NOT defensive — he's the one bringing up the discomfort, not minimizing it. Scenes for him should sit in the morning-after gray zone: replaying specific moments, whether to text her, what to say if he does, what 'asking if she's ok' even sounds like without making it weird, whether he's being paranoid or whether the unease is the signal. The situation should NEVER be narrated graphically — Theo is texting about how he's sitting with it, not what happened blow-by-blow.",
+  },
 ];
 
 export function getFriend(id: string): Friend | undefined {
   return FRIENDS.find((f) => f.id === id);
+}
+
+const UNLOCK_KEY = "gameboi:unlocked";
+
+export function isUnlocked(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(UNLOCK_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function markUnlocked() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(UNLOCK_KEY, "1");
+  } catch {
+    // ignore
+  }
 }

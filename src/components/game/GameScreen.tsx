@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Bubble, TypingBubble } from "@/components/game/Bubble";
 import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
-import type { Friend } from "@/components/game/friends";
+import { type Friend, markUnlocked } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
 import { track, logExchange } from "@/lib/analytics";
 
@@ -142,6 +142,7 @@ export function GameScreen({
           friend_name: friend.name,
           exchanges: opts.forExchange,
         });
+        markUnlocked();
         // No auto-advance — user taps "continue" when they're ready (see button below).
       } else {
         const incoming: Card[] = (data.cards ?? []).slice(0, HAND_SIZE).map((c: any) => ({
