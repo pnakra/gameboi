@@ -18,6 +18,10 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
   const [handoffLoading, setHandoffLoading] = useState(false);
 
   useEffect(() => {
+    track("end_card_viewed", { friend_id: friend.id, friend_name: friend.name });
+  }, [friend.id, friend.name]);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
