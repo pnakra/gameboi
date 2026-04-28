@@ -95,6 +95,13 @@ export function EndCard({ friend, transcript, itoFirst, onPlayAgain, onSwitchFri
 
         <div className="mt-auto pt-10 space-y-3">
           <button
+            onClick={handoffToIto}
+            disabled={handoffLoading || loading}
+            className="w-full h-13 py-3.5 rounded-2xl bg-[var(--ito)]/15 border border-[var(--ito)]/40 text-[var(--ito)] font-bold tracking-tight active:scale-[0.98] transition-transform disabled:opacity-50"
+          >
+            {handoffLoading ? "one sec..." : "want to keep talking this through?"}
+          </button>
+          <button
             onClick={onPlayAgain}
             className="w-full h-13 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold tracking-tight active:scale-[0.98] transition-transform"
           >
