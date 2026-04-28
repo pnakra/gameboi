@@ -140,13 +140,6 @@ export function GameScreen({
   function pickCard(c: Card) {
     if (loading || isFinished || playingCardId) return;
 
-    // After exchange 4, cards are suggestions — populate the field instead of submitting.
-    if (exchange >= FREETEXT_FROM) {
-      setActiveCardId(null);
-      setDraft(c.label);
-      return;
-    }
-
     setActiveCardId(null);
     setPlayingCardId(c.id);
 
