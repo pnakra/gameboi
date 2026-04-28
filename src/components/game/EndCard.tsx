@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Friend } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics";
 
 type Props = {
   friend: Friend;
