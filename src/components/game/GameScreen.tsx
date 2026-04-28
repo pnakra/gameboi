@@ -142,6 +142,7 @@ export function GameScreen({
           friend_name: friend.name,
           exchanges: opts.forExchange,
         });
+        markUnlocked();
         // No auto-advance — user taps "continue" when they're ready (see button below).
       } else {
         const incoming: Card[] = (data.cards ?? []).slice(0, HAND_SIZE).map((c: any) => ({
