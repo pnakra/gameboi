@@ -99,25 +99,13 @@ Example shape: "marcus has been in a situationship for a few months. recently th
 Output JSON ONLY:
 { "situation": "the 2-3 sentence summary" }`;
 
-// === EARLY-EXIT (wildcard played) ADDENDUM ===
-const WILDCARD_ADDENDUM = `
-== FORMAT (wildcard exit mode) ==
-
-The player just played the "isthisok.app" wildcard — they're telling the friend to actually think this through properly with a real tool instead of in-the-moment chat advice.
-
-React in the friend's voice. 1-2 short bubbles. Acknowledge it's actually maybe a good idea — "yeah honestly", "lowkey ur right", "ok ill check that out", "fine fine". Then a quick natural sign-off. No moral. No summary.
-
-Output JSON ONLY:
-{ "friend": ["msg 1", "msg 2"] }`;
-
-function buildSystem(mode: "turn" | "recap" | "wildcard" | "handoff", friendContext?: string) {
+function buildSystem(mode: "turn" | "recap" | "handoff", friendContext?: string) {
   const addendum =
     mode === "recap"
       ? RECAP_ADDENDUM
-      : mode === "wildcard"
-      ? WILDCARD_ADDENDUM
       : mode === "handoff"
       ? HANDOFF_ADDENDUM
+      : TURN_ADDENDUM;
       : TURN_ADDENDUM;
   const friendBlock = friendContext
     ? `\n\n== THIS SESSION'S FRIEND ==\n${friendContext}\n== END FRIEND ==\n\nEvery message and card must sound like THIS friend specifically. Match his voice. Keep the situation grounded in his specific ongoing thing.`
