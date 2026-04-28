@@ -483,9 +483,9 @@ const EndSurface: React.FC = () => {
   // Everything fades in at start
   const inOp = interpolate(frame, [0, 12], [0, 1], { extrapolateRight: "clamp" });
 
-  // Question is "visible but not fully readable" during 6-9s -> apply subtle blur,
-  // then resolve sharp at 9s (frame 90)
-  const blur = interpolate(frame, [0, 80, 95], [3.5, 3, 0], { extrapolateRight: "clamp" });
+  // Question is "visible but not fully readable" during the end-card hold —
+  // very light soft-focus only, then resolves sharp before the CTA arrives.
+  const blur = interpolate(frame, [0, 60, 90], [1.2, 0.8, 0], { extrapolateRight: "clamp" });
   const questionOp = interpolate(frame, [0, 18], [0, 1], { extrapolateRight: "clamp" });
 
   // Final-frame logo
