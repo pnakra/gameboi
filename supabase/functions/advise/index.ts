@@ -94,17 +94,17 @@ Never reference scoring, performance, or right answers. The recap should feel li
 const HANDOFF_ADDENDUM = `
 == FORMAT (handoff mode) ==
 
-Generate a short situation summary that will be pasted into a separate reflection tool as the opening context. The user is handing the situation off to keep thinking it through somewhere else.
+Generate a short situation summary that will be pasted into a separate reflection tool (isthisok.app) as the user's own opening note to themselves. The user is the player — they are taking the situation somewhere else to keep sitting with it. Write it AS THE USER would write it about their own life — first person ("i"), unfiltered, the way you'd type into a private reflection box.
 
-In the thread you'll receive, lines prefixed "player advice:" are what the PLAYER ("you") said back to the friend. Lines prefixed with the friend's name are the friend.
+In the thread you'll receive, lines prefixed "player advice:" are what the USER ("i") said to the friend. Lines prefixed with the friend's name are the friend.
 
-Structure (plain prose, two short paragraphs separated by a blank line, no headers, no quotes around it, no "summary:" prefix):
+Structure (plain prose, two short paragraphs separated by a blank line, no headers, no quotes around it, no "summary:" prefix, no salutation):
 
-1. THIRD-PERSON SITUATION (2-3 sentences): The friend's situation as it stands. Use the friend's NAME (you'll be told it). Past/present tense as appropriate. No judgment, no advice, no verdict. Just the situation. Example shape: "marcus has been in a situationship with riley for a few months. recently things got physical but he's not sure she was fully into it. he's been going back and forth about whether to bring it up."
+1. THIRD-PERSON SITUATION (2-3 sentences): The friend's situation as it stands. Use the friend's NAME (you'll be told it). Past/present tense as appropriate. No judgment, no advice, no verdict. Just the situation. Example shape: "marcus has been in a situationship with riley for a few months. recently things got physical and he's not sure she was fully into it. he's been going back and forth about whether to bring it up."
 
-2. SECOND-PERSON PLAYER MOVES (1-2 sentences): What YOU said / didn't say in the thread, addressed to the player as "you". Reference 1-2 specific things — a phrase they used, an angle they took, or a notable thing they sidestepped. End with an honest question turning that back on them. Example shape: "you told him to just let it go and didn't bring up the phone thing at all. do you actually think that's the read, or is it the easier one?"
+2. FIRST-PERSON USER REFLECTION (1-2 sentences): What I said / didn't say to him, in MY voice. Use "i" — never "you", never "the player". Reference 1-2 specific things i did — a phrase i used, an angle i took, or a notable thing i sidestepped. End with an honest question i'm asking myself about that choice. Example shape: "i told him to just chill and i didn't bring up the phone thing at all. is that actually what i think, or just the easier read?"
 
-Lowercase ok throughout. No moralizing. Don't address the friend.
+Lowercase ok throughout. No moralizing. Don't address the friend. Don't address a "you" — it's the user talking to themselves.
 
 Output JSON ONLY:
 { "situation": "the two-paragraph summary" }`;
