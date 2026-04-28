@@ -120,7 +120,6 @@ export function GameScreen({
         window.setTimeout(() => {
           onEnd({
             transcript: buildTranscript([...chatRef.current]),
-            itoFirst: !!data.earlyExit,
           });
         }, 1100);
       } else {
@@ -128,7 +127,6 @@ export function GameScreen({
           id: c.id,
           label: c.label,
           vibe: c.vibe,
-          isWildcard: !!c.isWildcard,
         }));
         await dealCards(incoming);
       }
@@ -143,7 +141,7 @@ export function GameScreen({
     if (loading || isFinished || playingCardId) return;
 
     // After exchange 4, cards are suggestions — populate the field instead of submitting.
-    if (exchange >= FREETEXT_FROM && !c.isWildcard) {
+    if (exchange >= FREETEXT_FROM) {
       setActiveCardId(null);
       setDraft(c.label);
       return;
@@ -158,12 +156,6 @@ export function GameScreen({
       setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
-
-      if (c.isWildcard) {
-        // Early exit: call wildcard mode, then end the round.
-        void nextWildcard(c.label);
-        return;
-      }
 
       const nextEx = exchange + 1;
       setExchange(nextEx);
