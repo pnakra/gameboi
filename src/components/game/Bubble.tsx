@@ -35,7 +35,7 @@ export function Bubble({
       <div
         className={cn(
           // iOS bubble proportions: ~16.5px text, ~75% max width, ~20px radius
-          "relative max-w-[75%] px-[14px] py-[7px] text-[16.5px] leading-[1.25] tracking-[-0.01em]",
+          "relative max-w-[75%] px-[14px] pt-[8px] pb-[9px] text-[16.5px] leading-[1.3] tracking-[-0.01em]",
           "rounded-[20px] whitespace-pre-wrap break-words",
           isYou
             ? "bg-bubble-you text-bubble-you-foreground"
