@@ -113,8 +113,8 @@ function buildSystem(mode: "turn" | "recap" | "handoff", friendContext?: string)
 }
 
 function phaseFor(exchange: number): "setup" | "complication" | "head" {
-  if (exchange <= 3) return "setup";
-  if (exchange <= 7) return "complication";
+  if (exchange <= 1) return "setup";
+  if (exchange <= 3) return "complication";
   return "head";
 }
 
