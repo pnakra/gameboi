@@ -149,24 +149,38 @@ function RecapFirstLayout({
       <p
         className={cn(
           "text-[17px] leading-[1.45] text-foreground/95 text-balance",
-          loading && "opacity-40",
         )}
+        aria-live="polite"
       >
-        {loading ? "..." : recap}
+        {loading ? (
+          <span className="block space-y-2">
+            <span className="block h-4 rounded-md bg-foreground/10 animate-pulse w-[92%]" />
+            <span className="block h-4 rounded-md bg-foreground/10 animate-pulse w-[88%]" />
+            <span className="block h-4 rounded-md bg-foreground/10 animate-pulse w-[70%]" />
+            <span className="block h-4 rounded-md bg-foreground/10 animate-pulse w-[80%]" />
+            <span className="block text-[12px] text-muted-foreground/80 lowercase pt-2 not-italic">
+              putting it together…
+            </span>
+          </span>
+        ) : (
+          recap
+        )}
       </p>
 
       <div className="mt-8 pt-8 border-t border-white/[0.06]">
         <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-3">
           worth sitting with
         </div>
-        <p
-          className={cn(
-            "display text-[22px] leading-[1.25] font-semibold text-balance",
-            loading && "opacity-40",
-          )}
-        >
-          {loading ? "..." : question}
-        </p>
+        {loading ? (
+          <div className="space-y-2.5">
+            <div className="h-5 rounded-md bg-foreground/10 animate-pulse w-[90%]" />
+            <div className="h-5 rounded-md bg-foreground/10 animate-pulse w-[75%]" />
+          </div>
+        ) : (
+          <p className="display text-[22px] leading-[1.25] font-semibold text-balance">
+            {question}
+          </p>
+        )}
       </div>
     </>
   );
