@@ -104,17 +104,19 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
         />
       </div>
 
-      {/* Label — fills card. Clamped when fanned; full text when active. */}
+      {/* Label — fills card. Top-aligned so long text doesn't clip from below. */}
       <div
         className={cn(
-          "absolute inset-x-3.5 top-9 bottom-3.5 flex items-end",
-          "text-[14px] font-semibold leading-[1.3] text-foreground/95 text-balance",
+          "absolute inset-x-3.5 top-9 bottom-3.5 flex items-start overflow-hidden",
+          "font-semibold text-foreground/95 text-balance",
         )}
       >
         <span
           className={cn(
             "block w-full transition-all duration-200",
-            active ? "text-[15px] leading-[1.32]" : "line-clamp-5",
+            active
+              ? "text-[15px] leading-[1.32]"
+              : "text-[13px] leading-[1.28] line-clamp-7",
           )}
         >
           {label}
