@@ -30,7 +30,7 @@ export function FriendSelect({ onPick }: { onPick: (f: Friend) => void }) {
           tonight
         </div>
         <h1 className="display text-[34px] leading-[0.95] font-bold text-balance">
-          who needs you?
+          pick your gameboi
         </h1>
       </div>
 
