@@ -49,7 +49,7 @@ function Index() {
       <EndCard
         friend={friend}
         transcript={endPayload.transcript}
-        itoFirst={endPayload.itoFirst}
+        
         onPlayAgain={() => setStage("interstitial")}
         onSwitchFriend={() => {
           setEndPayload(null);
