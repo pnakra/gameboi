@@ -300,12 +300,14 @@ export function GameScreen({
             </div>
           </header>
 
-          {/* Thread — fills available space but anchors content to the bottom,
-              so on early turns the last message sits right above the card hand
-              (no big void in the middle). Long threads scroll naturally. */}
+          {/* Thread — sizes to its content so on short threads (early turns)
+              the cards float right below the last bubble instead of being
+              pushed to the bottom of the screen. Once the thread overflows
+              the available space it scrolls and the cards stay anchored. */}
           <div
             ref={scrollRef}
-            className="flex-1 min-h-0 overflow-y-auto px-3 pt-3 pb-0 flex flex-col justify-end"
+            className="min-h-0 overflow-y-auto px-3 pt-3 pb-0"
+            style={{ flex: "0 1 auto" }}
           >
             {groupedChat.map((item, i) => {
               if (item.kind === "stamp") {
