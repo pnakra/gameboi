@@ -150,9 +150,9 @@ const Texts: React.FC = () => {
 
 /* ---- Cards hero ---- */
 const CARDS: CardData[] = [
-  { vibe: "chill", label: "it's literally been 2 days, breathe" },
-  { vibe: "bold", label: "what would 'going over' actually mean" },
-  { vibe: "soft", label: "what do *you* actually want here" },
+  { vibe: "chill", label: "it's been 2 days, breathe" },
+  { vibe: "bold", label: "what does 'come over' actually mean" },
+  { vibe: "soft", label: "what do you actually want here" },
 ];
 
 const CardsHero: React.FC = () => {

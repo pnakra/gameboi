@@ -293,9 +293,9 @@ const CHAT_BEATS: Beat[] = [
 ];
 
 const CARDS: CardData[] = [
-  { vibe: "chill", label: "it's literally been 2 days, breathe" },
+  { vibe: "chill", label: "it's been 2 days, breathe" },
   { vibe: "bold", label: "what would 'going over' actually mean rn" },
-  { vibe: "soft", label: "what do *you* actually want here" },
+  { vibe: "soft", label: "what do you actually want here" },
 ];
 
 const ChatInner: React.FC = () => {
