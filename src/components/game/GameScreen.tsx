@@ -77,7 +77,12 @@ export function GameScreen({
     }, 600);
   }
 
-  async function next(opts: { start?: boolean; chosenReply?: string; forExchange: number }) {
+  async function next(opts: {
+    start?: boolean;
+    chosenReply?: string;
+    replySource?: "card" | "freetext";
+    forExchange: number;
+  }) {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("advise", {
@@ -113,11 +118,30 @@ export function GameScreen({
         },
       ]);
 
+      // Persist this exchange (input + output) for the round.
+      logExchange({
+        friend_id: friend.id,
+        friend_name: friend.name,
+        exchange_number: opts.forExchange,
+        phase: data.phase,
+        chosen_reply: opts.chosenReply ?? null,
+        reply_source: opts.replySource ?? null,
+        friend_messages: friendMsgs,
+        cards: data.cards ?? [],
+        is_final: !!data.isFinal,
+        raw_response: data.assistantRaw,
+      });
+
       setLoading(false);
 
       if (data.isFinal) {
         setIsFinished(true);
         setHand([]);
+        track("round_ended", {
+          friend_id: friend.id,
+          friend_name: friend.name,
+          exchanges: opts.forExchange,
+        });
         // Brief beat so the last bubble lands before the end card.
         window.setTimeout(() => {
           onEnd({
@@ -134,6 +158,7 @@ export function GameScreen({
       }
     } catch (e) {
       console.error(e);
+      track("advise_error", { message: e instanceof Error ? e.message : "unknown" });
       setChat((c) => [...c, { kind: "them", text: "ugh wifi just died one sec", ts: Date.now(), pop: true }]);
       setLoading(false);
     }
