@@ -244,7 +244,7 @@ Deno.serve(async (req) => {
       const parsed = extractJson(raw);
       return new Response(
         JSON.stringify({
-          situation: String(parsed.situation || "").slice(0, 800),
+          situation: String(parsed.situation || "").slice(0, 1400),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
