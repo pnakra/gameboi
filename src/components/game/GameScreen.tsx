@@ -53,6 +53,7 @@ export function GameScreen({
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
+    track("round_started", { friend_id: friend.id, friend_name: friend.name });
     setChat([{ kind: "stamp", text: `today ${openTime}` }]);
     void next({ start: true, forExchange: 1 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
