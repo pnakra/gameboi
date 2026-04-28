@@ -387,18 +387,8 @@ export function GameScreen({
               </div>
             )}
 
-            {/* From FREETEXT_FROM onward, the player can also type their own reply
-                instead of (or in addition to) tapping a card. */}
-            {!isFinished && exchange >= FREETEXT_FROM && (
-              <div className="px-1 pt-1 animate-fade-in">
-                <ComposeBar
-                  value={draft}
-                  onChange={setDraft}
-                  onSend={sendDraft}
-                  disabled={loading || !!playingCardId}
-                />
-              </div>
-            )}
+            {/* Free-text input intentionally removed — cards are the only way to reply
+                during the exchange. The reflection box lives on the post-game handoff. */}
 
             {/* Tap-outside dismisses the preview on mobile */}
             {activeCardId && !playingCardId && (
