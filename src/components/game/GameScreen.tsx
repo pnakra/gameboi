@@ -337,8 +337,9 @@ export function GameScreen({
             <div className="h-3" />
           </div>
 
-          {/* INPUT AREA */}
-          <div className="shrink-0 safe-bottom px-2 pt-2">
+          {/* CARD HAND / CONTINUE — sits directly below the thread so on
+              early turns it floats up to meet the last bubble. */}
+          <div className="shrink-0 px-2 pt-2">
             {isFinished && (
               <div className="px-2 py-3 animate-fade-in">
                 <button
