@@ -202,12 +202,6 @@ function extractJson(s: string): any {
   return JSON.parse(s.slice(start, end + 1));
 }
 
-// The wildcard the engine always injects. Stable label so the AI in wildcard mode can recognize it.
-const WILDCARD_CARD = {
-  label: "tell him to actually think this one through properly at isthisok.app",
-  vibe: "ito" as const,
-  isWildcard: true,
-};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
