@@ -48,6 +48,7 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
 
   async function handoffToIto() {
     if (handoffLoading) return;
+    track("handoff_clicked", { source: "end_card", friend_id: friend.id });
     setHandoffLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("advise", {
