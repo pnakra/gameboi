@@ -16,6 +16,7 @@ export function EndCard({ friend, transcript, itoFirst, onPlayAgain, onSwitchFri
   const [recap, setRecap] = useState<string | null>(null);
   const [question, setQuestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [handoffLoading, setHandoffLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +42,29 @@ export function EndCard({ friend, transcript, itoFirst, onPlayAgain, onSwitchFri
       cancelled = true;
     };
   }, [transcript, friend.context]);
+
+  async function handoffToIto() {
+    if (handoffLoading) return;
+    setHandoffLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("advise", {
+        body: {
+          mode: "handoff",
+          transcript,
+          friendContext: friend.context,
+          friendName: friend.name,
+        },
+      });
+      if (error) throw error;
+      const situation: string =
+        data?.situation ||
+        `${friend.name.toLowerCase()} is working through something and wants to think it through.`;
+      window.location.href = `https://isthisok.app/?situation=${encodeURIComponent(situation)}`;
+    } catch (e) {
+      console.error(e);
+      window.location.href = "https://isthisok.app";
+    }
+  }
 
   return (
     <div className="relative min-h-[100dvh] w-full bg-background flex items-stretch sm:items-center justify-center sm:py-6 grain overflow-hidden">
