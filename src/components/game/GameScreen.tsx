@@ -5,7 +5,7 @@ import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
 import type { Friend } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
 
-type Card = { id: string; label: string; vibe: Vibe; entering?: boolean; isWildcard?: boolean };
+type Card = { id: string; label: string; vibe: Vibe; entering?: boolean };
 type ChatItem =
   | { kind: "them"; text: string; ts: number; pop?: boolean }
   | { kind: "you"; text: string; ts: number; pop?: boolean }
@@ -15,11 +15,10 @@ type ApiTurn = { role: "user" | "assistant"; content: string };
 const MIN_EXCHANGES = 6;
 const MAX_EXCHANGES = 10;
 const FREETEXT_FROM = 5;
-const HAND_SIZE = 4;
+const HAND_SIZE = 3;
 
 export type EndPayload = {
   transcript: string;
-  itoFirst: boolean;
 };
 
 export function GameScreen({
