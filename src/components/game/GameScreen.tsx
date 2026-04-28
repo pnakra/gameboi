@@ -411,6 +411,13 @@ export function GameScreen({
                 href="https://isthisok.app/check-in"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  track("isthisok_link_clicked", {
+                    source: "game_screen_inline",
+                    friend_id: friend.id,
+                    exchange,
+                  })
+                }
                 className="block text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight"
               >
                 got your own situation? isthisok.app
