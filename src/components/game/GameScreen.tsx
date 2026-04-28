@@ -352,7 +352,7 @@ export function GameScreen({
               // Fanned hand of cards — used throughout the entire arc.
               <div
                 className={cn(
-                  "relative h-[260px] mx-auto",
+                  "relative h-[220px] mx-auto",
                   "before:content-[''] before:absolute before:left-1/2 before:bottom-2 before:-translate-x-1/2",
                   "before:w-[340px] before:h-[40px] before:rounded-full before:bg-primary/10 before:blur-2xl before:pointer-events-none",
                 )}
