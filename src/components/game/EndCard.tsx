@@ -6,13 +6,11 @@ import { cn } from "@/lib/utils";
 type Props = {
   friend: Friend;
   transcript: string;
-  /** When true, the end was triggered by the ito wildcard — surface ito as the dominant element. */
-  itoFirst?: boolean;
   onPlayAgain: () => void;
   onSwitchFriend: () => void;
 };
 
-export function EndCard({ friend, transcript, itoFirst, onPlayAgain, onSwitchFriend }: Props) {
+export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Props) {
   const [recap, setRecap] = useState<string | null>(null);
   const [question, setQuestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
