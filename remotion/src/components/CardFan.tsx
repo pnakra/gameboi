@@ -42,9 +42,9 @@ export const CardFan: React.FC<FanProps> = ({ cards, dealStart, highlightIndex, 
         // Fan position
         const center = (total - 1) / 2;
         const offset = i - center;
-        const baseRotate = offset * 8;
-        const baseX = offset * 60;
-        const baseY = Math.abs(offset) * 12;
+        const baseRotate = offset * 9;
+        const baseX = offset * 110;
+        const baseY = Math.abs(offset) * 14;
 
         // Highlight lift
         const isHighlight = highlightIndex === i;
