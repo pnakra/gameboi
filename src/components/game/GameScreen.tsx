@@ -457,20 +457,18 @@ function SuggestionStrip({
   return (
     <div className="mt-3 -mx-2 px-2 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
       {cards.map((c) => {
-        const isWild = !!c.isWildcard;
-        const tintVar = isWild
-          ? "--card-ito"
-          : c.vibe === "direct"
-          ? "--card-direct"
-          : c.vibe === "chill"
-          ? "--card-chill"
-          : c.vibe === "bold"
-          ? "--card-bold"
-          : c.vibe === "soft"
-          ? "--card-soft"
-          : c.vibe === "chaos"
-          ? "--card-chaos"
-          : "--card-chill";
+        const tintVar =
+          c.vibe === "direct"
+            ? "--card-direct"
+            : c.vibe === "chill"
+            ? "--card-chill"
+            : c.vibe === "bold"
+            ? "--card-bold"
+            : c.vibe === "soft"
+            ? "--card-soft"
+            : c.vibe === "chaos"
+            ? "--card-chaos"
+            : "--card-chill";
         return (
           <button
             key={c.id}
@@ -488,7 +486,7 @@ function SuggestionStrip({
             }}
           >
             <span className="block text-[9px] uppercase tracking-[0.18em] mb-0.5" style={{ color: `var(${tintVar})` }}>
-              {isWild ? "isthisok.app" : c.vibe}
+              {c.vibe}
             </span>
             <span className="line-clamp-2">{c.label}</span>
           </button>
