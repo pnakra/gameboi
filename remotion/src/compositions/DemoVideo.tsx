@@ -143,13 +143,13 @@ const PhoneStage: React.FC<{ label: string; children: React.ReactNode }> = ({ la
         <div
           style={{
             opacity: captionOp,
-            maxWidth: 460,
+            width: 600,
             textAlign: "right",
           }}
         >
           <div
             style={{
-              fontSize: 24,
+              fontSize: 22,
               color: theme.textMuted,
               textTransform: "uppercase",
               letterSpacing: 6,
@@ -162,11 +162,12 @@ const PhoneStage: React.FC<{ label: string; children: React.ReactNode }> = ({ la
           <div
             style={{
               fontFamily: "Space Grotesk, system-ui, sans-serif",
-              fontSize: 76,
+              fontSize: 68,
               color: theme.text,
               fontWeight: 700,
               letterSpacing: -2,
               lineHeight: 1.05,
+              whiteSpace: "nowrap",
             }}
           >
             {label}
