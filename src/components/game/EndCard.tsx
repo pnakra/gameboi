@@ -63,10 +63,10 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
       const situation: string =
         data?.situation ||
         `${friend.name.toLowerCase()} is working through something and wants to think it through.`;
-      window.location.href = `https://isthisok.app/check-in?situation=${encodeURIComponent(situation)}`;
+      window.location.href = `https://ito-gameboi.lovable.app/check-in?situation=${encodeURIComponent(situation)}`;
     } catch (e) {
       console.error(e);
-      window.location.href = "https://isthisok.app/check-in";
+      window.location.href = "https://ito-gameboi.lovable.app/check-in";
     }
   }
 
