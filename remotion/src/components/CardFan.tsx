@@ -39,12 +39,12 @@ export const CardFan: React.FC<FanProps> = ({ cards, dealStart, highlightIndex, 
         const dealAnim = spring({ frame: local, fps, config: { damping: 16, stiffness: 180 } });
         const dealOpacity = interpolate(local, [0, 8], [0, 1], { extrapolateRight: "clamp" });
 
-        // Fan position
+        // Fan position — wide spread so adjacent cards don't bury each other's text
         const center = (total - 1) / 2;
         const offset = i - center;
-        const baseRotate = offset * 9;
-        const baseX = offset * 110;
-        const baseY = Math.abs(offset) * 14;
+        const baseRotate = offset * 10;
+        const baseX = offset * 150;
+        const baseY = Math.abs(offset) * 16;
 
         // Highlight lift
         const isHighlight = highlightIndex === i;
