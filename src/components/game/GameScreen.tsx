@@ -433,57 +433,6 @@ function ComposeBar({
   );
 }
 
-function SuggestionStrip({
-  cards,
-  disabled,
-  onPick,
-}: {
-  cards: Card[];
-  disabled?: boolean;
-  onPick: (c: Card) => void;
-}) {
-  if (!cards.length) return <div className="h-12 mt-3" />;
-  return (
-    <div className="mt-3 -mx-2 px-2 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-      {cards.map((c) => {
-        const tintVar =
-          c.vibe === "direct"
-            ? "--card-direct"
-            : c.vibe === "chill"
-            ? "--card-chill"
-            : c.vibe === "bold"
-            ? "--card-bold"
-            : c.vibe === "soft"
-            ? "--card-soft"
-            : c.vibe === "chaos"
-            ? "--card-chaos"
-            : "--card-chill";
-        return (
-          <button
-            key={c.id}
-            disabled={disabled}
-            onClick={() => onPick(c)}
-            className={cn(
-              "shrink-0 max-w-[260px] text-left text-[12.5px] leading-[1.3] font-medium",
-              "px-3 py-2 rounded-2xl border transition-all active:scale-[0.97]",
-              "disabled:opacity-50",
-            )}
-            style={{
-              borderColor: `color-mix(in oklch, var(${tintVar}) 40%, transparent)`,
-              backgroundColor: `color-mix(in oklch, var(${tintVar}) 10%, var(--surface))`,
-              color: "var(--foreground)",
-            }}
-          >
-            <span className="block text-[9px] uppercase tracking-[0.18em] mb-0.5" style={{ color: `var(${tintVar})` }}>
-              {c.vibe}
-            </span>
-            <span className="line-clamp-2">{c.label}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 /* ---------- helpers ---------- */
 
