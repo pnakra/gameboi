@@ -5,7 +5,7 @@ import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
 import type { Friend } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
 
-type Card = { id: string; label: string; vibe: Vibe; entering?: boolean; isWildcard?: boolean };
+type Card = { id: string; label: string; vibe: Vibe; entering?: boolean };
 type ChatItem =
   | { kind: "them"; text: string; ts: number; pop?: boolean }
   | { kind: "you"; text: string; ts: number; pop?: boolean }
@@ -15,11 +15,10 @@ type ApiTurn = { role: "user" | "assistant"; content: string };
 const MIN_EXCHANGES = 6;
 const MAX_EXCHANGES = 10;
 const FREETEXT_FROM = 5;
-const HAND_SIZE = 4;
+const HAND_SIZE = 3;
 
 export type EndPayload = {
   transcript: string;
-  itoFirst: boolean;
 };
 
 export function GameScreen({
@@ -121,7 +120,6 @@ export function GameScreen({
         window.setTimeout(() => {
           onEnd({
             transcript: buildTranscript([...chatRef.current]),
-            itoFirst: !!data.earlyExit,
           });
         }, 1100);
       } else {
@@ -129,7 +127,6 @@ export function GameScreen({
           id: c.id,
           label: c.label,
           vibe: c.vibe,
-          isWildcard: !!c.isWildcard,
         }));
         await dealCards(incoming);
       }
@@ -144,7 +141,7 @@ export function GameScreen({
     if (loading || isFinished || playingCardId) return;
 
     // After exchange 4, cards are suggestions — populate the field instead of submitting.
-    if (exchange >= FREETEXT_FROM && !c.isWildcard) {
+    if (exchange >= FREETEXT_FROM) {
       setActiveCardId(null);
       setDraft(c.label);
       return;
@@ -159,12 +156,6 @@ export function GameScreen({
       setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
-
-      if (c.isWildcard) {
-        // Early exit: call wildcard mode, then end the round.
-        void nextWildcard(c.label);
-        return;
-      }
 
       const nextEx = exchange + 1;
       setExchange(nextEx);
@@ -211,39 +202,6 @@ export function GameScreen({
       window.location.href = "https://isthisok.app";
     } finally {
       setHandoffLoading(false);
-    }
-  }
-
-  async function nextWildcard(chosenCard: string) {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("advise", {
-        body: {
-          mode: "wildcard",
-          chosenCard,
-          history,
-          friendContext: friend.context,
-        },
-      });
-      if (error) throw error;
-      const friendMsgs: string[] = data.friend ?? ["yeah honestly maybe i should", "ok ill check that out"];
-      for (let i = 0; i < friendMsgs.length; i++) {
-        await new Promise((r) => setTimeout(r, i === 0 ? 700 : 500));
-        setChat((c) => [...c, { kind: "them", text: friendMsgs[i], ts: Date.now(), pop: true }]);
-      }
-      setLoading(false);
-      setIsFinished(true);
-      setHand([]);
-      window.setTimeout(() => {
-        onEnd({
-          transcript: buildTranscript([...chatRef.current]),
-          itoFirst: true,
-        });
-      }, 1100);
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
-      onEnd({ transcript: buildTranscript(chatRef.current), itoFirst: true });
     }
   }
 
@@ -499,20 +457,18 @@ function SuggestionStrip({
   return (
     <div className="mt-3 -mx-2 px-2 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
       {cards.map((c) => {
-        const isWild = !!c.isWildcard;
-        const tintVar = isWild
-          ? "--card-ito"
-          : c.vibe === "direct"
-          ? "--card-direct"
-          : c.vibe === "chill"
-          ? "--card-chill"
-          : c.vibe === "bold"
-          ? "--card-bold"
-          : c.vibe === "soft"
-          ? "--card-soft"
-          : c.vibe === "chaos"
-          ? "--card-chaos"
-          : "--card-chill";
+        const tintVar =
+          c.vibe === "direct"
+            ? "--card-direct"
+            : c.vibe === "chill"
+            ? "--card-chill"
+            : c.vibe === "bold"
+            ? "--card-bold"
+            : c.vibe === "soft"
+            ? "--card-soft"
+            : c.vibe === "chaos"
+            ? "--card-chaos"
+            : "--card-chill";
         return (
           <button
             key={c.id}
@@ -530,7 +486,7 @@ function SuggestionStrip({
             }}
           >
             <span className="block text-[9px] uppercase tracking-[0.18em] mb-0.5" style={{ color: `var(${tintVar})` }}>
-              {isWild ? "isthisok.app" : c.vibe}
+              {c.vibe}
             </span>
             <span className="line-clamp-2">{c.label}</span>
           </button>

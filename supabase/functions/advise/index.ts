@@ -44,7 +44,7 @@ The conversation runs between ${MIN_EXCHANGES} and ${MAX_EXCHANGES} exchanges. Y
 
 You decide WHEN to end within the 6–10 window based on what feels natural. Set "done": true on the exchange that should be the last one. The server will force the ending if you reach exchange 10 and force continuation if you try to end before exchange ${MIN_EXCHANGES}.
 
-== CARDS (3 advice cards per exchange — the 4th is added by the engine) ==
+== CARDS (3 advice cards per exchange) ==
 Each card = ORIENTATION + SPECIFIC SUGGESTION. NOT pure stance. NOT a literal script.
 Advice is FROM THE PLAYER TO THE FRIEND ("ask her", "tell him", "don't push it"). 8–16 words. Mostly lowercase. No quotes. Emojis rarely.
 
@@ -99,23 +99,10 @@ Example shape: "marcus has been in a situationship for a few months. recently th
 Output JSON ONLY:
 { "situation": "the 2-3 sentence summary" }`;
 
-// === EARLY-EXIT (wildcard played) ADDENDUM ===
-const WILDCARD_ADDENDUM = `
-== FORMAT (wildcard exit mode) ==
-
-The player just played the "isthisok.app" wildcard — they're telling the friend to actually think this through properly with a real tool instead of in-the-moment chat advice.
-
-React in the friend's voice. 1-2 short bubbles. Acknowledge it's actually maybe a good idea — "yeah honestly", "lowkey ur right", "ok ill check that out", "fine fine". Then a quick natural sign-off. No moral. No summary.
-
-Output JSON ONLY:
-{ "friend": ["msg 1", "msg 2"] }`;
-
-function buildSystem(mode: "turn" | "recap" | "wildcard" | "handoff", friendContext?: string) {
+function buildSystem(mode: "turn" | "recap" | "handoff", friendContext?: string) {
   const addendum =
     mode === "recap"
       ? RECAP_ADDENDUM
-      : mode === "wildcard"
-      ? WILDCARD_ADDENDUM
       : mode === "handoff"
       ? HANDOFF_ADDENDUM
       : TURN_ADDENDUM;
@@ -202,28 +189,19 @@ function extractJson(s: string): any {
   return JSON.parse(s.slice(start, end + 1));
 }
 
-// The wildcard the engine always injects. Stable label so the AI in wildcard mode can recognize it.
-const WILDCARD_CARD = {
-  label: "tell him to actually think this one through properly at isthisok.app",
-  vibe: "ito" as const,
-  isWildcard: true,
-};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const body = await req.json().catch(() => ({}));
-    const mode: "turn" | "recap" | "wildcard" | "handoff" =
+    const mode: "turn" | "recap" | "handoff" =
       body.mode === "recap"
         ? "recap"
-        : body.mode === "wildcard"
-        ? "wildcard"
         : body.mode === "handoff"
         ? "handoff"
         : "turn";
     const history: AnthropicMsg[] = Array.isArray(body.history) ? body.history : [];
-    const chosenCard: string | undefined = body.chosenCard;
     const friendContext: string | undefined = body.friendContext;
 
     // ---------- RECAP MODE ----------
@@ -262,34 +240,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ---------- WILDCARD EARLY-EXIT MODE ----------
-    if (mode === "wildcard") {
-      const userTurn = `The player just played the wildcard: "${chosenCard}". React briefly in voice, acknowledge it, sign off. Return JSON.`;
-      const messages: AnthropicMsg[] =
-        history.length > 0
-          ? [...history, { role: "user", content: userTurn }]
-          : [{ role: "user", content: userTurn }];
-      const raw = await callClaude(messages, buildSystem("wildcard", friendContext));
-      const parsed = extractJson(raw);
-      return new Response(
-        JSON.stringify({
-          friend: parsed.friend || ["yeah honestly maybe i should", "ok ill check that out"],
-          isFinal: true,
-          earlyExit: true,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
     // ---------- NORMAL TURN MODE ----------
     // The client sends `exchange` (1..MAX). For backward compatibility also accept `turn`.
-    // `chosenReply` is what the player sent (card label OR free-text). Falls back to chosenCard.
+    // `chosenReply` is what the player sent (card label OR free-text).
     const isStart: boolean = body.start === true || history.length === 0;
     const rawExchange = Number(body.exchange ?? body.turn ?? 0);
     const exchange: number = isStart
       ? 1
       : Math.max(1, Math.min(MAX_EXCHANGES, rawExchange || Math.floor(history.length / 2) + 1));
-    const chosenReply: string | undefined = body.chosenReply ?? chosenCard;
+    const chosenReply: string | undefined = body.chosenReply;
 
     const userTurn = turnInstruction(exchange, chosenReply);
     const messages: AnthropicMsg[] = isStart
@@ -299,18 +258,12 @@ Deno.serve(async (req) => {
     const raw = await callClaude(messages, buildSystem("turn", friendContext));
     const parsed = extractJson(raw);
 
-    // Take 3 AI cards, then inject the ito wildcard as the 4th.
-    const aiCards = (parsed.cards || []).slice(0, 3).map((c: any, i: number) => ({
+    // 3 AI advice cards per exchange.
+    const cards = (parsed.cards || []).slice(0, 3).map((c: any, i: number) => ({
       id: `${Date.now()}-${i}`,
       label: String(c.label || "").slice(0, 140),
       vibe: ["direct", "chill", "bold", "soft", "chaos"].includes(c.vibe) ? c.vibe : "chill",
-      isWildcard: false,
     }));
-
-    const cards = [
-      ...aiCards,
-      { id: `${Date.now()}-w`, ...WILDCARD_CARD },
-    ];
 
     // Decide whether this exchange is final.
     // Force continue before MIN, force end at MAX, otherwise honor model's `done`.
