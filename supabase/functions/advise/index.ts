@@ -293,18 +293,12 @@ Deno.serve(async (req) => {
     const raw = await callClaude(messages, buildSystem("turn", friendContext));
     const parsed = extractJson(raw);
 
-    // Take 3 AI cards, then inject the ito wildcard as the 4th.
-    const aiCards = (parsed.cards || []).slice(0, 3).map((c: any, i: number) => ({
+    // 3 AI advice cards per exchange.
+    const cards = (parsed.cards || []).slice(0, 3).map((c: any, i: number) => ({
       id: `${Date.now()}-${i}`,
       label: String(c.label || "").slice(0, 140),
       vibe: ["direct", "chill", "bold", "soft", "chaos"].includes(c.vibe) ? c.vibe : "chill",
-      isWildcard: false,
     }));
-
-    const cards = [
-      ...aiCards,
-      { id: `${Date.now()}-w`, ...WILDCARD_CARD },
-    ];
 
     // Decide whether this exchange is final.
     // Force continue before MIN, force end at MAX, otherwise honor model's `done`.
