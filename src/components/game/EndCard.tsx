@@ -75,21 +75,12 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
           end of round
         </div>
 
-        {itoFirst ? (
-          <ItoFirstLayout
-            friend={friend}
-            recap={recap}
-            question={question}
-            loading={loading}
-          />
-        ) : (
-          <RecapFirstLayout
-            friend={friend}
-            recap={recap}
-            question={question}
-            loading={loading}
-          />
-        )}
+        <RecapFirstLayout
+          friend={friend}
+          recap={recap}
+          question={question}
+          loading={loading}
+        />
 
         <div className="mt-auto pt-10 space-y-3">
           <button
