@@ -241,25 +241,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ---------- WILDCARD EARLY-EXIT MODE ----------
-    if (mode === "wildcard") {
-      const userTurn = `The player just played the wildcard: "${chosenCard}". React briefly in voice, acknowledge it, sign off. Return JSON.`;
-      const messages: AnthropicMsg[] =
-        history.length > 0
-          ? [...history, { role: "user", content: userTurn }]
-          : [{ role: "user", content: userTurn }];
-      const raw = await callClaude(messages, buildSystem("wildcard", friendContext));
-      const parsed = extractJson(raw);
-      return new Response(
-        JSON.stringify({
-          friend: parsed.friend || ["yeah honestly maybe i should", "ok ill check that out"],
-          isFinal: true,
-          earlyExit: true,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
     // ---------- NORMAL TURN MODE ----------
     // The client sends `exchange` (1..MAX). For backward compatibility also accept `turn`.
     // `chosenReply` is what the player sent (card label OR free-text). Falls back to chosenCard.
