@@ -205,39 +205,6 @@ export function GameScreen({
     }
   }
 
-  async function nextWildcard(chosenCard: string) {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("advise", {
-        body: {
-          mode: "wildcard",
-          chosenCard,
-          history,
-          friendContext: friend.context,
-        },
-      });
-      if (error) throw error;
-      const friendMsgs: string[] = data.friend ?? ["yeah honestly maybe i should", "ok ill check that out"];
-      for (let i = 0; i < friendMsgs.length; i++) {
-        await new Promise((r) => setTimeout(r, i === 0 ? 700 : 500));
-        setChat((c) => [...c, { kind: "them", text: friendMsgs[i], ts: Date.now(), pop: true }]);
-      }
-      setLoading(false);
-      setIsFinished(true);
-      setHand([]);
-      window.setTimeout(() => {
-        onEnd({
-          transcript: buildTranscript([...chatRef.current]),
-          itoFirst: true,
-        });
-      }, 1100);
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
-      onEnd({ transcript: buildTranscript(chatRef.current), itoFirst: true });
-    }
-  }
-
   const groupedChat = useMemo(() => groupBubbles(chat), [chat]);
 
   return (
