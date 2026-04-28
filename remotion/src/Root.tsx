@@ -24,11 +24,11 @@ export const RemotionRoot = () => {
         width={1080}
         height={1920}
       />
-      {/* Vertical product-UI ad — 11s, real game thread + end card + CTA */}
+      {/* Vertical product-UI ad — 12s, real game thread + end card + CTA */}
       <Composition
         id="tiktok"
         component={TikTokAdVideo}
-        durationInFrames={330}
+        durationInFrames={360}
         fps={30}
         width={1080}
         height={1920}
