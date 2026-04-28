@@ -289,8 +289,8 @@ export function GameScreen({
 
           {/* INPUT AREA */}
           <div className="shrink-0 safe-bottom px-2 pt-2">
-            {!isFinished && exchange < FREETEXT_FROM && (
-              // PHASE 1: fanned hand of cards (exchanges 1–4)
+            {!isFinished && (
+              // Fanned hand of cards — used throughout the entire arc.
               <div
                 className={cn(
                   "relative h-[260px] mx-auto",
@@ -328,8 +328,9 @@ export function GameScreen({
               </div>
             )}
 
+            {/* From FREETEXT_FROM onward, the player can also type their own reply
+                instead of (or in addition to) tapping a card. */}
             {!isFinished && exchange >= FREETEXT_FROM && (
-              // PHASE 2: free-text input + cards as suggestion chips below
               <div className="px-1 pt-1 animate-fade-in">
                 <ComposeBar
                   value={draft}
@@ -337,16 +338,11 @@ export function GameScreen({
                   onSend={sendDraft}
                   disabled={loading || !!playingCardId}
                 />
-                <SuggestionStrip
-                  cards={hand}
-                  disabled={loading || !!playingCardId}
-                  onPick={pickCard}
-                />
               </div>
             )}
 
             {/* Tap-outside dismisses the preview on mobile */}
-            {activeCardId && !playingCardId && exchange < FREETEXT_FROM && (
+            {activeCardId && !playingCardId && (
               <div
                 onClick={() => setActiveCardId(null)}
                 className="fixed inset-0 z-20"
@@ -354,7 +350,7 @@ export function GameScreen({
               />
             )}
 
-            {/* Handoff CTA — subtle, appears from exchange 5 onward, also when finished */}
+            {/* Handoff CTA — appears once the complication has landed, plus on end */}
             {(exchange >= FREETEXT_FROM || isFinished) ? (
               <button
                 onClick={handoffToIto}
@@ -365,7 +361,7 @@ export function GameScreen({
               </button>
             ) : (
               <a
-                href="https://isthisok.app"
+                href="https://isthisok.app/check-in"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight"
