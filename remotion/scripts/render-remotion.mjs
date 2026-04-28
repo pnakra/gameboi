@@ -6,14 +6,15 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const target = process.argv[2];
-if (!target || (target !== "demo" && target !== "ad")) {
-  console.error("Usage: node scripts/render-remotion.mjs <demo|ad>");
+if (!target || !["demo", "ad", "tiktok"].includes(target)) {
+  console.error("Usage: node scripts/render-remotion.mjs <demo|ad|tiktok>");
   process.exit(1);
 }
 
 const outputs = {
   demo: "/mnt/documents/gameboi-demo.mp4",
   ad: "/mnt/documents/gameboi-ad.mp4",
+  tiktok: "/mnt/documents/gameboi-tiktok-ad.mp4",
 };
 
 console.log(`Bundling for "${target}"...`);
