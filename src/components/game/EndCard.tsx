@@ -97,13 +97,19 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
             {handoffLoading ? "one sec..." : "want to keep talking this through?"}
           </button>
           <button
-            onClick={onPlayAgain}
+            onClick={() => {
+              track("play_again_clicked", { friend_id: friend.id });
+              onPlayAgain();
+            }}
             className="w-full h-13 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold tracking-tight active:scale-[0.98] transition-transform"
           >
             play again with {friend.name.toLowerCase()}
           </button>
           <button
-            onClick={onSwitchFriend}
+            onClick={() => {
+              track("switch_friend_clicked", { friend_id: friend.id });
+              onSwitchFriend();
+            }}
             className="w-full h-12 rounded-2xl bg-surface text-foreground/80 font-semibold tracking-tight active:scale-[0.98] transition-transform border border-white/[0.06]"
           >
             switch friends
