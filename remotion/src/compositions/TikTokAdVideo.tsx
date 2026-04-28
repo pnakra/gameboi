@@ -73,12 +73,13 @@ export const TikTokAdVideo: React.FC = () => {
 const DEV_MSGS = [
   "yooo",
   "so riley texted me",
-  "she was pretty drunk saturday night and i wasn't really",
+  "she was pretty drunk saturday night and i wasn't really paying attention",
+  "now she's like 'wanna come over later' 😭 what do i even say",
 ];
 
-// All three Dev messages land within the first 60 frames (2s)
-// Frames: 6, 26, 46 — each gets ~14 frames of pop before the next
-const DEV_BEATS = [6, 26, 46];
+// All four Dev messages land within the first 60 frames (2s).
+// Frames: 4, 18, 32, 48 — staggered so each pops before the next.
+const DEV_BEATS = [4, 18, 32, 48];
 
 // Card hand deals at frame 70 (2.33s into comp = ~10f after thread sequence ends)
 const CARD_DEAL_START = 70 - T.THREAD.start; // local to this Sequence
