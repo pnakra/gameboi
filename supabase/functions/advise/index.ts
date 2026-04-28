@@ -106,7 +106,6 @@ function buildSystem(mode: "turn" | "recap" | "handoff", friendContext?: string)
       : mode === "handoff"
       ? HANDOFF_ADDENDUM
       : TURN_ADDENDUM;
-      : TURN_ADDENDUM;
   const friendBlock = friendContext
     ? `\n\n== THIS SESSION'S FRIEND ==\n${friendContext}\n== END FRIEND ==\n\nEvery message and card must sound like THIS friend specifically. Match his voice. Keep the situation grounded in his specific ongoing thing.`
     : "";
