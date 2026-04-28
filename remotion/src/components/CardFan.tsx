@@ -90,37 +90,36 @@ export const CardFan: React.FC<FanProps> = ({ cards, dealStart, highlightIndex, 
               position: "absolute",
               left: "50%",
               bottom: 0,
-              width: 220,
-              height: 270,
-              marginLeft: -110,
+              width: 230,
+              height: 300,
+              marginLeft: -115,
               transform: `translate(${baseX}px, ${baseY + dealY + lift + playY}px) rotate(${
                 baseRotate + dealRotate
               }deg) scale(${playScale})`,
               opacity: dealOpacity * playOpacity,
               transformOrigin: "bottom center",
               borderRadius: 22,
-              padding: 18,
+              padding: 20,
               background: `linear-gradient(160deg, ${vibeColor[card.vibe]} 0%, ${
                 vibeColor[card.vibe]
               }cc 100%)`,
               color: "#0f0a18",
               fontFamily: "Inter, system-ui, sans-serif",
               fontWeight: 700,
-              fontSize: 16,
-              lineHeight: 1.25,
+              lineHeight: 1.2,
               display: "flex",
               flexDirection: "column",
-              justifyContent: "space-between",
+              gap: 12,
               boxShadow: isHighlight
                 ? `0 20px 40px -10px ${vibeColor[card.vibe]}80, 0 0 0 2px rgba(255,255,255,0.4)`
                 : "0 12px 28px -8px rgba(0,0,0,0.55)",
               border: "1px solid rgba(255,255,255,0.25)",
             }}
           >
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", opacity: 0.7 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", opacity: 0.75 }}>
               {card.vibe}
             </div>
-            <div style={{ fontSize: 17, lineHeight: 1.25 }}>{card.label}</div>
+            <div style={{ fontSize: 16, lineHeight: 1.22 }}>{card.label}</div>
           </div>
         );
       })}
