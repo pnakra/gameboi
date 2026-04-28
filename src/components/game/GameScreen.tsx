@@ -185,6 +185,35 @@ export function GameScreen({
     void next({ chosenReply: text, forExchange: nextEx });
   }
 
+  const [handoffLoading, setHandoffLoading] = useState(false);
+  async function handoffToIto() {
+    if (handoffLoading) return;
+    setHandoffLoading(true);
+    try {
+      const transcript = buildTranscript(chatRef.current);
+      const { data, error } = await supabase.functions.invoke("advise", {
+        body: {
+          mode: "handoff",
+          transcript,
+          friendContext: friend.context,
+          friendName: friend.name,
+        },
+      });
+      if (error) throw error;
+      const situation: string =
+        data?.situation ||
+        `${friend.name.toLowerCase()} is working through something and wants to think it through.`;
+      const url = `https://isthisok.app/?situation=${encodeURIComponent(situation)}`;
+      window.location.href = url;
+    } catch (e) {
+      console.error(e);
+      // Fail-safe: still send them over with no prefill.
+      window.location.href = "https://isthisok.app";
+    } finally {
+      setHandoffLoading(false);
+    }
+  }
+
   async function nextWildcard(chosenCard: string) {
     setLoading(true);
     try {
