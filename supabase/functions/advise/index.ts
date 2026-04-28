@@ -76,28 +76,38 @@ Set "done": true only on the exchange you intend to be the last (between exchang
 const RECAP_ADDENDUM = `
 == FORMAT (recap mode) ==
 
-Generate a brief end-of-round reflection for the player. You will be given the full thread.
+Generate a brief end-of-round reflection for the player. You will be given the full thread. In the thread, lines prefixed "player advice:" are what the PLAYER ("you") said back to the friend. Lines prefixed with the friend's name are the friend.
+
+The recap MUST reflect what the player actually chose to say (and importantly, what they DIDN'T bring up that maybe was sitting there). Address the player as "you". Name 1-2 specific moves they made or noticeably skipped — quote a short fragment of their wording when it lands. Don't praise or criticize the choice. Just hold it up.
+
+The question at the end should pivot off one of those choices — turning the lens back on the player. Not "what would you do differently" — more like "you didn't bring up the phone thing — what would it have cost you to?" or "you called her messy — is that the read or the easier read?"
 
 Output JSON ONLY:
 {
-  "recap": "2-3 sentences, neutral, describing what happened in the thread. No judgment on any card the player played. No verdict on the friend. No 'good' / 'bad' / 'should have'. Past tense. Lowercase ok. Keep it tight.",
-  "question": "ONE genuine open question worth sitting with. Not rhetorical. Not leading toward an answer. Not 'what would you do differently' — more like 'when do you actually know if someone's into you' or 'what does it cost to be the one who asks first'. One sentence."
+  "recap": "2-3 sentences. Past tense. Lowercase ok. References at least one specific thing the player said or pointedly didn't say. Neutral — no 'good'/'bad'/'should have'. No verdict on the friend.",
+  "question": "ONE genuine open question that turns one of the player's specific choices back on them. Not rhetorical. Not leading. One sentence."
 }
 
-Never reference scoring, performance, right answers, or the player's choices being good/bad. The recap should feel like the last beat of a real conversation with someone who didn't tell you what to think.`;
+Never reference scoring, performance, or right answers. The recap should feel like the last beat of a real conversation with someone who noticed exactly what you said and didn't say — and isn't telling you what to think about it.`;
 
 // === MODE-SPECIFIC ADDENDUM (handoff) ===
 const HANDOFF_ADDENDUM = `
 == FORMAT (handoff mode) ==
 
-Generate a neutral 2-3 sentence summary of the friend's situation in THIRD PERSON, written so it can be pasted into a separate reflection tool as the opening context. The user is handing the situation off to keep thinking it through somewhere else.
+Generate a short situation summary that will be pasted into a separate reflection tool as the opening context. The user is handing the situation off to keep thinking it through somewhere else.
 
-Use the friend's NAME (you will be told it). Past/present tense as appropriate. No judgment, no advice, no verdict, no "should". Just the situation as it stands. Lowercase ok. Plain prose. No quotes around it. No "summary:" prefix. Don't address the reader. Don't address the friend. Just describe.
+In the thread you'll receive, lines prefixed "player advice:" are what the PLAYER ("you") said back to the friend. Lines prefixed with the friend's name are the friend.
 
-Example shape: "marcus has been in a situationship for a few months. recently things got physical but he's not sure she was fully into it. he's been going back and forth about whether to bring it up."
+Structure (plain prose, two short paragraphs separated by a blank line, no headers, no quotes around it, no "summary:" prefix):
+
+1. THIRD-PERSON SITUATION (2-3 sentences): The friend's situation as it stands. Use the friend's NAME (you'll be told it). Past/present tense as appropriate. No judgment, no advice, no verdict. Just the situation. Example shape: "marcus has been in a situationship with riley for a few months. recently things got physical but he's not sure she was fully into it. he's been going back and forth about whether to bring it up."
+
+2. SECOND-PERSON PLAYER MOVES (1-2 sentences): What YOU said / didn't say in the thread, addressed to the player as "you". Reference 1-2 specific things — a phrase they used, an angle they took, or a notable thing they sidestepped. End with an honest question turning that back on them. Example shape: "you told him to just let it go and didn't bring up the phone thing at all. do you actually think that's the read, or is it the easier one?"
+
+Lowercase ok throughout. No moralizing. Don't address the friend.
 
 Output JSON ONLY:
-{ "situation": "the 2-3 sentence summary" }`;
+{ "situation": "the two-paragraph summary" }`;
 
 function buildSystem(mode: "turn" | "recap" | "handoff", friendContext?: string) {
   const addendum =
@@ -234,7 +244,7 @@ Deno.serve(async (req) => {
       const parsed = extractJson(raw);
       return new Response(
         JSON.stringify({
-          situation: String(parsed.situation || "").slice(0, 800),
+          situation: String(parsed.situation || "").slice(0, 1400),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
