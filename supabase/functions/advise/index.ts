@@ -243,13 +243,13 @@ Deno.serve(async (req) => {
 
     // ---------- NORMAL TURN MODE ----------
     // The client sends `exchange` (1..MAX). For backward compatibility also accept `turn`.
-    // `chosenReply` is what the player sent (card label OR free-text). Falls back to chosenCard.
+    // `chosenReply` is what the player sent (card label OR free-text).
     const isStart: boolean = body.start === true || history.length === 0;
     const rawExchange = Number(body.exchange ?? body.turn ?? 0);
     const exchange: number = isStart
       ? 1
       : Math.max(1, Math.min(MAX_EXCHANGES, rawExchange || Math.floor(history.length / 2) + 1));
-    const chosenReply: string | undefined = body.chosenReply ?? chosenCard;
+    const chosenReply: string | undefined = body.chosenReply;
 
     const userTurn = turnInstruction(exchange, chosenReply);
     const messages: AnthropicMsg[] = isStart
