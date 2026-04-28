@@ -395,9 +395,6 @@ export function GameScreen({
               </div>
             )}
 
-            {/* Free-text input intentionally removed — cards are the only way to reply
-                during the exchange. The reflection box lives on the post-game handoff. */}
-
             {/* Tap-outside dismisses the preview on mobile */}
             {activeCardId && !playingCardId && (
               <div
@@ -406,7 +403,11 @@ export function GameScreen({
                 aria-hidden
               />
             )}
+          </div>
 
+          {/* Bottom-anchored handoff link — mt-auto pins it to the bottom even
+              when the cards have floated up to meet a short thread. */}
+          <div className="shrink-0 mt-auto safe-bottom px-2">
             {/* Handoff CTA — appears once the complication has landed, plus on end */}
             {(exchange >= FREETEXT_FROM || isFinished) ? (
               <button
