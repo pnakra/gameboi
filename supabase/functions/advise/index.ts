@@ -1,9 +1,9 @@
 // Edge function: generates the next scene from Claude based on prior scene + chosen card.
 // Drives a dynamic 6–10 exchange arc with progressive reveals. Also generates the end-of-round recap.
 
-const MIN_EXCHANGES = 6;
-const MAX_EXCHANGES = 10;
-const FREETEXT_FROM = 5; // exchange number where input upgrades to free text on the client
+const MIN_EXCHANGES = 4;
+const MAX_EXCHANGES = 6;
+const FREETEXT_FROM = 3; // exchange number where input upgrades to free text on the client
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,14 +35,14 @@ Real teen texting voice. Mostly lowercase. Slang & emojis sparingly and naturall
 
 Keep messages SHORT. 1-3 bubbles per exchange. Each usually under ~80 chars. Break thoughts across bubbles like real texting.
 
-== EXCHANGE ARC (6–10 exchanges total) ==
-The conversation runs between ${MIN_EXCHANGES} and ${MAX_EXCHANGES} exchanges. You will be told which exchange this is and which phase you are in.
+== EXCHANGE ARC (4–6 exchanges total — keep it tight) ==
+The conversation runs between ${MIN_EXCHANGES} and ${MAX_EXCHANGES} exchanges. You will be told which exchange this is and which phase you are in. The whole session should land under ~2 minutes — every exchange has to earn its place.
 
-- SETUP (exchanges 1 to ~3): Establish the situation. Friend opens, player advises, friend reacts. Hold back at least one key detail. Add small new shape with each reply but do not resolve.
-- COMPLICATION (exchanges ~4 to ~7): Introduce a complication that RECONTEXTUALIZES something said earlier — "ok wait i didn't tell u this", "tbh i kinda left out that...", "also her bestfriend is my ex". The pivot should make the player rethink.
-- HEAD (exchanges ~8 to 10): Bring things to a head. Friend is about to do something / something is about to happen / decision moment. The final exchange must end naturally — sign off like a real teen ("ok wish me luck", "ill update u", "k im going in"). NO moral, NO summary, NO verdict. Situation stays unresolved emotionally.
+- SETUP (exchange 1): Friend opens. Briefly drop what just happened, holding back at least one key detail. Casual, not over-explained.
+- COMPLICATION (exchanges 2–3): Drop or build on a recontextualizing detail — something he "forgot to mention" / "wasn't gonna say but" — that makes the player rethink the read. The pivot must land by exchange 3.
+- HEAD (exchanges 4–6): Things come to a point. Friend is about to do something / a decision moment / he's logging off. Sign off naturally on the final exchange ("ok wish me luck", "ill update u", "k im going in"). NO moral, NO summary, NO verdict. Situation stays unresolved emotionally.
 
-You decide WHEN to end within the 6–10 window based on what feels natural. Set "done": true on the exchange that should be the last one. The server will force the ending if you reach exchange 10 and force continuation if you try to end before exchange ${MIN_EXCHANGES}.
+You decide WHEN to end within the 4–6 window based on what feels natural. Set "done": true on the exchange that should be the last one. The server forces the ending if you reach exchange ${MAX_EXCHANGES} and forces continuation if you try to end before exchange ${MIN_EXCHANGES}.
 
 == CARDS (3 advice cards per exchange) ==
 Each card = ORIENTATION + SPECIFIC SUGGESTION. NOT pure stance. NOT a literal script.
@@ -113,8 +113,8 @@ function buildSystem(mode: "turn" | "recap" | "handoff", friendContext?: string)
 }
 
 function phaseFor(exchange: number): "setup" | "complication" | "head" {
-  if (exchange <= 3) return "setup";
-  if (exchange <= 7) return "complication";
+  if (exchange <= 1) return "setup";
+  if (exchange <= 3) return "complication";
   return "head";
 }
 

@@ -12,9 +12,9 @@ type ChatItem =
   | { kind: "stamp"; text: string };
 type ApiTurn = { role: "user" | "assistant"; content: string };
 
-const MIN_EXCHANGES = 6;
-const MAX_EXCHANGES = 10;
-const FREETEXT_FROM = 5;
+const MIN_EXCHANGES = 4;
+const MAX_EXCHANGES = 6;
+const FREETEXT_FROM = 3;
 const HAND_SIZE = 3;
 
 export type EndPayload = {
