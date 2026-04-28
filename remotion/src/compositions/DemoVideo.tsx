@@ -537,7 +537,7 @@ const HandoffScene: React.FC = () => {
             textShadow: `0 0 50px ${theme.ito}66`,
           }}
         >
-          isthisok.app
+          gameboi.online
         </div>
       </div>
     </AbsoluteFill>

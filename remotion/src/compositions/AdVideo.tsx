@@ -24,7 +24,7 @@ import devAvatar from "../../public/images/friend-dev.jpg";
  *  0-45    HOOK: full-screen text "your friend is texting you about something."
  *  45-120  TEXTS POPPING: 3 group-chat-style bubbles tumble in over backdrop
  *  120-195 CARD FAN HERO: cards deal in big, one is highlighted/picked
- *  195-255 CTA: gameboi logo + isthisok.app
+ *  195-255 CTA: gameboi logo + gameboi.online
  */
 
 const T = {
@@ -281,7 +281,7 @@ const CTA: React.FC = () => {
             letterSpacing: -0.5,
           }}
         >
-          gameboi.lovable.app
+          gameboi.online
         </div>
       </div>
     </AbsoluteFill>
