@@ -94,14 +94,20 @@ Never reference scoring, performance, or right answers. The recap should feel li
 const HANDOFF_ADDENDUM = `
 == FORMAT (handoff mode) ==
 
-Generate a neutral 2-3 sentence summary of the friend's situation in THIRD PERSON, written so it can be pasted into a separate reflection tool as the opening context. The user is handing the situation off to keep thinking it through somewhere else.
+Generate a short situation summary that will be pasted into a separate reflection tool as the opening context. The user is handing the situation off to keep thinking it through somewhere else.
 
-Use the friend's NAME (you will be told it). Past/present tense as appropriate. No judgment, no advice, no verdict, no "should". Just the situation as it stands. Lowercase ok. Plain prose. No quotes around it. No "summary:" prefix. Don't address the reader. Don't address the friend. Just describe.
+In the thread you'll receive, lines prefixed "player advice:" are what the PLAYER ("you") said back to the friend. Lines prefixed with the friend's name are the friend.
 
-Example shape: "marcus has been in a situationship for a few months. recently things got physical but he's not sure she was fully into it. he's been going back and forth about whether to bring it up."
+Structure (plain prose, two short paragraphs separated by a blank line, no headers, no quotes around it, no "summary:" prefix):
+
+1. THIRD-PERSON SITUATION (2-3 sentences): The friend's situation as it stands. Use the friend's NAME (you'll be told it). Past/present tense as appropriate. No judgment, no advice, no verdict. Just the situation. Example shape: "marcus has been in a situationship with riley for a few months. recently things got physical but he's not sure she was fully into it. he's been going back and forth about whether to bring it up."
+
+2. SECOND-PERSON PLAYER MOVES (1-2 sentences): What YOU said / didn't say in the thread, addressed to the player as "you". Reference 1-2 specific things — a phrase they used, an angle they took, or a notable thing they sidestepped. End with an honest question turning that back on them. Example shape: "you told him to just let it go and didn't bring up the phone thing at all. do you actually think that's the read, or is it the easier one?"
+
+Lowercase ok throughout. No moralizing. Don't address the friend.
 
 Output JSON ONLY:
-{ "situation": "the 2-3 sentence summary" }`;
+{ "situation": "the two-paragraph summary" }`;
 
 function buildSystem(mode: "turn" | "recap" | "handoff", friendContext?: string) {
   const addendum =
