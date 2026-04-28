@@ -105,18 +105,7 @@ function FriendCard({
 
         {/* Text */}
         <div className="flex-1 min-w-0 flex flex-col justify-center py-1">
-          <div className="flex items-baseline gap-2">
-            <h2 className="display text-[24px] font-bold leading-none">{friend.name}</h2>
-            <span
-              className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full"
-              style={{
-                color: accentVar,
-                backgroundColor: `color-mix(in oklch, ${accentVar} 15%, transparent)`,
-              }}
-            >
-              tap in
-            </span>
-          </div>
+          <h2 className="display text-[24px] font-bold leading-none">{friend.name}</h2>
           <p className="mt-2 text-[13.5px] leading-snug text-foreground/80 text-balance">
             {friend.sketch}
           </p>
