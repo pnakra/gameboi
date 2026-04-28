@@ -1,9 +1,9 @@
 // Edge function: generates the next scene from Claude based on prior scene + chosen card.
 // Drives a dynamic 6–10 exchange arc with progressive reveals. Also generates the end-of-round recap.
 
-const MIN_EXCHANGES = 6;
-const MAX_EXCHANGES = 10;
-const FREETEXT_FROM = 5; // exchange number where input upgrades to free text on the client
+const MIN_EXCHANGES = 4;
+const MAX_EXCHANGES = 6;
+const FREETEXT_FROM = 3; // exchange number where input upgrades to free text on the client
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
