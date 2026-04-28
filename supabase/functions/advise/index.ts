@@ -110,9 +110,15 @@ React in the friend's voice. 1-2 short bubbles. Acknowledge it's actually maybe 
 Output JSON ONLY:
 { "friend": ["msg 1", "msg 2"] }`;
 
-function buildSystem(mode: "turn" | "recap" | "wildcard", friendContext?: string) {
+function buildSystem(mode: "turn" | "recap" | "wildcard" | "handoff", friendContext?: string) {
   const addendum =
-    mode === "recap" ? RECAP_ADDENDUM : mode === "wildcard" ? WILDCARD_ADDENDUM : TURN_ADDENDUM;
+    mode === "recap"
+      ? RECAP_ADDENDUM
+      : mode === "wildcard"
+      ? WILDCARD_ADDENDUM
+      : mode === "handoff"
+      ? HANDOFF_ADDENDUM
+      : TURN_ADDENDUM;
   const friendBlock = friendContext
     ? `\n\n== THIS SESSION'S FRIEND ==\n${friendContext}\n== END FRIEND ==\n\nEvery message and card must sound like THIS friend specifically. Match his voice. Keep the situation grounded in his specific ongoing thing.`
     : "";
