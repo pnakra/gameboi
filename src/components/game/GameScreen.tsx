@@ -142,12 +142,7 @@ export function GameScreen({
           friend_name: friend.name,
           exchanges: opts.forExchange,
         });
-        // Brief beat so the last bubble lands before the end card.
-        window.setTimeout(() => {
-          onEnd({
-            transcript: buildTranscript([...chatRef.current]),
-          });
-        }, 1100);
+        // No auto-advance — user taps "continue" when they're ready (see button below).
       } else {
         const incoming: Card[] = (data.cards ?? []).slice(0, HAND_SIZE).map((c: any) => ({
           id: c.id,
@@ -336,6 +331,23 @@ export function GameScreen({
 
           {/* INPUT AREA */}
           <div className="shrink-0 safe-bottom px-2 pt-2">
+            {isFinished && (
+              <div className="px-2 py-3 animate-fade-in">
+                <button
+                  onClick={() => {
+                    track("continue_to_recap_clicked", {
+                      friend_id: friend.id,
+                      exchanges: exchange,
+                    });
+                    onEnd({ transcript: buildTranscript([...chatRef.current]) });
+                  }}
+                  className="w-full h-13 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold tracking-tight active:scale-[0.98] transition-transform"
+                >
+                  continue
+                </button>
+              </div>
+            )}
+
             {!isFinished && (
               // Fanned hand of cards — used throughout the entire arc.
               <div
