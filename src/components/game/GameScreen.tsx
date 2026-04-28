@@ -187,12 +187,12 @@ export function GameScreen({
       const situation: string =
         data?.situation ||
         `${friend.name.toLowerCase()} is working through something and wants to think it through.`;
-      const url = `https://isthisok.app/?situation=${encodeURIComponent(situation)}`;
+      const url = `https://isthisok.app/check-in?situation=${encodeURIComponent(situation)}`;
       window.location.href = url;
     } catch (e) {
       console.error(e);
       // Fail-safe: still send them over with no prefill.
-      window.location.href = "https://isthisok.app";
+      window.location.href = "https://isthisok.app/check-in";
     } finally {
       setHandoffLoading(false);
     }
