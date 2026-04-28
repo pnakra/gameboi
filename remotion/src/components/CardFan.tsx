@@ -90,23 +90,23 @@ export const CardFan: React.FC<FanProps> = ({ cards, dealStart, highlightIndex, 
               position: "absolute",
               left: "50%",
               bottom: 0,
-              width: 200,
-              height: 240,
-              marginLeft: -100,
+              width: 220,
+              height: 270,
+              marginLeft: -110,
               transform: `translate(${baseX}px, ${baseY + dealY + lift + playY}px) rotate(${
                 baseRotate + dealRotate
               }deg) scale(${playScale})`,
               opacity: dealOpacity * playOpacity,
               transformOrigin: "bottom center",
               borderRadius: 22,
-              padding: 16,
+              padding: 18,
               background: `linear-gradient(160deg, ${vibeColor[card.vibe]} 0%, ${
                 vibeColor[card.vibe]
               }cc 100%)`,
               color: "#0f0a18",
               fontFamily: "Inter, system-ui, sans-serif",
               fontWeight: 700,
-              fontSize: 18,
+              fontSize: 16,
               lineHeight: 1.25,
               display: "flex",
               flexDirection: "column",
@@ -120,7 +120,7 @@ export const CardFan: React.FC<FanProps> = ({ cards, dealStart, highlightIndex, 
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", opacity: 0.7 }}>
               {card.vibe}
             </div>
-            <div style={{ fontSize: 18 }}>{card.label}</div>
+            <div style={{ fontSize: 17, lineHeight: 1.25 }}>{card.label}</div>
           </div>
         );
       })}
