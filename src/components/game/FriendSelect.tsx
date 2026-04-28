@@ -19,6 +19,12 @@ export function FriendSelect({ onPick }: { onPick: (f: Friend) => void }) {
       {/* Ambient glow */}
       <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[420px] h-[420px] rounded-full bg-primary/20 blur-[100px] pointer-events-none" />
 
+      <div className="relative text-center mb-2 animate-float-in">
+        <div className="display text-[20px] font-bold tracking-tight text-foreground/90 lowercase">
+          gameboi
+        </div>
+      </div>
+
       <div className="relative text-center mb-6 animate-float-in">
         <div className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground mb-3">
           tonight
