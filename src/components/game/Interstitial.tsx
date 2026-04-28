@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { track } from "@/lib/analytics";
 
 export function Interstitial({ onContinue }: { onContinue: () => void }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
+    track("interstitial_viewed");
     const t = window.setTimeout(() => setReady(true), 1000);
     return () => window.clearTimeout(t);
   }, []);
@@ -21,13 +23,14 @@ export function Interstitial({ onContinue }: { onContinue: () => void }) {
           href="https://isthisok.app/check-in"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => track("isthisok_link_clicked", { source: "interstitial" })}
           className="mt-6 text-[var(--ito)] text-[20px] font-bold underline underline-offset-4 decoration-[var(--ito)]/40"
         >
           isthisok.app →
         </a>
 
         <button
-          onClick={ready ? onContinue : undefined}
+          onClick={ready ? () => { track("interstitial_continue_clicked"); onContinue(); } : undefined}
           disabled={!ready}
           className="mt-12 w-full h-13 py-3.5 rounded-2xl bg-surface border border-white/[0.08] text-foreground/90 font-semibold tracking-tight transition-all disabled:opacity-30 active:scale-[0.98]"
         >

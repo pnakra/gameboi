@@ -14,7 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_name: string
+          id: string
+          properties: Json
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_name: string
+          id?: string
+          properties?: Json
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          event_name?: string
+          id?: string
+          properties?: Json
+          session_id?: string
+        }
+        Relationships: []
+      }
+      exchange_logs: {
+        Row: {
+          cards: Json
+          chosen_reply: string | null
+          created_at: string
+          exchange_number: number
+          friend_id: string | null
+          friend_messages: Json
+          friend_name: string | null
+          id: string
+          is_final: boolean
+          phase: string | null
+          raw_response: string | null
+          reply_source: string | null
+          session_id: string
+        }
+        Insert: {
+          cards?: Json
+          chosen_reply?: string | null
+          created_at?: string
+          exchange_number: number
+          friend_id?: string | null
+          friend_messages?: Json
+          friend_name?: string | null
+          id?: string
+          is_final?: boolean
+          phase?: string | null
+          raw_response?: string | null
+          reply_source?: string | null
+          session_id: string
+        }
+        Update: {
+          cards?: Json
+          chosen_reply?: string | null
+          created_at?: string
+          exchange_number?: number
+          friend_id?: string | null
+          friend_messages?: Json
+          friend_name?: string | null
+          id?: string
+          is_final?: boolean
+          phase?: string | null
+          raw_response?: string | null
+          reply_source?: string | null
+          session_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

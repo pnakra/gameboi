@@ -1,13 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FRIENDS, type Friend } from "./friends";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics";
 
 export function FriendSelect({ onPick }: { onPick: (f: Friend) => void }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
 
+  useEffect(() => {
+    track("friend_select_viewed");
+  }, []);
+
   function pick(f: Friend) {
     if (leaving) return;
+    track("friend_picked", { friend_id: f.id, friend_name: f.name });
     setSelectedId(f.id);
     setLeaving(true);
     // satisfying beat before transition

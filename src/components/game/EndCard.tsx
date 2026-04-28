@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Friend } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics";
 
 type Props = {
   friend: Friend;
@@ -15,6 +16,10 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
   const [question, setQuestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [handoffLoading, setHandoffLoading] = useState(false);
+
+  useEffect(() => {
+    track("end_card_viewed", { friend_id: friend.id, friend_name: friend.name });
+  }, [friend.id, friend.name]);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,6 +48,7 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
 
   async function handoffToIto() {
     if (handoffLoading) return;
+    track("handoff_clicked", { source: "end_card", friend_id: friend.id });
     setHandoffLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("advise", {
@@ -91,13 +97,19 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
             {handoffLoading ? "one sec..." : "want to keep talking this through?"}
           </button>
           <button
-            onClick={onPlayAgain}
+            onClick={() => {
+              track("play_again_clicked", { friend_id: friend.id });
+              onPlayAgain();
+            }}
             className="w-full h-13 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold tracking-tight active:scale-[0.98] transition-transform"
           >
             play again with {friend.name.toLowerCase()}
           </button>
           <button
-            onClick={onSwitchFriend}
+            onClick={() => {
+              track("switch_friend_clicked", { friend_id: friend.id });
+              onSwitchFriend();
+            }}
             className="w-full h-12 rounded-2xl bg-surface text-foreground/80 font-semibold tracking-tight active:scale-[0.98] transition-transform border border-white/[0.06]"
           >
             switch friends

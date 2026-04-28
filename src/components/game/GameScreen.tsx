@@ -4,6 +4,7 @@ import { Bubble, TypingBubble } from "@/components/game/Bubble";
 import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
 import type { Friend } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
+import { track, logExchange } from "@/lib/analytics";
 
 type Card = { id: string; label: string; vibe: Vibe; entering?: boolean };
 type ChatItem =
@@ -52,6 +53,7 @@ export function GameScreen({
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
+    track("round_started", { friend_id: friend.id, friend_name: friend.name });
     setChat([{ kind: "stamp", text: `today ${openTime}` }]);
     void next({ start: true, forExchange: 1 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -75,7 +77,12 @@ export function GameScreen({
     }, 600);
   }
 
-  async function next(opts: { start?: boolean; chosenReply?: string; forExchange: number }) {
+  async function next(opts: {
+    start?: boolean;
+    chosenReply?: string;
+    replySource?: "card" | "freetext";
+    forExchange: number;
+  }) {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("advise", {
@@ -111,11 +118,30 @@ export function GameScreen({
         },
       ]);
 
+      // Persist this exchange (input + output) for the round.
+      logExchange({
+        friend_id: friend.id,
+        friend_name: friend.name,
+        exchange_number: opts.forExchange,
+        phase: data.phase,
+        chosen_reply: opts.chosenReply ?? null,
+        reply_source: opts.replySource ?? null,
+        friend_messages: friendMsgs,
+        cards: data.cards ?? [],
+        is_final: !!data.isFinal,
+        raw_response: data.assistantRaw,
+      });
+
       setLoading(false);
 
       if (data.isFinal) {
         setIsFinished(true);
         setHand([]);
+        track("round_ended", {
+          friend_id: friend.id,
+          friend_name: friend.name,
+          exchanges: opts.forExchange,
+        });
         // Brief beat so the last bubble lands before the end card.
         window.setTimeout(() => {
           onEnd({
@@ -132,6 +158,7 @@ export function GameScreen({
       }
     } catch (e) {
       console.error(e);
+      track("advise_error", { message: e instanceof Error ? e.message : "unknown" });
       setChat((c) => [...c, { kind: "them", text: "ugh wifi just died one sec", ts: Date.now(), pop: true }]);
       setLoading(false);
     }
@@ -142,6 +169,12 @@ export function GameScreen({
 
     setActiveCardId(null);
     setPlayingCardId(c.id);
+    track("card_played", {
+      friend_id: friend.id,
+      exchange,
+      vibe: c.vibe,
+      label: c.label,
+    });
 
     // After the card's fly-up animation completes, push the bubble + clear hand + request next exchange
     window.setTimeout(() => {
@@ -152,13 +185,18 @@ export function GameScreen({
 
       const nextEx = exchange + 1;
       setExchange(nextEx);
-      void next({ chosenReply: c.label, forExchange: nextEx });
+      void next({ chosenReply: c.label, replySource: "card", forExchange: nextEx });
     }, 480);
   }
 
   function sendDraft() {
     const text = draft.trim();
     if (!text || loading || isFinished || playingCardId) return;
+    track("freetext_sent", {
+      friend_id: friend.id,
+      exchange,
+      length: text.length,
+    });
     setDraft("");
     setActiveCardId(null);
     const ts = Date.now();
@@ -166,12 +204,18 @@ export function GameScreen({
     setHand([]);
     const nextEx = exchange + 1;
     setExchange(nextEx);
-    void next({ chosenReply: text, forExchange: nextEx });
+    void next({ chosenReply: text, replySource: "freetext", forExchange: nextEx });
   }
 
   const [handoffLoading, setHandoffLoading] = useState(false);
   async function handoffToIto() {
     if (handoffLoading) return;
+    track("handoff_clicked", {
+      source: "game_screen",
+      friend_id: friend.id,
+      exchange,
+      finished: isFinished,
+    });
     setHandoffLoading(true);
     try {
       const transcript = buildTranscript(chatRef.current);
@@ -229,7 +273,10 @@ export function GameScreen({
           {/* Conversation header */}
           <header className="relative flex items-center px-3 pt-2 pb-2.5 border-b border-white/[0.06] bg-background">
             <button
-              onClick={onExit}
+              onClick={() => {
+                track("exit_clicked", { friend_id: friend.id, exchange, finished: isFinished });
+                onExit();
+              }}
               aria-label="Back"
               className="text-accent text-[26px] leading-none w-9 h-9 grid place-items-center -ml-1 active:opacity-60"
             >
@@ -364,6 +411,13 @@ export function GameScreen({
                 href="https://isthisok.app/check-in"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  track("isthisok_link_clicked", {
+                    source: "game_screen_inline",
+                    friend_id: friend.id,
+                    exchange,
+                  })
+                }
                 className="block text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight"
               >
                 got your own situation? isthisok.app
