@@ -13,22 +13,22 @@ import { theme } from "../theme";
 import devAvatar from "../../public/images/friend-dev.jpg";
 
 /**
- * 1080x1920, 30fps, 330 frames = 11 seconds.
+ * 1080x1920, 30fps, 360 frames = 12 seconds.
  * Mobile-vertical TikTok ad. Real product UI (not editorial).
  *
  * Shot list:
  *  0–60     (0–2s)   Game thread: Dev's three rapid texts compressed into 2s.
- *  60–180   (2–6s)   Card hand → tap "what does 'come over' actually mean" → bubble → Dev replies.
- *  180–270  (6–9s)   Cut to End Card. "WORTH SITTING WITH" + question, slightly soft.
- *  270–330  (9–11s)  "want to keep talking this through?" + gameboi.online (amber).
+ *  60–210   (2–7s)   Card hand → tap "what does 'come over' actually mean" → bubble → Dev replies.
+ *  210–300  (7–10s)  Cut to End Card. "WORTH SITTING WITH" + question — light soft-focus only.
+ *  300–360  (10–12s) "want to keep talking this through?" + gameboi.online (amber).
  *  Final frame:      tiny gameboi wordmark fade-in.
  */
 
 const T = {
   THREAD: { start: 0, end: 60 },
-  PLAY: { start: 60, end: 180 },
-  END: { start: 180, end: 270 },
-  CTA: { start: 270, end: 330 },
+  PLAY: { start: 60, end: 210 },
+  END: { start: 210, end: 300 },
+  CTA: { start: 300, end: 360 },
 };
 
 // Phone screen dims (centered, fills most of vertical canvas)
@@ -68,18 +68,17 @@ export const TikTokAdVideo: React.FC = () => {
   );
 };
 
-/* ---------- THREAD + PLAY (0–6s) ---------- */
+/* ---------- THREAD + PLAY (0–7s) ---------- */
 
 const DEV_MSGS = [
-  "yooo",
   "so riley texted me",
   "she was pretty drunk saturday night and i wasn't really paying attention",
   "now she's like 'wanna come over later' 😭 what do i even say",
 ];
 
-// All four Dev messages land within the first 60 frames (2s).
-// Frames: 4, 18, 32, 48 — staggered so each pops before the next.
-const DEV_BEATS = [4, 18, 32, 48];
+// All three Dev messages land within the first 60 frames (2s).
+// Frames staggered so each pops before the next.
+const DEV_BEATS = [6, 24, 44];
 
 // Card hand deals at frame 70 (2.33s into comp = ~10f after thread sequence ends)
 const CARD_DEAL_START = 70 - T.THREAD.start; // local to this Sequence
