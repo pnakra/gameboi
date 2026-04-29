@@ -167,6 +167,15 @@ export function GameScreen({
         await new Promise((r) => setTimeout(r, i === 0 ? 750 : 550));
         const ts = Date.now();
         setChat((c) => [...c, { kind: "them", text: friendMsgs[i], ts, pop: true }]);
+        friendMessagesSeenRef.current += 1;
+        if (!firstMessageTrackedRef.current) {
+          firstMessageTrackedRef.current = true;
+          track("first_message_rendered", {
+            friend_id: friend.id,
+            is_deep_link: isDeepLinkSession(),
+            time_to_first_message_ms: Date.now() - roundStartMsRef.current,
+          });
+        }
       }
 
       setHistory((h) => [
