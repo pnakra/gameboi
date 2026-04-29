@@ -361,7 +361,7 @@ export function GameScreen({
     // friend sends a natural closer, round ends. EndCard handles the actual link.
     window.setTimeout(() => {
       const ts = Date.now();
-      setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
+      setChat((prev) => [...prev, { kind: "you", text: c.message, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
 
