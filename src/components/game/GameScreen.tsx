@@ -28,13 +28,7 @@ const WILDCARD_LABELS = [
   "tell him to just take a beat before replying",
 ];
 
-// Friend-side closing messages — natural, conversational signoff.
-const WILDCARD_CLOSERS = [
-  "yeah maybe i should just think about it more. thanks man",
-  "true. gonna sit with it for a sec. appreciate you",
-  "ok yeah. lemme just chew on it. thanks for listening",
-  "fair. i'll just take a beat. thanks dude",
-];
+// (Real-talk wildcard no longer ends the round, so it has no closer pool.)
 
 // isthisok.app card — advice to the friend that gently surfaces the tool by name.
 // Plays in-chat like the other wildcard, then EndCard handles the actual link.
