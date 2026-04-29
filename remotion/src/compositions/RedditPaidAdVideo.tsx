@@ -61,28 +61,28 @@ const T = {
 
 const DEV_MSGS = [
   // First text already visible at frame 0 (negative enterFrame so spring is settled)
-  { text: "ok so riley texted me", at: -10 },
-  { text: "she was Drunk drunk on saturday and i did NOT remember half of it", at: 6 },
-  { text: "now she's like 'wanna come over later' lmao what do i even sayyy", at: 22 },
+  { text: "ok third date with riley tmrw", at: -10 },
+  { text: "she just texted 'my place this time? i'll cook' 👀", at: 6 },
+  { text: "i think she means more than dinner?? idk how to even reply to that", at: 22 },
 ];
 
 const HAND1 = [
-  { vibe: "chill", label: "it's been 2 days, breathe" },
-  { vibe: "bold", label: "what does 'come over' actually mean" },
-  { vibe: "soft", label: "what do you actually want here" },
+  { vibe: "chill", label: "just say yes to dinner, see what happens" },
+  { vibe: "bold", label: "ask her what she actually has in mind" },
+  { vibe: "soft", label: "what are you hoping it means" },
 ];
 const PICK1 = 1;
 const PICK1_LABEL = HAND1[PICK1].label;
-const DEV_REPLY1_TEXT = "right?? like is it a vibe or is it a Thing";
+const DEV_REPLY1_TEXT = "wait i can just… ask her? lol";
 
 const HAND2 = [
-  { vibe: "chaos", label: "tell her you blacked out and forgot her name" },
-  { vibe: "direct", label: "say yes lol have fun" },
-  { vibe: "soft", label: "what part of you wants to go" },
+  { vibe: "chaos", label: "reply 'i'll bring dessert 😏' and log off" },
+  { vibe: "direct", label: "tell her what you're hoping for too" },
+  { vibe: "soft", label: "what would feel honest to send right now" },
 ];
 const PICK2 = 2;
 const PICK2_LABEL = HAND2[PICK2].label;
-const DEV_REPLY2_TEXT = "ok that's the question huh";
+const DEV_REPLY2_TEXT = "ok yeah. honest is scarier but better";
 
 export const RedditPaidAdVideo: React.FC = () => {
   return (
