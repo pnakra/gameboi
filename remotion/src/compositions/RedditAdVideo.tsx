@@ -59,7 +59,7 @@ const T = {
 const DEV_MSGS = [
   { text: "ok so riley texted me", at: 8 },
   { text: "she was Drunk drunk on saturday and i did NOT remember half of it", at: 26 },
-  { text: "now she's like 'wanna come over later' 😭 what do i even sayyy", at: 48 },
+  { text: "now she's like 'wanna come over later' lmao what do i even sayyy", at: 48 },
 ];
 
 const HAND1 = [
@@ -69,7 +69,7 @@ const HAND1 = [
 ];
 const PICK1 = 1;
 const PICK1_LABEL = HAND1[PICK1].label;
-const DEV_REPLY1_TEXT = "right?? like is it a vibe or is it a Thing 💀";
+const DEV_REPLY1_TEXT = "right?? like is it a vibe or is it a Thing";
 
 const HAND2 = [
   { vibe: "chaos", label: "tell her you blacked out and forgot her name" },
