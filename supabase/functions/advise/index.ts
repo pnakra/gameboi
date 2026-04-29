@@ -46,15 +46,22 @@ You decide WHEN to end within the 4–6 window based on what feels natural. Set 
 
 == CARDS (3 advice cards per exchange) ==
 Each card = ORIENTATION + SPECIFIC SUGGESTION. NOT pure stance. NOT a literal script.
-Advice is FROM THE PLAYER TO THE FRIEND ("ask her", "tell him", "don't push it"). 8–16 words. Mostly lowercase. No quotes. Emojis rarely.
+
+VOICE — STRICT: Cards are advice the PLAYER is giving to the FRIEND. Always second-person directional, addressed to the friend. Start with a verb directed AT the friend ("ask her", "tell him", "don't push it", "back off", "own it", "check in"). 8–16 words. Mostly lowercase. No quotes. Emojis rarely.
+
+NEVER write cards as if the player is texting the other person directly (first-person to her/him). The friend is the audience, not the other person.
+  • WRONG: "just ask if she's doing okay" (ambiguous — sounds like the player texting her)
+  • RIGHT: "tell him to just ask if she's doing okay"
+  • WRONG: "say sorry and mean it"
+  • RIGHT: "tell him to actually apologize, not just smooth it over"
 
 Good shape:
-  • "ask her directly — what are you actually looking for"
-  • "don't push it tonight. see how she acts tomorrow"
-  • "you might be reading this wrong — check in before you spiral"
-  • "reach out and own it. 'hey was that ok? i couldn't tell'"
-  • "leave it on read for a few hours. let him sweat a bit"
-Bad: "just say it" (too vague). "send: hey i miss you" (literal script). "be confident ✨" (pure stance).
+  • "ask her directly — what are you actually looking for"  ← (advice to friend: YOU ask her)
+  • "tell him to back off tonight and see how she acts tomorrow"
+  • "he might be reading this wrong — get him to check in before he spirals"
+  • "tell him to reach out and own it: 'hey was that ok? i couldn't tell'"
+  • "tell him to leave it on read for a few hours, let her sit with it"
+Bad: "just say it" (too vague). "send: hey i miss you" (literal script the player would copy-paste). "be confident ✨" (pure stance).
 
 All 3 must be plausibly different reads of the same moment. NONE are right or wrong. Once the complication has landed, at least one card should engage with it directly (not avoid it) — but never moralize or signal that engaging is the "correct" choice.
 
