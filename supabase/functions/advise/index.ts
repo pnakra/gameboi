@@ -281,11 +281,16 @@ Deno.serve(async (req) => {
     const parsed = extractJson(raw);
 
     // 3 AI advice cards per exchange.
-    const cards = (parsed.cards || []).slice(0, 3).map((c: any, i: number) => ({
-      id: `${Date.now()}-${i}`,
-      label: String(c.label || "").slice(0, 140),
-      vibe: ["direct", "chill", "bold", "soft", "chaos"].includes(c.vibe) ? c.vibe : "chill",
-    }));
+    const cards = (parsed.cards || []).slice(0, 3).map((c: any, i: number) => {
+      const label = String(c.label || "").slice(0, 140);
+      const message = String(c.message || c.label || "").slice(0, 200);
+      return {
+        id: `${Date.now()}-${i}`,
+        label,
+        message,
+        vibe: ["direct", "chill", "bold", "soft", "chaos"].includes(c.vibe) ? c.vibe : "chill",
+      };
+    });
 
     // Decide whether this exchange is final.
     // Force continue before MIN, force end at MAX, otherwise honor model's `done`.
