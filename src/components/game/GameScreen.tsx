@@ -69,16 +69,60 @@ export function GameScreen({
     chatRef.current = chat;
   }, [chat]);
 
+  // Deep-link instrumentation refs
+  const roundStartMsRef = useRef<number>(0);
+  const firstMessageTrackedRef = useRef(false);
+  const friendMessagesSeenRef = useRef(0);
+  const exitTrackedRef = useRef(false);
+  const itoViewedRef = useRef(false);
+  const itoLinkRef = useRef<HTMLAnchorElement>(null);
+
   const openTime = useMemo(() => formatTime(new Date()), []);
 
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    track("round_started", { friend_id: friend.id, friend_name: friend.name });
+    roundStartMsRef.current = Date.now();
+    track("round_started", {
+      friend_id: friend.id,
+      friend_name: friend.name,
+      is_deep_link: isDeepLinkSession(),
+    });
     setChat([{ kind: "stamp", text: `today ${openTime}` }]);
     void next({ start: true, forExchange: 1 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Track early-exit signals (tab close, backgrounded, navigated away) so we
+  // can see how many friend messages a deep-linked user actually read before
+  // bouncing. Fires at most once per round.
+  useEffect(() => {
+    function trackExit(reason: string) {
+      if (exitTrackedRef.current) return;
+      exitTrackedRef.current = true;
+      const elapsed = roundStartMsRef.current ? Date.now() - roundStartMsRef.current : 0;
+      track("round_exited_early", {
+        reason,
+        friend_id: friend.id,
+        is_deep_link: isDeepLinkSession(),
+        messages_read_before_exit: friendMessagesSeenRef.current,
+        ito_link_viewed: itoViewedRef.current,
+        finished: isFinished,
+        elapsed_ms: elapsed,
+        exchange,
+      });
+    }
+    const onVis = () => {
+      if (document.visibilityState === "hidden") trackExit("visibility_hidden");
+    };
+    const onPageHide = () => trackExit("pagehide");
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("pagehide", onPageHide);
+    };
+  }, [friend.id, exchange, isFinished]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
