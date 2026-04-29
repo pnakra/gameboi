@@ -16,7 +16,28 @@ type ApiTurn = { role: "user" | "assistant"; content: string };
 const MIN_EXCHANGES = 4;
 const MAX_EXCHANGES = 6;
 const FREETEXT_FROM = 3;
-const HAND_SIZE = 3;
+const HAND_SIZE = 2;
+const WILDCARD_ID = "__wildcard_ito__";
+
+// Phrasings that read like genuine advice from the player, not a CTA.
+const WILDCARD_LABELS = [
+  "tell him to just sit with this one",
+  "maybe he needs to think it through more",
+  "honestly might be worth slowing down on this",
+  "tell him to just take a beat before replying",
+];
+
+// Friend-side closing messages — natural, conversational signoff.
+const WILDCARD_CLOSERS = [
+  "yeah maybe i should just think about it more. thanks man",
+  "true. gonna sit with it for a sec. appreciate you",
+  "ok yeah. lemme just chew on it. thanks for listening",
+  "fair. i'll just take a beat. thanks dude",
+];
+
+function pickFrom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 export type EndPayload = {
   transcript: string;
@@ -150,6 +171,12 @@ export function GameScreen({
           label: c.label,
           vibe: c.vibe,
         }));
+        // Always append a wildcard "real talk" card as the third card.
+        incoming.push({
+          id: `${WILDCARD_ID}-${opts.forExchange}`,
+          label: pickFrom(WILDCARD_LABELS),
+          vibe: "ito",
+        });
         await dealCards(incoming);
       }
     } catch (e) {
@@ -162,6 +189,11 @@ export function GameScreen({
 
   function pickCard(c: Card) {
     if (loading || isFinished || playingCardId) return;
+
+    if (c.id.startsWith(WILDCARD_ID)) {
+      pickWildcard(c);
+      return;
+    }
 
     setActiveCardId(null);
     setPlayingCardId(c.id);
@@ -182,6 +214,43 @@ export function GameScreen({
       const nextEx = exchange + 1;
       setExchange(nextEx);
       void next({ chosenReply: c.label, replySource: "card", forExchange: nextEx });
+    }, 480);
+  }
+
+  function pickWildcard(c: Card) {
+    setActiveCardId(null);
+    setPlayingCardId(c.id);
+    track("wildcard_played", {
+      friend_id: friend.id,
+      exchange,
+      label: c.label,
+    });
+
+    const closer = pickFrom(WILDCARD_CLOSERS);
+
+    // After fly-up: push the player's advice bubble, clear hand, then friend
+    // sends a natural closer and the round ends.
+    window.setTimeout(() => {
+      const ts = Date.now();
+      setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
+      setHand([]);
+      setPlayingCardId(null);
+
+      // Friend reply after a brief beat
+      window.setTimeout(() => {
+        setChat((prev) => [
+          ...prev,
+          { kind: "them", text: closer, ts: Date.now(), pop: true },
+        ]);
+        setIsFinished(true);
+        track("round_ended", {
+          friend_id: friend.id,
+          friend_name: friend.name,
+          exchanges: exchange,
+          via: "wildcard",
+        });
+        markUnlocked();
+      }, 700);
     }, 480);
   }
 

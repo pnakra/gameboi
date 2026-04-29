@@ -46,28 +46,11 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
     };
   }, [transcript, friend.context]);
 
-  async function handoffToIto() {
+  function handoffToIto() {
     if (handoffLoading) return;
     track("handoff_clicked", { source: "end_card", friend_id: friend.id });
     setHandoffLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("advise", {
-        body: {
-          mode: "handoff",
-          transcript,
-          friendContext: friend.context,
-          friendName: friend.name,
-        },
-      });
-      if (error) throw error;
-      const situation: string =
-        data?.situation ||
-        `${friend.name.toLowerCase()} is working through something and wants to think it through.`;
-      window.location.href = `https://gameboi.isthisok.app/check-in?situation=${encodeURIComponent(situation)}`;
-    } catch (e) {
-      console.error(e);
-      window.location.href = "https://gameboi.isthisok.app/check-in";
-    }
+    window.location.href = "https://gameboi.isthisok.app/check-in";
   }
 
   return (
@@ -92,7 +75,7 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
           <button
             onClick={handoffToIto}
             disabled={handoffLoading || loading}
-            className="w-full h-13 py-3.5 rounded-2xl bg-[var(--ito)]/15 border border-[var(--ito)]/40 text-[var(--ito)] font-bold tracking-tight active:scale-[0.98] transition-transform disabled:opacity-50"
+            className="w-full h-13 py-3.5 rounded-2xl bg-[var(--ito)] text-background font-bold tracking-tight active:scale-[0.98] transition-transform disabled:opacity-50 shadow-[0_18px_40px_-18px_var(--ito)]"
           >
             {handoffLoading ? "one sec..." : "want to keep talking this through?"}
           </button>
@@ -101,7 +84,7 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
               track("play_again_clicked", { friend_id: friend.id });
               onPlayAgain();
             }}
-            className="w-full h-13 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold tracking-tight active:scale-[0.98] transition-transform"
+            className="w-full h-12 rounded-2xl bg-surface text-foreground/90 font-semibold tracking-tight active:scale-[0.98] transition-transform border border-white/[0.08]"
           >
             play again with {friend.name.toLowerCase()}
           </button>
@@ -110,7 +93,7 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
               track("switch_friend_clicked", { friend_id: friend.id });
               onSwitchFriend();
             }}
-            className="w-full h-12 rounded-2xl bg-surface text-foreground/80 font-semibold tracking-tight active:scale-[0.98] transition-transform border border-white/[0.06]"
+            className="w-full h-11 rounded-2xl text-muted-foreground/80 font-medium tracking-tight active:scale-[0.98] transition-transform"
           >
             switch friends
           </button>

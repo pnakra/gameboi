@@ -1,14 +1,15 @@
 import { cn } from "@/lib/utils";
 import { forwardRef } from "react";
 
-export type Vibe = "direct" | "chill" | "bold" | "soft" | "chaos";
+export type Vibe = "direct" | "chill" | "bold" | "soft" | "chaos" | "ito";
 
 const vibeStyles: Record<Vibe, { tag: string; tintVar: string }> = {
-  direct: { tag: "direct", tintVar: "--card-direct" },
-  chill:  { tag: "chill",  tintVar: "--card-chill" },
-  bold:   { tag: "bold",   tintVar: "--card-bold" },
-  soft:   { tag: "soft",   tintVar: "--card-soft" },
-  chaos:  { tag: "chaos",  tintVar: "--card-chaos" },
+  direct: { tag: "direct",   tintVar: "--card-direct" },
+  chill:  { tag: "chill",    tintVar: "--card-chill" },
+  bold:   { tag: "bold",     tintVar: "--card-bold" },
+  soft:   { tag: "soft",     tintVar: "--card-soft" },
+  chaos:  { tag: "chaos",    tintVar: "--card-chaos" },
+  ito:    { tag: "real talk", tintVar: "--card-ito" },
 };
 
 type Props = {
