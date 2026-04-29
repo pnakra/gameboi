@@ -267,11 +267,17 @@ export function GameScreen({
           label: c.label,
           vibe: c.vibe,
         }));
-        // Always append a wildcard "real talk" card as the third card.
+        // Append the "real talk" wildcard as the 3rd card.
         incoming.push({
           id: `${WILDCARD_ID}-${opts.forExchange}`,
           label: pickFrom(WILDCARD_LABELS),
           vibe: "ito",
+        });
+        // Append the isthisok.app card as the 4th card — branded, optional, surfaces the tool.
+        incoming.push({
+          id: `${ITO_APP_ID}-${opts.forExchange}`,
+          label: pickFrom(ITO_APP_LABELS),
+          vibe: "ito_app",
         });
         await dealCards(incoming);
       }
