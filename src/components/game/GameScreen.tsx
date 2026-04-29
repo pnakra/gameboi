@@ -124,6 +124,32 @@ export function GameScreen({
     };
   }, [friend.id, exchange, isFinished]);
 
+  // Fire once when the ito link actually scrolls into view — separates
+  // "saw the CTA but didn't tap" from "never saw it" for deep-linked sessions.
+  useEffect(() => {
+    const el = itoLinkRef.current;
+    if (!el || itoViewedRef.current || typeof IntersectionObserver === "undefined") return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && !itoViewedRef.current) {
+            itoViewedRef.current = true;
+            track("ito_link_viewed", {
+              friend_id: friend.id,
+              exchange,
+              is_deep_link: isDeepLinkSession(),
+              messages_read_when_viewed: friendMessagesSeenRef.current,
+            });
+            obs.disconnect();
+          }
+        }
+      },
+      { threshold: 0.5 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [friend.id, exchange, isFinished]);
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [chat, loading]);
