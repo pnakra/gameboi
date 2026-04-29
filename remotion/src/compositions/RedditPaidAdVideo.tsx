@@ -62,7 +62,7 @@ const T = {
 const DEV_MSGS = [
   // First text already visible at frame 0 (negative enterFrame so spring is settled)
   { text: "ok third date with riley tmrw", at: -10 },
-  { text: "she just texted 'my place this time? i'll cook' 👀", at: 6 },
+  { text: "she just texted 'my place this time? i'll cook'", at: 6 },
   { text: "i think she means more than dinner?? idk how to even reply to that", at: 22 },
 ];
 
@@ -73,10 +73,10 @@ const HAND1 = [
 ];
 const PICK1 = 1;
 const PICK1_LABEL = HAND1[PICK1].label;
-const DEV_REPLY1_TEXT = "wait i can just… ask her? lol";
+const DEV_REPLY1_TEXT = "wait i can just... ask her? lol";
 
 const HAND2 = [
-  { vibe: "chaos", label: "reply 'i'll bring dessert 😏' and log off" },
+  { vibe: "chaos", label: "reply 'i'll bring dessert' and log off" },
   { vibe: "direct", label: "tell her what you're hoping for too" },
   { vibe: "soft", label: "what would feel honest to send right now" },
 ];
