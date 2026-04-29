@@ -3,14 +3,55 @@ import { FRIENDS, type Friend, isUnlocked } from "./friends";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics";
 
+// --- Headline A/B test ---------------------------------------------------
+// Two variants, 50/50 split. Assignment is sticky per browser (localStorage)
+// so the same visitor never sees both, and so a returning bouncer is counted
+// against the same variant on both visits. Every event from this session
+// will carry `headline_variant` so we can segment the funnel cleanly.
+type HeadlineVariant = "control" | "buzz";
+
+const VARIANT_KEY = "gameboi:headline_variant";
+
+const HEADLINES: Record<
+  HeadlineVariant,
+  { eyebrow: string; headline: string; sub: string }
+> = {
+  control: {
+    eyebrow: "tonight",
+    headline: "pick your homeboi",
+    sub: "tap a friend to see what's going on",
+  },
+  buzz: {
+    eyebrow: "incoming",
+    headline: "someone's about to text you.",
+    sub: "tap whoever you want to hear from first",
+  },
+};
+
+function getHeadlineVariant(): HeadlineVariant {
+  if (typeof window === "undefined") return "control";
+  try {
+    const cached = window.localStorage.getItem(VARIANT_KEY);
+    if (cached === "control" || cached === "buzz") return cached;
+    const v: HeadlineVariant = Math.random() < 0.5 ? "control" : "buzz";
+    window.localStorage.setItem(VARIANT_KEY, v);
+    return v;
+  } catch {
+    return Math.random() < 0.5 ? "control" : "buzz";
+  }
+}
+
 export function FriendSelect({ onPick }: { onPick: (f: Friend) => void }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
+  const [variant, setVariant] = useState<HeadlineVariant>("control");
 
   useEffect(() => {
     setUnlocked(isUnlocked());
-    track("friend_select_viewed");
+    const v = getHeadlineVariant();
+    setVariant(v);
+    track("friend_select_viewed", { headline_variant: v });
   }, []);
 
   const visible = useMemo(
@@ -25,15 +66,21 @@ export function FriendSelect({ onPick }: { onPick: (f: Friend) => void }) {
   function pick(f: Friend) {
     if (leaving) return;
     if (f.locked && !unlocked) {
-      track("locked_friend_tapped", { friend_id: f.id });
+      track("locked_friend_tapped", { friend_id: f.id, headline_variant: variant });
       return;
     }
-    track("friend_picked", { friend_id: f.id, friend_name: f.name });
+    track("friend_picked", {
+      friend_id: f.id,
+      friend_name: f.name,
+      headline_variant: variant,
+    });
     setSelectedId(f.id);
     setLeaving(true);
     // satisfying beat before transition
     window.setTimeout(() => onPick(f), 520);
   }
+
+  const copy = HEADLINES[variant];
 
   return (
     <div className="relative min-h-[100dvh] max-w-[480px] mx-auto flex flex-col px-5 pt-8 pb-6 grain overflow-hidden">
@@ -42,11 +89,14 @@ export function FriendSelect({ onPick }: { onPick: (f: Friend) => void }) {
 
       <div className="relative text-center mb-6 animate-float-in">
         <div className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground mb-3">
-          tonight
+          {copy.eyebrow}
         </div>
         <h1 className="display text-[34px] leading-[0.95] font-bold text-balance">
-          pick your homeboi
+          {copy.headline}
         </h1>
+        <p className="mt-3 text-[13px] text-muted-foreground/80 text-balance">
+          {copy.sub}
+        </p>
       </div>
 
       <div className="relative flex-1 flex flex-col gap-3.5 justify-center">
@@ -69,7 +119,7 @@ export function FriendSelect({ onPick }: { onPick: (f: Friend) => void }) {
       <div className="relative text-center text-[11px] text-muted-foreground/60 mt-6">
         {lockedPreview.length > 0
           ? "play one round to unlock more"
-          : "pick one. you can switch later."}
+          : "you can switch later."}
       </div>
     </div>
   );
