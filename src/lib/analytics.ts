@@ -111,6 +111,16 @@ function getAttribution(): Attribution {
   }
 }
 
+export function isDeepLinkSession(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const a = JSON.parse(window.sessionStorage.getItem(ATTRIBUTION_KEY) || "{}");
+    return !!a.is_deep_link;
+  } catch {
+    return false;
+  }
+}
+
 export function track(eventName: string, properties: Record<string, unknown> = {}): void {
   const session_id = getSessionId();
   const attribution = getAttribution();
