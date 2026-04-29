@@ -332,31 +332,17 @@ export function GameScreen({
       label: c.label,
     });
 
-    const closer = pickFrom(WILDCARD_CLOSERS);
-
-    // After fly-up: push the player's advice bubble, clear hand, then friend
-    // sends a natural closer and the round ends.
+    // Real-talk now plays like a normal advice card: push the bubble, clear hand,
+    // and request the next exchange so the friend reacts in voice and the arc continues.
     window.setTimeout(() => {
       const ts = Date.now();
       setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
 
-      // Friend reply after a brief beat
-      window.setTimeout(() => {
-        setChat((prev) => [
-          ...prev,
-          { kind: "them", text: closer, ts: Date.now(), pop: true },
-        ]);
-        setIsFinished(true);
-        track("round_ended", {
-          friend_id: friend.id,
-          friend_name: friend.name,
-          exchanges: exchange,
-          via: "wildcard",
-        });
-        markUnlocked();
-      }, 700);
+      const nextEx = exchange + 1;
+      setExchange(nextEx);
+      void next({ chosenReply: c.label, replySource: "card", forExchange: nextEx });
     }, 480);
   }
 
