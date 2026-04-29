@@ -18,6 +18,7 @@ const MAX_EXCHANGES = 6;
 const FREETEXT_FROM = 3;
 const HAND_SIZE = 2;
 const WILDCARD_ID = "__wildcard_ito__";
+const ITO_APP_ID = "__wildcard_ito_app__";
 
 // Phrasings that read like genuine advice from the player, not a CTA.
 const WILDCARD_LABELS = [
@@ -33,6 +34,22 @@ const WILDCARD_CLOSERS = [
   "true. gonna sit with it for a sec. appreciate you",
   "ok yeah. lemme just chew on it. thanks for listening",
   "fair. i'll just take a beat. thanks dude",
+];
+
+// isthisok.app card — advice to the friend that gently surfaces the tool by name.
+// Plays in-chat like the other wildcard, then EndCard handles the actual link.
+const ITO_APP_LABELS = [
+  "tell him to do an isthisok.app check-in before he replies",
+  "honestly send him to isthisok.app — let him work it out there first",
+  "tell him to run it through isthisok.app before he does anything",
+  "this feels like an isthisok.app moment — tell him to check in with himself",
+];
+
+const ITO_APP_CLOSERS = [
+  "yeah ok. gonna actually do that before i reply. thanks man",
+  "true. lemme go check in with myself first. appreciate it",
+  "fair. ill run through it on there before i text her back",
+  "ok yeah. gonna sit with it on there for a sec. thanks dude",
 ];
 
 function pickFrom<T>(arr: T[]): T {
