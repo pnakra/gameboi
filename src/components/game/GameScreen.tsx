@@ -16,7 +16,28 @@ type ApiTurn = { role: "user" | "assistant"; content: string };
 const MIN_EXCHANGES = 4;
 const MAX_EXCHANGES = 6;
 const FREETEXT_FROM = 3;
-const HAND_SIZE = 3;
+const HAND_SIZE = 2;
+const WILDCARD_ID = "__wildcard_ito__";
+
+// Phrasings that read like genuine advice from the player, not a CTA.
+const WILDCARD_LABELS = [
+  "tell him to just sit with this one",
+  "maybe he needs to think it through more",
+  "honestly might be worth slowing down on this",
+  "tell him to just take a beat before replying",
+];
+
+// Friend-side closing messages — natural, conversational signoff.
+const WILDCARD_CLOSERS = [
+  "yeah maybe i should just think about it more. thanks man",
+  "true. gonna sit with it for a sec. appreciate you",
+  "ok yeah. lemme just chew on it. thanks for listening",
+  "fair. i'll just take a beat. thanks dude",
+];
+
+function pickFrom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 export type EndPayload = {
   transcript: string;
