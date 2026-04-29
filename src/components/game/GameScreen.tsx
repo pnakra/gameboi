@@ -516,14 +516,20 @@ export function GameScreen({
               </button>
             ) : (
               <a
+                ref={itoLinkRef}
                 href="https://isthisok.app/check-in"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() =>
-                  track("isthisok_link_clicked", {
+                  track("ito_link_clicked", {
                     source: "game_screen_inline",
                     friend_id: friend.id,
                     exchange,
+                    is_deep_link: isDeepLinkSession(),
+                    messages_read_before_click: friendMessagesSeenRef.current,
+                    elapsed_ms: roundStartMsRef.current
+                      ? Date.now() - roundStartMsRef.current
+                      : 0,
                   })
                 }
                 className="flex items-center justify-center min-h-[44px] py-3 text-center text-[14px] text-[var(--ito)]/90 hover:text-[var(--ito)] lowercase tracking-tight"
