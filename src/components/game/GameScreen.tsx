@@ -203,39 +203,14 @@ export function GameScreen({
     void next({ chosenReply: text, replySource: "freetext", forExchange: nextEx });
   }
 
-  const [handoffLoading, setHandoffLoading] = useState(false);
-  async function handoffToIto() {
-    if (handoffLoading) return;
+  function handoffToIto() {
     track("handoff_clicked", {
       source: "game_screen",
       friend_id: friend.id,
       exchange,
       finished: isFinished,
     });
-    setHandoffLoading(true);
-    try {
-      const transcript = buildTranscript(chatRef.current);
-      const { data, error } = await supabase.functions.invoke("advise", {
-        body: {
-          mode: "handoff",
-          transcript,
-          friendContext: friend.context,
-          friendName: friend.name,
-        },
-      });
-      if (error) throw error;
-      const situation: string =
-        data?.situation ||
-        `${friend.name.toLowerCase()} is working through something and wants to think it through.`;
-      const url = `https://isthisok.app/check-in?situation=${encodeURIComponent(situation)}`;
-      window.location.href = url;
-    } catch (e) {
-      console.error(e);
-      // Fail-safe: still send them over with no prefill.
-      window.location.href = "https://isthisok.app/check-in";
-    } finally {
-      setHandoffLoading(false);
-    }
+    window.location.href = "https://gameboi.isthisok.app/check-in";
   }
 
   const groupedChat = useMemo(() => groupBubbles(chat), [chat]);
@@ -413,10 +388,9 @@ export function GameScreen({
             {(exchange >= FREETEXT_FROM || isFinished) ? (
               <button
                 onClick={handoffToIto}
-                disabled={handoffLoading}
-                className="block w-full text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight disabled:opacity-50"
+                className="block w-full text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight"
               >
-                {handoffLoading ? "one sec..." : "want to keep talking this through?"}
+                want to keep talking this through?
               </button>
             ) : (
               <a
