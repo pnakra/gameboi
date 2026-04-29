@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GameScreen, type EndPayload } from "@/components/game/GameScreen";
 import { FriendSelect } from "@/components/game/FriendSelect";
 import { EndCard } from "@/components/game/EndCard";
 import { Interstitial } from "@/components/game/Interstitial";
-import type { Friend } from "@/components/game/friends";
+import { FRIENDS, type Friend, isUnlocked, markUnlocked } from "@/components/game/friends";
+import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,6 +27,24 @@ function Index() {
   const [endPayload, setEndPayload] = useState<EndPayload | null>(null);
   // Bump to remount GameScreen on "play again"
   const [playKey, setPlayKey] = useState(0);
+
+  // Deep link: ?friend=<id> drops the user straight into that round, skipping
+  // the friend select screen. Used by ad campaigns so users land in the
+  // scenario they just watched in the creative.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const requested = params.get("friend")?.toLowerCase();
+    if (!requested) return;
+    const match = FRIENDS.find((f) => f.id === requested);
+    if (!match) return;
+    // Locked friends are gated behind one completed round — but for deep-link
+    // ad traffic, unlock immediately so the experience matches the creative.
+    if (match.locked && !isUnlocked()) markUnlocked();
+    track("deep_link_friend", { friend_id: match.id });
+    setFriend(match);
+    setStage("play");
+  }, []);
 
   if (stage === "play" && friend) {
     return (

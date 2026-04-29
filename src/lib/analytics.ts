@@ -1,5 +1,7 @@
 // Lightweight, fire-and-forget analytics helper.
 // - One anonymous session id per browser tab (sessionStorage), stable across the round.
+// - Captures attribution (utm_*, referrer, landing path) once per session and
+//   stamps it onto every event so even single-event bounced sessions are attributable.
 // - track(): logs a meaningful UI event to the `analytics_events` table.
 // - logExchange(): logs one full input/output round-trip to `exchange_logs`.
 // All inserts are best-effort; failures are swallowed so they never block UX.
@@ -7,12 +9,26 @@
 import { supabase } from "@/integrations/supabase/client";
 
 const SESSION_KEY = "gameboi_session_id";
+const ATTRIBUTION_KEY = "gameboi_attribution";
+
+type Attribution = {
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+  referrer?: string;
+  referrer_host?: string;
+  landing_path?: string;
+  landing_search?: string;
+  // Inferred bucket: "tiktok" | "instagram" | "twitter" | "google" | "direct" | "other"
+  source_bucket?: string;
+};
 
 function uuid(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
   }
-  // Fallback
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
@@ -30,12 +46,75 @@ export function getSessionId(): string {
   }
 }
 
+function bucketFor(utmSource?: string, referrerHost?: string): string {
+  const s = (utmSource || "").toLowerCase();
+  const r = (referrerHost || "").toLowerCase();
+  const hay = `${s} ${r}`;
+  if (/tiktok/.test(hay)) return "tiktok";
+  if (/instagram|ig\.me/.test(hay)) return "instagram";
+  if (/twitter|t\.co|x\.com/.test(hay)) return "twitter";
+  if (/facebook|fb\.com|fb\.me/.test(hay)) return "facebook";
+  if (/google|googleads|doubleclick/.test(hay)) return "google";
+  if (/reddit/.test(hay)) return "reddit";
+  if (/youtube|youtu\.be/.test(hay)) return "youtube";
+  if (!s && !r) return "direct";
+  return "other";
+}
+
+/** Capture attribution from the URL + referrer once per session. Idempotent. */
+function getAttribution(): Attribution {
+  if (typeof window === "undefined") return {};
+  try {
+    const cached = window.sessionStorage.getItem(ATTRIBUTION_KEY);
+    if (cached) return JSON.parse(cached) as Attribution;
+
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+    const referrer = document.referrer || undefined;
+    let referrer_host: string | undefined;
+    if (referrer) {
+      try {
+        referrer_host = new URL(referrer).host;
+      } catch {
+        // ignore
+      }
+    }
+
+    const attribution: Attribution = {
+      utm_source: params.get("utm_source") || undefined,
+      utm_medium: params.get("utm_medium") || undefined,
+      utm_campaign: params.get("utm_campaign") || undefined,
+      utm_content: params.get("utm_content") || undefined,
+      utm_term: params.get("utm_term") || undefined,
+      referrer,
+      referrer_host,
+      landing_path: url.pathname || undefined,
+      landing_search: url.search || undefined,
+    };
+    attribution.source_bucket = bucketFor(attribution.utm_source, referrer_host);
+
+    // Drop undefined keys so the JSON stays clean
+    const clean: Attribution = {};
+    (Object.keys(attribution) as (keyof Attribution)[]).forEach((k) => {
+      const v = attribution[k];
+      if (v !== undefined && v !== "") (clean as Record<string, unknown>)[k] = v;
+    });
+
+    window.sessionStorage.setItem(ATTRIBUTION_KEY, JSON.stringify(clean));
+    return clean;
+  } catch {
+    return {};
+  }
+}
+
 export function track(eventName: string, properties: Record<string, unknown> = {}): void {
   const session_id = getSessionId();
-  // Fire and forget — never await, never throw.
+  const attribution = getAttribution();
+  // Stamp attribution on every event so a single-event bounce is still attributable.
+  const merged = { ...attribution, ...properties };
   void supabase
     .from("analytics_events")
-    .insert({ session_id, event_name: eventName, properties: properties as never })
+    .insert({ session_id, event_name: eventName, properties: merged as never })
     .then(({ error }) => {
       if (error) console.warn("[analytics] track failed:", eventName, error.message);
     });
