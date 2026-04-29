@@ -45,25 +45,27 @@ The conversation runs between ${MIN_EXCHANGES} and ${MAX_EXCHANGES} exchanges. Y
 You decide WHEN to end within the 4–6 window based on what feels natural. Set "done": true on the exchange that should be the last one. The server forces the ending if you reach exchange ${MAX_EXCHANGES} and forces continuation if you try to end before exchange ${MIN_EXCHANGES}.
 
 == CARDS (3 advice cards per exchange) ==
-Each card = ORIENTATION + SPECIFIC SUGGESTION. NOT pure stance. NOT a literal script.
+Each card has TWO parts:
+  1. "label" — the advice ABOUT the friend, shown on the card. Third-person, directed at the player. Starts with a verb like "tell him", "get him to", "have him". 6–12 words. This is NOT what gets texted — it's the strategy.
+  2. "message" — the ACTUAL TEXT the player would send back to the friend in the chat. First/second person, talking TO the friend, in casual texting voice. 4–14 words. Mostly lowercase. This is what appears as the player's text bubble.
 
-VOICE — STRICT: Cards are advice the PLAYER is giving to the FRIEND. Always second-person directional, addressed to the friend. Start with a verb directed AT the friend ("ask her", "tell him", "don't push it", "back off", "own it", "check in"). 8–16 words. Mostly lowercase. No quotes. Emojis rarely.
+The "message" must be a natural-texting-voice rewrite of the "label" — the same advice, but as the player would actually type it to their friend. Same intent, different grammar.
 
-NEVER write cards as if the player is texting the other person directly (first-person to her/him). The friend is the audience, not the other person.
-  • WRONG: "just ask if she's doing okay" (ambiguous — sounds like the player texting her)
-  • RIGHT: "tell him to just ask if she's doing okay"
-  • WRONG: "say sorry and mean it"
-  • RIGHT: "tell him to actually apologize, not just smooth it over"
+Examples:
+  • label: "tell him to pick one and commit to it"
+    message: "just pick one and stick with it dude"
+  • label: "get him to check in with her before he spirals"
+    message: "bro just text her and ask if she's good"
+  • label: "tell him to back off tonight and see how she acts tomorrow"
+    message: "give her space tonight man, see how she is tmrw"
+  • label: "have him own it — apologize without smoothing it over"
+    message: "you gotta actually apologize, not just brush past it"
+  • label: "tell him to ask her directly what she's looking for"
+    message: "just ask her what she actually wants from this"
 
-Good shape:
-  • "ask her directly — what are you actually looking for"  ← (advice to friend: YOU ask her)
-  • "tell him to back off tonight and see how she acts tomorrow"
-  • "he might be reading this wrong — get him to check in before he spirals"
-  • "tell him to reach out and own it: 'hey was that ok? i couldn't tell'"
-  • "tell him to leave it on read for a few hours, let her sit with it"
-Bad: "just say it" (too vague). "send: hey i miss you" (literal script the player would copy-paste). "be confident ✨" (pure stance).
+NEVER make label and message identical. NEVER make message sound like a card / advice header — it's a real text reply to a friend. NEVER make message a literal script for the friend to send to the OTHER person — it's what the player texts the friend.
 
-All 3 must be plausibly different reads of the same moment. NONE are right or wrong. Once the complication has landed, at least one card should engage with it directly (not avoid it) — but never moralize or signal that engaging is the "correct" choice.
+All 3 cards must be plausibly different reads of the same moment. NONE are right or wrong. Once the complication has landed, at least one card should engage with it directly (not avoid it) — but never moralize or signal that engaging is the "correct" choice.
 
 Vibes available: direct, chill, bold, soft, chaos. Use 3 different ones per exchange.
 
@@ -72,7 +74,7 @@ Return ONLY this JSON, no prose, no markdown:
 {
   "friend": ["msg 1", "msg 2"],
   "cards": [
-    { "label": "card text", "vibe": "direct" | "chill" | "bold" | "soft" | "chaos" }
+    { "label": "card text (advice ABOUT friend)", "message": "what player actually texts the friend", "vibe": "direct" | "chill" | "bold" | "soft" | "chaos" }
   ],
   "done": false
 }
@@ -279,11 +281,16 @@ Deno.serve(async (req) => {
     const parsed = extractJson(raw);
 
     // 3 AI advice cards per exchange.
-    const cards = (parsed.cards || []).slice(0, 3).map((c: any, i: number) => ({
-      id: `${Date.now()}-${i}`,
-      label: String(c.label || "").slice(0, 140),
-      vibe: ["direct", "chill", "bold", "soft", "chaos"].includes(c.vibe) ? c.vibe : "chill",
-    }));
+    const cards = (parsed.cards || []).slice(0, 3).map((c: any, i: number) => {
+      const label = String(c.label || "").slice(0, 140);
+      const message = String(c.message || c.label || "").slice(0, 200);
+      return {
+        id: `${Date.now()}-${i}`,
+        label,
+        message,
+        vibe: ["direct", "chill", "bold", "soft", "chaos"].includes(c.vibe) ? c.vibe : "chill",
+      };
+    });
 
     // Decide whether this exchange is final.
     // Force continue before MIN, force end at MAX, otherwise honor model's `done`.

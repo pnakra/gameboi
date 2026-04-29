@@ -6,7 +6,7 @@ import { type Friend, markUnlocked } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
 import { track, logExchange, isDeepLinkSession } from "@/lib/analytics";
 
-type Card = { id: string; label: string; vibe: Vibe; entering?: boolean };
+type Card = { id: string; label: string; message: string; vibe: Vibe; entering?: boolean };
 type ChatItem =
   | { kind: "them"; text: string; ts: number; pop?: boolean }
   | { kind: "you"; text: string; ts: number; pop?: boolean }
@@ -20,23 +20,24 @@ const HAND_SIZE = 2;
 const WILDCARD_ID = "__wildcard_ito__";
 const ITO_APP_ID = "__wildcard_ito_app__";
 
-// Phrasings that read like genuine advice from the player, not a CTA.
-const WILDCARD_LABELS = [
-  "tell him to just sit with this one",
-  "maybe he needs to think it through more",
-  "honestly might be worth slowing down on this",
-  "tell him to just take a beat before replying",
+// Wildcard cards: { label } shows on the card (advice ABOUT friend),
+// { message } is what the player actually texts the friend (first/second-person).
+const WILDCARD_VARIANTS: { label: string; message: string }[] = [
+  { label: "tell him to just sit with this one", message: "honestly bro just sit with it for a sec" },
+  { label: "maybe he needs to think it through more", message: "i think u need to think this through more" },
+  { label: "tell him to slow down on this", message: "slow down man, don't rush this" },
+  { label: "tell him to take a beat before replying", message: "take a beat before u reply, no rush" },
 ];
 
 // (Real-talk wildcard no longer ends the round, so it has no closer pool.)
 
 // isthisok.app card — advice to the friend that gently surfaces the tool by name.
 // Plays in-chat like the other wildcard, then EndCard handles the actual link.
-const ITO_APP_LABELS = [
-  "tell him to do an isthisok.app check-in before he replies",
-  "honestly send him to isthisok.app — let him work it out there first",
-  "tell him to run it through isthisok.app before he does anything",
-  "this feels like an isthisok.app moment — tell him to check in with himself",
+const ITO_APP_VARIANTS: { label: string; message: string }[] = [
+  { label: "tell him to do an isthisok.app check-in before he replies", message: "do an isthisok.app check-in before u reply" },
+  { label: "send him to isthisok.app — let him work it out there first", message: "go to isthisok.app and work it out there first" },
+  { label: "tell him to run it through isthisok.app before he does anything", message: "run it through isthisok.app before u do anything" },
+  { label: "this feels like an isthisok.app moment", message: "this feels like an isthisok.app moment ngl" },
 ];
 
 const ITO_APP_CLOSERS = [
@@ -259,18 +260,23 @@ export function GameScreen({
         const incoming: Card[] = (data.cards ?? []).slice(0, HAND_SIZE).map((c: any) => ({
           id: c.id,
           label: c.label,
+          message: c.message || c.label,
           vibe: c.vibe,
         }));
         // Append the "real talk" wildcard as the 3rd card.
+        const wild = pickFrom(WILDCARD_VARIANTS);
         incoming.push({
           id: `${WILDCARD_ID}-${opts.forExchange}`,
-          label: pickFrom(WILDCARD_LABELS),
+          label: wild.label,
+          message: wild.message,
           vibe: "ito",
         });
         // Append the isthisok.app card as the 4th card — branded, optional, surfaces the tool.
+        const itoApp = pickFrom(ITO_APP_VARIANTS);
         incoming.push({
           id: `${ITO_APP_ID}-${opts.forExchange}`,
-          label: pickFrom(ITO_APP_LABELS),
+          label: itoApp.label,
+          message: itoApp.message,
           vibe: "ito_app",
         });
         await dealCards(incoming);
@@ -307,13 +313,13 @@ export function GameScreen({
     // After the card's fly-up animation completes, push the bubble + clear hand + request next exchange
     window.setTimeout(() => {
       const ts = Date.now();
-      setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
+      setChat((prev) => [...prev, { kind: "you", text: c.message, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
 
       const nextEx = exchange + 1;
       setExchange(nextEx);
-      void next({ chosenReply: c.label, replySource: "card", forExchange: nextEx });
+      void next({ chosenReply: c.message, replySource: "card", forExchange: nextEx });
     }, 480);
   }
 
@@ -330,13 +336,13 @@ export function GameScreen({
     // and request the next exchange so the friend reacts in voice and the arc continues.
     window.setTimeout(() => {
       const ts = Date.now();
-      setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
+      setChat((prev) => [...prev, { kind: "you", text: c.message, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
 
       const nextEx = exchange + 1;
       setExchange(nextEx);
-      void next({ chosenReply: c.label, replySource: "card", forExchange: nextEx });
+      void next({ chosenReply: c.message, replySource: "card", forExchange: nextEx });
     }, 480);
   }
 
@@ -355,7 +361,7 @@ export function GameScreen({
     // friend sends a natural closer, round ends. EndCard handles the actual link.
     window.setTimeout(() => {
       const ts = Date.now();
-      setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
+      setChat((prev) => [...prev, { kind: "you", text: c.message, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
 
