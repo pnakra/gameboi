@@ -171,6 +171,12 @@ export function GameScreen({
           label: c.label,
           vibe: c.vibe,
         }));
+        // Always append a wildcard "real talk" card as the third card.
+        incoming.push({
+          id: `${WILDCARD_ID}-${opts.forExchange}`,
+          label: pickFrom(WILDCARD_LABELS),
+          vibe: "ito",
+        });
         await dealCards(incoming);
       }
     } catch (e) {
