@@ -18,6 +18,7 @@ const MAX_EXCHANGES = 6;
 const FREETEXT_FROM = 3;
 const HAND_SIZE = 2;
 const WILDCARD_ID = "__wildcard_ito__";
+const ITO_APP_ID = "__wildcard_ito_app__";
 
 // Phrasings that read like genuine advice from the player, not a CTA.
 const WILDCARD_LABELS = [
@@ -33,6 +34,22 @@ const WILDCARD_CLOSERS = [
   "true. gonna sit with it for a sec. appreciate you",
   "ok yeah. lemme just chew on it. thanks for listening",
   "fair. i'll just take a beat. thanks dude",
+];
+
+// isthisok.app card — advice to the friend that gently surfaces the tool by name.
+// Plays in-chat like the other wildcard, then EndCard handles the actual link.
+const ITO_APP_LABELS = [
+  "tell him to do an isthisok.app check-in before he replies",
+  "honestly send him to isthisok.app — let him work it out there first",
+  "tell him to run it through isthisok.app before he does anything",
+  "this feels like an isthisok.app moment — tell him to check in with himself",
+];
+
+const ITO_APP_CLOSERS = [
+  "yeah ok. gonna actually do that before i reply. thanks man",
+  "true. lemme go check in with myself first. appreciate it",
+  "fair. ill run through it on there before i text her back",
+  "ok yeah. gonna sit with it on there for a sec. thanks dude",
 ];
 
 function pickFrom<T>(arr: T[]): T {
@@ -250,11 +267,17 @@ export function GameScreen({
           label: c.label,
           vibe: c.vibe,
         }));
-        // Always append a wildcard "real talk" card as the third card.
+        // Append the "real talk" wildcard as the 3rd card.
         incoming.push({
           id: `${WILDCARD_ID}-${opts.forExchange}`,
           label: pickFrom(WILDCARD_LABELS),
           vibe: "ito",
+        });
+        // Append the isthisok.app card as the 4th card — branded, optional, surfaces the tool.
+        incoming.push({
+          id: `${ITO_APP_ID}-${opts.forExchange}`,
+          label: pickFrom(ITO_APP_LABELS),
+          vibe: "ito_app",
         });
         await dealCards(incoming);
       }
@@ -269,6 +292,10 @@ export function GameScreen({
   function pickCard(c: Card) {
     if (loading || isFinished || playingCardId) return;
 
+    if (c.id.startsWith(ITO_APP_ID)) {
+      pickItoApp(c);
+      return;
+    }
     if (c.id.startsWith(WILDCARD_ID)) {
       pickWildcard(c);
       return;
@@ -327,6 +354,42 @@ export function GameScreen({
           friend_name: friend.name,
           exchanges: exchange,
           via: "wildcard",
+        });
+        markUnlocked();
+      }, 700);
+    }, 480);
+  }
+
+  function pickItoApp(c: Card) {
+    setActiveCardId(null);
+    setPlayingCardId(c.id);
+    track("ito_app_card_played", {
+      friend_id: friend.id,
+      exchange,
+      label: c.label,
+    });
+
+    const closer = pickFrom(ITO_APP_CLOSERS);
+
+    // Same flow as the real-talk wildcard: player's advice bubble flies up,
+    // friend sends a natural closer, round ends. EndCard handles the actual link.
+    window.setTimeout(() => {
+      const ts = Date.now();
+      setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
+      setHand([]);
+      setPlayingCardId(null);
+
+      window.setTimeout(() => {
+        setChat((prev) => [
+          ...prev,
+          { kind: "them", text: closer, ts: Date.now(), pop: true },
+        ]);
+        setIsFinished(true);
+        track("round_ended", {
+          friend_id: friend.id,
+          friend_name: friend.name,
+          exchanges: exchange,
+          via: "ito_app",
         });
         markUnlocked();
       }, 700);
