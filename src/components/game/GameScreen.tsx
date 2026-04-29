@@ -190,7 +190,7 @@ export function GameScreen({
   function pickCard(c: Card) {
     if (loading || isFinished || playingCardId) return;
 
-    if (c.id === WILDCARD_ID) {
+    if (c.id.startsWith(WILDCARD_ID)) {
       pickWildcard(c);
       return;
     }
