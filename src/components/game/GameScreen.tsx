@@ -4,7 +4,7 @@ import { Bubble, TypingBubble } from "@/components/game/Bubble";
 import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
 import { type Friend, markUnlocked } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
-import { track, logExchange } from "@/lib/analytics";
+import { track, logExchange, isDeepLinkSession } from "@/lib/analytics";
 
 type Card = { id: string; label: string; vibe: Vibe; entering?: boolean };
 type ChatItem =
@@ -69,16 +69,86 @@ export function GameScreen({
     chatRef.current = chat;
   }, [chat]);
 
+  // Deep-link instrumentation refs
+  const roundStartMsRef = useRef<number>(0);
+  const firstMessageTrackedRef = useRef(false);
+  const friendMessagesSeenRef = useRef(0);
+  const exitTrackedRef = useRef(false);
+  const itoViewedRef = useRef(false);
+  const itoLinkRef = useRef<HTMLAnchorElement>(null);
+
   const openTime = useMemo(() => formatTime(new Date()), []);
 
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    track("round_started", { friend_id: friend.id, friend_name: friend.name });
+    roundStartMsRef.current = Date.now();
+    track("round_started", {
+      friend_id: friend.id,
+      friend_name: friend.name,
+      is_deep_link: isDeepLinkSession(),
+    });
     setChat([{ kind: "stamp", text: `today ${openTime}` }]);
     void next({ start: true, forExchange: 1 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Track early-exit signals (tab close, backgrounded, navigated away) so we
+  // can see how many friend messages a deep-linked user actually read before
+  // bouncing. Fires at most once per round.
+  useEffect(() => {
+    function trackExit(reason: string) {
+      if (exitTrackedRef.current) return;
+      exitTrackedRef.current = true;
+      const elapsed = roundStartMsRef.current ? Date.now() - roundStartMsRef.current : 0;
+      track("round_exited_early", {
+        reason,
+        friend_id: friend.id,
+        is_deep_link: isDeepLinkSession(),
+        messages_read_before_exit: friendMessagesSeenRef.current,
+        ito_link_viewed: itoViewedRef.current,
+        finished: isFinished,
+        elapsed_ms: elapsed,
+        exchange,
+      });
+    }
+    const onVis = () => {
+      if (document.visibilityState === "hidden") trackExit("visibility_hidden");
+    };
+    const onPageHide = () => trackExit("pagehide");
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("pagehide", onPageHide);
+    };
+  }, [friend.id, exchange, isFinished]);
+
+  // Fire once when the ito link actually scrolls into view — separates
+  // "saw the CTA but didn't tap" from "never saw it" for deep-linked sessions.
+  useEffect(() => {
+    const el = itoLinkRef.current;
+    if (!el || itoViewedRef.current || typeof IntersectionObserver === "undefined") return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && !itoViewedRef.current) {
+            itoViewedRef.current = true;
+            track("ito_link_viewed", {
+              friend_id: friend.id,
+              exchange,
+              is_deep_link: isDeepLinkSession(),
+              messages_read_when_viewed: friendMessagesSeenRef.current,
+            });
+            obs.disconnect();
+          }
+        }
+      },
+      { threshold: 0.5 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [friend.id, exchange, isFinished]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -123,6 +193,15 @@ export function GameScreen({
         await new Promise((r) => setTimeout(r, i === 0 ? 750 : 550));
         const ts = Date.now();
         setChat((c) => [...c, { kind: "them", text: friendMsgs[i], ts, pop: true }]);
+        friendMessagesSeenRef.current += 1;
+        if (!firstMessageTrackedRef.current) {
+          firstMessageTrackedRef.current = true;
+          track("first_message_rendered", {
+            friend_id: friend.id,
+            is_deep_link: isDeepLinkSession(),
+            time_to_first_message_ms: Date.now() - roundStartMsRef.current,
+          });
+        }
       }
 
       setHistory((h) => [
@@ -463,14 +542,20 @@ export function GameScreen({
               </button>
             ) : (
               <a
+                ref={itoLinkRef}
                 href="https://isthisok.app/check-in"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() =>
-                  track("isthisok_link_clicked", {
+                  track("ito_link_clicked", {
                     source: "game_screen_inline",
                     friend_id: friend.id,
                     exchange,
+                    is_deep_link: isDeepLinkSession(),
+                    messages_read_before_click: friendMessagesSeenRef.current,
+                    elapsed_ms: roundStartMsRef.current
+                      ? Date.now() - roundStartMsRef.current
+                      : 0,
                   })
                 }
                 className="flex items-center justify-center min-h-[44px] py-3 text-center text-[14px] text-[var(--ito)]/90 hover:text-[var(--ito)] lowercase tracking-tight"

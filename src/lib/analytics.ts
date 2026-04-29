@@ -92,6 +92,10 @@ function getAttribution(): Attribution {
       landing_search: url.search || undefined,
     };
     attribution.source_bucket = bucketFor(attribution.utm_source, referrer_host);
+    // Mark deep-link sessions (ad traffic landing directly into a scenario via ?friend=).
+    const isDeepLink = !!params.get("friend");
+    (attribution as Record<string, unknown>).is_deep_link = isDeepLink;
+    (attribution as Record<string, unknown>).deep_link_friend = params.get("friend") || undefined;
 
     // Drop undefined keys so the JSON stays clean
     const clean: Attribution = {};
@@ -104,6 +108,16 @@ function getAttribution(): Attribution {
     return clean;
   } catch {
     return {};
+  }
+}
+
+export function isDeepLinkSession(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const a = JSON.parse(window.sessionStorage.getItem(ATTRIBUTION_KEY) || "{}");
+    return !!a.is_deep_link;
+  } catch {
+    return false;
   }
 }
 
