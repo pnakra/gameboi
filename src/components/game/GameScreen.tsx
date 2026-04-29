@@ -203,39 +203,14 @@ export function GameScreen({
     void next({ chosenReply: text, replySource: "freetext", forExchange: nextEx });
   }
 
-  const [handoffLoading, setHandoffLoading] = useState(false);
-  async function handoffToIto() {
-    if (handoffLoading) return;
+  function handoffToIto() {
     track("handoff_clicked", {
       source: "game_screen",
       friend_id: friend.id,
       exchange,
       finished: isFinished,
     });
-    setHandoffLoading(true);
-    try {
-      const transcript = buildTranscript(chatRef.current);
-      const { data, error } = await supabase.functions.invoke("advise", {
-        body: {
-          mode: "handoff",
-          transcript,
-          friendContext: friend.context,
-          friendName: friend.name,
-        },
-      });
-      if (error) throw error;
-      const situation: string =
-        data?.situation ||
-        `${friend.name.toLowerCase()} is working through something and wants to think it through.`;
-      const url = `https://isthisok.app/check-in?situation=${encodeURIComponent(situation)}`;
-      window.location.href = url;
-    } catch (e) {
-      console.error(e);
-      // Fail-safe: still send them over with no prefill.
-      window.location.href = "https://isthisok.app/check-in";
-    } finally {
-      setHandoffLoading(false);
-    }
+    window.location.href = "https://gameboi.isthisok.app/check-in";
   }
 
   const groupedChat = useMemo(() => groupBubbles(chat), [chat]);
