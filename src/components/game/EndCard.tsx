@@ -46,28 +46,11 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
     };
   }, [transcript, friend.context]);
 
-  async function handoffToIto() {
+  function handoffToIto() {
     if (handoffLoading) return;
     track("handoff_clicked", { source: "end_card", friend_id: friend.id });
     setHandoffLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("advise", {
-        body: {
-          mode: "handoff",
-          transcript,
-          friendContext: friend.context,
-          friendName: friend.name,
-        },
-      });
-      if (error) throw error;
-      const situation: string =
-        data?.situation ||
-        `${friend.name.toLowerCase()} is working through something and wants to think it through.`;
-      window.location.href = `https://gameboi.isthisok.app/check-in?situation=${encodeURIComponent(situation)}`;
-    } catch (e) {
-      console.error(e);
-      window.location.href = "https://gameboi.isthisok.app/check-in";
-    }
+    window.location.href = "https://gameboi.isthisok.app/check-in";
   }
 
   return (
