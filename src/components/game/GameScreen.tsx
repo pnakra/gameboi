@@ -313,13 +313,13 @@ export function GameScreen({
     // After the card's fly-up animation completes, push the bubble + clear hand + request next exchange
     window.setTimeout(() => {
       const ts = Date.now();
-      setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
+      setChat((prev) => [...prev, { kind: "you", text: c.message, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
 
       const nextEx = exchange + 1;
       setExchange(nextEx);
-      void next({ chosenReply: c.label, replySource: "card", forExchange: nextEx });
+      void next({ chosenReply: c.message, replySource: "card", forExchange: nextEx });
     }, 480);
   }
 
