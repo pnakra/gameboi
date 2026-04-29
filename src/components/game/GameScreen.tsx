@@ -292,6 +292,10 @@ export function GameScreen({
   function pickCard(c: Card) {
     if (loading || isFinished || playingCardId) return;
 
+    if (c.id.startsWith(ITO_APP_ID)) {
+      pickItoApp(c);
+      return;
+    }
     if (c.id.startsWith(WILDCARD_ID)) {
       pickWildcard(c);
       return;
