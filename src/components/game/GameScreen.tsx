@@ -473,9 +473,15 @@ export function GameScreen({
                     exchange,
                   })
                 }
-                className="block text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight"
+                className="flex items-center justify-center min-h-[44px] py-3 text-center text-[14px] text-[var(--ito)]/90 hover:text-[var(--ito)] lowercase tracking-tight"
               >
-                got your own situation? isthisok.app
+                <span>
+                  got your own situation?{" "}
+                  <span className="underline underline-offset-4 decoration-[var(--ito)]/50 font-semibold">
+                    isthisok.app
+                  </span>{" "}
+                  →
+                </span>
               </a>
             )}
           </div>
