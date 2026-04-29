@@ -4,7 +4,7 @@ import { Bubble, TypingBubble } from "@/components/game/Bubble";
 import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
 import { type Friend, markUnlocked } from "@/components/game/friends";
 import { cn } from "@/lib/utils";
-import { track, logExchange } from "@/lib/analytics";
+import { track, logExchange, isDeepLinkSession } from "@/lib/analytics";
 
 type Card = { id: string; label: string; vibe: Vibe; entering?: boolean };
 type ChatItem =
