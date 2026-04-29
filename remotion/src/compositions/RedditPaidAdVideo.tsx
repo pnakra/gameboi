@@ -84,22 +84,17 @@ const PICK2 = 2;
 const PICK2_LABEL = HAND2[PICK2].label;
 const DEV_REPLY2_TEXT = "ok that's the question huh";
 
-export const RedditAdVideo: React.FC = () => {
-  const frame = useCurrentFrame();
-
+export const RedditPaidAdVideo: React.FC = () => {
   return (
     <AbsoluteFill style={{ background: "#0a0712", fontFamily: "Inter, system-ui, sans-serif" }}>
-      {/* Soft vignette so the "screen recording" sits in space, not on a flat color */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: "radial-gradient(circle at 50% 50%, #1a1226 0%, #0a0712 80%)",
+          background: "radial-gradient(circle at 50% 45%, #1a1226 0%, #0a0712 80%)",
         }}
       />
-
-      {frame < T.END_CARD && <PhoneRecording />}
-      {frame >= T.END_CARD && <EndCard />}
+      <PhoneRecording />
     </AbsoluteFill>
   );
 };
