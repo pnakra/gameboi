@@ -76,7 +76,8 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
             `translate(-50%, -56px) rotate(0deg) scale(1.08)`
           : fanTransform,
         opacity: playing ? 0 : 1,
-        zIndex: active ? 30 : 10 + fanIndex,
+        // First card sits on top, last card (isthisok.app) sits at the back.
+        zIndex: active ? 30 : 10 + (fanTotal - 1 - fanIndex),
         backgroundImage: `
           radial-gradient(120% 80% at 30% 0%, color-mix(in oklch, ${tint} 28%, transparent) 0%, transparent 55%),
           linear-gradient(160deg, color-mix(in oklch, ${tint} 22%, var(--surface-2)) 0%, var(--surface) 100%)
