@@ -184,6 +184,11 @@ export function GameScreen({
   function pickCard(c: Card) {
     if (loading || isFinished || playingCardId) return;
 
+    if (c.id === WILDCARD_ID) {
+      pickWildcard(c);
+      return;
+    }
+
     setActiveCardId(null);
     setPlayingCardId(c.id);
     track("card_played", {
@@ -203,6 +208,43 @@ export function GameScreen({
       const nextEx = exchange + 1;
       setExchange(nextEx);
       void next({ chosenReply: c.label, replySource: "card", forExchange: nextEx });
+    }, 480);
+  }
+
+  function pickWildcard(c: Card) {
+    setActiveCardId(null);
+    setPlayingCardId(c.id);
+    track("wildcard_played", {
+      friend_id: friend.id,
+      exchange,
+      label: c.label,
+    });
+
+    const closer = pickFrom(WILDCARD_CLOSERS);
+
+    // After fly-up: push the player's advice bubble, clear hand, then friend
+    // sends a natural closer and the round ends.
+    window.setTimeout(() => {
+      const ts = Date.now();
+      setChat((prev) => [...prev, { kind: "you", text: c.label, ts, pop: true }]);
+      setHand([]);
+      setPlayingCardId(null);
+
+      // Friend reply after a brief beat
+      window.setTimeout(() => {
+        setChat((prev) => [
+          ...prev,
+          { kind: "them", text: closer, ts: Date.now(), pop: true },
+        ]);
+        setIsFinished(true);
+        track("round_ended", {
+          friend_id: friend.id,
+          friend_name: friend.name,
+          exchanges: exchange,
+          via: "wildcard",
+        });
+        markUnlocked();
+      }, 700);
     }, 480);
   }
 
