@@ -3,6 +3,7 @@ import { DemoVideo } from "./compositions/DemoVideo";
 import { AdVideo } from "./compositions/AdVideo";
 import { TikTokAdVideo } from "./compositions/TikTokAdVideo";
 import { RedditAdVideo } from "./compositions/RedditAdVideo";
+import { RedditPaidAdVideo } from "./compositions/RedditPaidAdVideo";
 
 export const RemotionRoot = () => {
   return (
@@ -34,7 +35,7 @@ export const RemotionRoot = () => {
         width={1080}
         height={1920}
       />
-      {/* Reddit-native screen-recording — square, 18s, no brand chrome */}
+      {/* Reddit-native organic — square, 18s, no brand chrome */}
       <Composition
         id="reddit"
         component={RedditAdVideo}
@@ -42,6 +43,15 @@ export const RemotionRoot = () => {
         fps={30}
         width={1080}
         height={1080}
+      />
+      {/* Reddit Promoted Post — 4:5, 15s, cold-open hook, no end card */}
+      <Composition
+        id="reddit-paid"
+        component={RedditPaidAdVideo}
+        durationInFrames={450}
+        fps={30}
+        width={1080}
+        height={1350}
       />
     </>
   );
