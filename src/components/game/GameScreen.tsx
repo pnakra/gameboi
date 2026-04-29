@@ -260,18 +260,23 @@ export function GameScreen({
         const incoming: Card[] = (data.cards ?? []).slice(0, HAND_SIZE).map((c: any) => ({
           id: c.id,
           label: c.label,
+          message: c.message || c.label,
           vibe: c.vibe,
         }));
         // Append the "real talk" wildcard as the 3rd card.
+        const wild = pickFrom(WILDCARD_VARIANTS);
         incoming.push({
           id: `${WILDCARD_ID}-${opts.forExchange}`,
-          label: pickFrom(WILDCARD_LABELS),
+          label: wild.label,
+          message: wild.message,
           vibe: "ito",
         });
         // Append the isthisok.app card as the 4th card — branded, optional, surfaces the tool.
+        const itoApp = pickFrom(ITO_APP_VARIANTS);
         incoming.push({
           id: `${ITO_APP_ID}-${opts.forExchange}`,
-          label: pickFrom(ITO_APP_LABELS),
+          label: itoApp.label,
+          message: itoApp.message,
           vibe: "ito_app",
         });
         await dealCards(incoming);
