@@ -13,53 +13,57 @@ import { theme } from "../theme";
 import devAvatar from "../../public/images/friend-dev.jpg";
 
 /**
- * RedditAdVideo
- * 1080x1080, 30fps, 540 frames = 18s.
+ * RedditPaidAdVideo
+ * 1080x1350 (4:5), 30fps, 450 frames = 15s.
  *
- * Reddit-native: pretends to be a screen recording someone posted.
- * No logo, no brand chrome, no CTA buttons, no captions.
- * Just the phone screen, then a plain end card with the URL.
+ * Built for Reddit Promoted Posts:
+ *  - 4:5 = max mobile real estate without desktop letterbox
+ *  - Hook is already in-progress at frame 0 (first text on screen, no warmup)
+ *  - No end card / no URL screen — Reddit's CTA button handles the click.
+ *    Last beat just holds on dev's vulnerable reply, lets it sit.
  *
  * Beats:
- *  0–60   (0–2s)   Funny opener: 3 chaotic dev texts land fast
- *  60–180 (2–6s)   Card hand deals, "bold" card highlighted, played
- *  180–240(6–8s)   "You" bubble + dev typing + dev reply (escalates the joke)
- *  240–360(8–12s)  Second hand deals, "soft" card highlighted, played (the real landing)
- *  360–420(12–14s) "You" bubble + dev typing + dev reply (vulnerable beat)
- *  420–540(14–18s) Plain end card: gameboi.online on quiet bg, hold
+ *  0–45   (0–1.5s)  Cold open: first text already there, second text lands ~12f, third ~30f
+ *  45–150 (1.5–5s)  Hand 1 deals → highlight bold card → play
+ *  150–210(5–7s)    "You" + dev typing + dev joke reply
+ *  210–315(7–10.5s) Hand 2 deals → highlight soft card → play
+ *  315–390(10.5–13) "You" + dev typing + dev real reply
+ *  390–450(13–15s)  Hold on the reply. No URL. Reddit CTA does the work.
  */
 
-// Square canvas
-const CANVAS = 1080;
+// 4:5 vertical canvas
+const CANVAS_W = 1080;
+const CANVAS_H = 1350;
 
-// "Phone screen" inside the canvas — sized like a screen recording crop
-const SCREEN_W = 940;
-const SCREEN_H = 1000;
-const SCREEN_X = (CANVAS - SCREEN_W) / 2;
-const SCREEN_Y = (CANVAS - SCREEN_H) / 2;
+// "Phone screen" inside the canvas
+const SCREEN_W = 980;
+const SCREEN_H = 1280;
+const SCREEN_X = (CANVAS_W - SCREEN_W) / 2;
+const SCREEN_Y = (CANVAS_H - SCREEN_H) / 2;
 
 const T = {
-  HAND1_DEAL: 70,
-  HAND1_HIGHLIGHT: 120,
-  HAND1_PLAY: 140,
-  YOU1: 165,
-  TYPING1_START: 180,
-  DEV_REPLY1: 210,
+  HAND1_DEAL: 45,
+  HAND1_HIGHLIGHT: 90,
+  HAND1_PLAY: 110,
+  YOU1: 135,
+  TYPING1_START: 150,
+  DEV_REPLY1: 180,
 
-  HAND2_DEAL: 255,
-  HAND2_HIGHLIGHT: 300,
-  HAND2_PLAY: 320,
-  YOU2: 345,
-  TYPING2_START: 360,
-  DEV_REPLY2: 395,
+  HAND2_DEAL: 215,
+  HAND2_HIGHLIGHT: 260,
+  HAND2_PLAY: 280,
+  YOU2: 305,
+  TYPING2_START: 320,
+  DEV_REPLY2: 355,
 
-  END_CARD: 425,
+  // No END_CARD — final beat is the reply holding on screen
 };
 
 const DEV_MSGS = [
-  { text: "ok so riley texted me", at: 8 },
-  { text: "she was Drunk drunk on saturday and i did NOT remember half of it", at: 26 },
-  { text: "now she's like 'wanna come over later' lmao what do i even sayyy", at: 48 },
+  // First text already visible at frame 0 (negative enterFrame so spring is settled)
+  { text: "ok so riley texted me", at: -10 },
+  { text: "she was Drunk drunk on saturday and i did NOT remember half of it", at: 6 },
+  { text: "now she's like 'wanna come over later' lmao what do i even sayyy", at: 22 },
 ];
 
 const HAND1 = [
