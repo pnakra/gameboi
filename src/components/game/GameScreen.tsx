@@ -388,10 +388,9 @@ export function GameScreen({
             {(exchange >= FREETEXT_FROM || isFinished) ? (
               <button
                 onClick={handoffToIto}
-                disabled={handoffLoading}
-                className="block w-full text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight disabled:opacity-50"
+                className="block w-full text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight"
               >
-                {handoffLoading ? "one sec..." : "want to keep talking this through?"}
+                want to keep talking this through?
               </button>
             ) : (
               <a
