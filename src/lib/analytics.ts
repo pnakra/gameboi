@@ -50,13 +50,13 @@ function bucketFor(utmSource?: string, referrerHost?: string): string {
   const s = (utmSource || "").toLowerCase();
   const r = (referrerHost || "").toLowerCase();
   const hay = `${s} ${r}`;
-  if (/tiktok/.test(hay)) return "tiktok";
-  if (/instagram|ig\.me/.test(hay)) return "instagram";
-  if (/twitter|t\.co|x\.com/.test(hay)) return "twitter";
-  if (/facebook|fb\.com|fb\.me/.test(hay)) return "facebook";
-  if (/google|googleads|doubleclick/.test(hay)) return "google";
-  if (/reddit/.test(hay)) return "reddit";
-  if (/youtube|youtu\.be/.test(hay)) return "youtube";
+  if (/(^|[\s.])tiktok\.com|(^|\s)tiktok(\s|$)/.test(hay)) return "tiktok";
+  if (/(^|[\s.])reddit\.com|(^|\s)reddit(\s|$)/.test(hay)) return "reddit";
+  if (/(^|[\s.])instagram\.com|(^|[\s.])ig\.me|(^|\s)instagram(\s|$)/.test(hay)) return "instagram";
+  if (/(^|[\s.])twitter\.com|(^|[\s.])t\.co|(^|[\s.])x\.com|(^|\s)twitter(\s|$)/.test(hay)) return "twitter";
+  if (/(^|[\s.])facebook\.com|(^|[\s.])fb\.com|(^|[\s.])fb\.me|(^|\s)facebook(\s|$)/.test(hay)) return "facebook";
+  if (/(^|[\s.])google\.com|(^|[\s.])googleads|(^|[\s.])doubleclick|(^|\s)google(\s|$)/.test(hay)) return "google";
+  if (/(^|[\s.])youtube\.com|(^|[\s.])youtu\.be|(^|\s)youtube(\s|$)/.test(hay)) return "youtube";
   if (!s && !r) return "direct";
   return "other";
 }
