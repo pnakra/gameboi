@@ -378,7 +378,10 @@ Deno.serve(async (req) => {
       ? [{ role: "user", content: userTurn }]
       : [...history, { role: "user", content: userTurn }];
 
-    const raw = await callClaude(messages, buildSystem("turn", friendContext));
+    const raw = await callClaude(
+      messages,
+      buildSystem("turn", friendContext, modeDirective, sessionMode),
+    );
     const parsed = extractJson(raw);
 
     // 3 AI advice cards per exchange.
@@ -393,6 +396,20 @@ Deno.serve(async (req) => {
       };
     });
 
+    // Group-chat roster: pass through verbatim if present, otherwise omit.
+    // Only meaningful for group sessions; we don't synthesize one for solo.
+    let roster: Array<{ name: string; gender: "m" | "f" }> | undefined;
+    if (Array.isArray(parsed.roster)) {
+      roster = parsed.roster
+        .map((r: any) => ({
+          name: String(r?.name || "").toLowerCase().slice(0, 40),
+          gender: r?.gender === "f" ? "f" : "m",
+        }))
+        .filter((r: { name: string }) => r.name.length > 0)
+        .slice(0, 8);
+      if (roster.length === 0) roster = undefined;
+    }
+
     // Decide whether this exchange is final.
     // Force continue before MIN, force end at MAX, otherwise honor model's `done`.
     const aiDone = parsed.done === true;
@@ -402,6 +419,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         friend: parsed.friend || [],
         cards,
+        ...(roster ? { roster } : {}),
         assistantRaw: raw,
         exchange,
         phase: phaseFor(exchange),
