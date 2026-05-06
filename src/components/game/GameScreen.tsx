@@ -418,42 +418,6 @@ export function GameScreen({
     }, 480);
   }
 
-  function pickItoApp(c: Card) {
-    setActiveCardId(null);
-    setPlayingCardId(c.id);
-    track("ito_app_card_played", {
-      friend_id: friend.id,
-      exchange,
-      label: c.label,
-    });
-
-    const closer = pickFrom(ITO_APP_CLOSERS);
-
-    // Same flow as the real-talk wildcard: player's advice bubble flies up,
-    // friend sends a natural closer, round ends. EndCard handles the actual link.
-    window.setTimeout(() => {
-      const ts = Date.now();
-      setChat((prev) => [...prev, { kind: "you", text: c.say, ts, pop: true }]);
-      setHand([]);
-      setPlayingCardId(null);
-
-      window.setTimeout(() => {
-        setChat((prev) => [
-          ...prev,
-          { kind: "them", text: closer, ts: Date.now(), pop: true },
-        ]);
-        setIsFinished(true);
-        track("round_ended", {
-          friend_id: friend.id,
-          friend_name: friend.name,
-          exchanges: exchange,
-          via: "ito_app",
-        });
-        markUnlocked();
-      }, 700);
-    }, 480);
-  }
-
   function sendDraft() {
     const text = draft.trim();
     if (!text || loading || isFinished || playingCardId) return;
