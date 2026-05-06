@@ -50,8 +50,9 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
   function handoffToIto() {
     if (handoffLoading) return;
     track("handoff_clicked", { source: "end_card", friend_id: friend.id });
+    track("ito_link_clicked", { source: "end_card", friend_id: friend.id });
     setHandoffLoading(true);
-    window.location.href = "https://gameboi.isthisok.app/check-in";
+    window.location.href = itoUrl({ surface: "end_card", friendId: friend.id });
   }
 
   return (
