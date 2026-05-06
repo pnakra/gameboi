@@ -475,7 +475,7 @@ export function GameScreen({
           </div>
 
           {/* Conversation header */}
-          <header className="relative flex items-center px-3 pt-2 pb-2.5 border-b border-white/[0.06] bg-background">
+          <header className="relative flex items-center px-3 pt-2 pb-3 border-b border-white/[0.06] bg-background min-h-[72px] shrink-0">
             <button
               onClick={() => {
                 track("exit_clicked", { friend_id: friend.id, exchange, finished: isFinished });
