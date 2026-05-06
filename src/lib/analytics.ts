@@ -46,6 +46,27 @@ export function getSessionId(): string {
   }
 }
 
+function detectInAppBrowser(ua: string): boolean {
+  if (!ua) return false;
+  return /(FBAN|FBAV|FB_IAB|Instagram|Twitter|TikTok|musical_ly|Bytedance|Snapchat|Line|Pinterest|RedditAndroid|Reddit\/|Threads|LinkedInApp|GSA\/|wv\))/i.test(ua);
+}
+
+function inAppBrowserName(ua: string): string | undefined {
+  if (!ua) return undefined;
+  if (/Instagram/i.test(ua)) return "instagram";
+  if (/(FBAN|FBAV|FB_IAB)/i.test(ua)) return "facebook";
+  if (/(TikTok|musical_ly|Bytedance)/i.test(ua)) return "tiktok";
+  if (/Twitter/i.test(ua)) return "twitter";
+  if (/(RedditAndroid|Reddit\/)/i.test(ua)) return "reddit";
+  if (/Snapchat/i.test(ua)) return "snapchat";
+  if (/Threads/i.test(ua)) return "threads";
+  if (/LinkedInApp/i.test(ua)) return "linkedin";
+  if (/Pinterest/i.test(ua)) return "pinterest";
+  if (/GSA\//i.test(ua)) return "google-app";
+  if (/wv\)/i.test(ua)) return "android-webview";
+  return undefined;
+}
+
 function bucketFor(utmSource?: string, referrerHost?: string): string {
   const s = (utmSource || "").toLowerCase();
   const r = (referrerHost || "").toLowerCase();
