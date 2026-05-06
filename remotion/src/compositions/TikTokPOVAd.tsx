@@ -261,7 +261,7 @@ const Thread: React.FC = () => {
         flex: 1,
         display: "flex",
         flexDirection: "column",
-        padding: "60px 28px 0",
+        padding: "42px 28px 150px",
       }}
     >
       <div
@@ -270,7 +270,7 @@ const Thread: React.FC = () => {
           color: C.textDim,
           fontSize: 20,
           fontWeight: 500,
-          margin: "0 0 30px",
+          margin: "0 0 24px",
           opacity: 0.7,
         }}
       >
@@ -315,7 +315,7 @@ const Thread: React.FC = () => {
               padding: "20px 28px",
               borderRadius: 34,
               borderBottomLeftRadius: 12,
-              maxWidth: 580,
+               maxWidth: 520,
               fontSize: 30,
               lineHeight: 1.32,
               boxShadow: "0 6px 20px -6px rgba(0,0,0,0.5)",
@@ -344,7 +344,7 @@ const Thread: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ marginTop: 30, opacity: typingOp, height: 70 }}>
+      <div style={{ marginTop: 24, opacity: typingOp, height: 70 }}>
         {typingOp > 0.01 && <TypingDots />}
       </div>
     </div>
