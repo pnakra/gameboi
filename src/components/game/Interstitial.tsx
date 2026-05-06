@@ -20,13 +20,13 @@ export function Interstitial({ onContinue }: { onContinue: () => void }) {
           if any of that hit close to home, the real thing has a real tool for it.
         </p>
         <a
-          href="https://isthisok.app/check-in"
+          href="https://gameboi.isthisok.app/check-in"
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => track("isthisok_link_clicked", { source: "interstitial" })}
           className="mt-6 text-[var(--ito)] text-[20px] font-bold underline underline-offset-4 decoration-[var(--ito)]/40"
         >
-          isthisok.app →
+          have your own situation to talk through? →
         </a>
 
         <button

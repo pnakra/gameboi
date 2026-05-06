@@ -381,8 +381,6 @@ Deno.serve(async (req) => {
     // 3 AI advice cards per exchange.
     const cards = (parsed.cards || []).slice(0, 3).map((c: any, i: number) => {
       const label = String(c.label || "").slice(0, 140);
-      // "say" is what the player actually texts. Fall back to the label if the
-      // model forgot to provide one (older clients / occasional miss).
       const say = String(c.say || c.label || "").slice(0, 200);
       return {
         id: `${Date.now()}-${i}`,

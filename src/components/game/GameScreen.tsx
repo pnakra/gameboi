@@ -22,9 +22,9 @@ const MIN_EXCHANGES = 4;
 const MAX_EXCHANGES = 8;
 const MID_REVIEW_EXCHANGES = [4, 6] as const;
 const FREETEXT_FROM = 3;
-const HAND_SIZE = 2;
+const HAND_SIZE = 3;
 const WILDCARD_ID = "__wildcard_ito__";
-const ITO_APP_ID = "__wildcard_ito_app__";
+const ITO_CHECKIN_URL = "https://gameboi.isthisok.app/check-in";
 
 // Wildcard advice: each entry pairs the LABEL (what the card says — advice
 // about the friend) with the SAY (what the player actually texts the friend).
@@ -49,33 +49,7 @@ const WILDCARD_CARDS: { label: string; say: string }[] = [
 
 // (Real-talk wildcard no longer ends the round, so it has no closer pool.)
 
-// isthisok.app card — advice to the friend that gently surfaces the tool by name.
-// Plays in-chat like the other wildcard, then EndCard handles the actual link.
-const ITO_APP_CARDS: { label: string; say: string }[] = [
-  {
-    label: "tell him to do an isthisok.app check-in before he replies",
-    say: "do an isthisok.app check-in before u reply. it actually helps",
-  },
-  {
-    label: "honestly send him to isthisok.app — let him work it out there first",
-    say: "go to isthisok.app and work it out there first. then come back",
-  },
-  {
-    label: "tell him to run it through isthisok.app before he does anything",
-    say: "run it through isthisok.app before u do anything bro",
-  },
-  {
-    label: "this feels like an isthisok.app moment — tell him to check in with himself",
-    say: "this feels like an isthisok.app moment. check in w yourself first",
-  },
-];
-
-const ITO_APP_CLOSERS = [
-  "yeah ok. gonna actually do that before i reply. thanks man",
-  "true. lemme go check in with myself first. appreciate it",
-  "fair. ill run through it on there before i text her back",
-  "ok yeah. gonna sit with it on there for a sec. thanks dude",
-];
+// (isthisok.app card removed — surface the tool via the persistent footer link instead.)
 
 function pickFrom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -275,7 +249,7 @@ export function GameScreen({
 
       // Stagger reveal — first message has a "thinking" pause, subsequent ones are quicker
       for (let i = 0; i < friendMsgs.length; i++) {
-        await new Promise((r) => setTimeout(r, i === 0 ? 750 : 550));
+        await new Promise((r) => setTimeout(r, i === 0 ? 220 : 480));
         const ts = Date.now();
         const parsed = parseSpeaker(friendMsgs[i]);
         // In group modes, surface the speaker label for EVERY voice — including
@@ -361,21 +335,13 @@ export function GameScreen({
           say: c.say || c.label,
           vibe: c.vibe,
         }));
-        // Append the "real talk" wildcard as the 3rd card.
+        // Append the "real talk" wildcard as the final card.
         const wild = pickFrom(WILDCARD_CARDS);
         incoming.push({
           id: `${WILDCARD_ID}-${opts.forExchange}`,
           label: wild.label,
           say: wild.say,
           vibe: "ito",
-        });
-        // Append the isthisok.app card as the 4th card — branded, optional, surfaces the tool.
-        const itoApp = pickFrom(ITO_APP_CARDS);
-        incoming.push({
-          id: `${ITO_APP_ID}-${opts.forExchange}`,
-          label: itoApp.label,
-          say: itoApp.say,
-          vibe: "ito_app",
         });
         // Mid-round review beats: trigger when we're about to deal cards for
         // exchange 4 (first review) and exchange 6 (second review). Stash the
@@ -402,10 +368,6 @@ export function GameScreen({
   function pickCard(c: Card) {
     if (loading || isFinished || playingCardId) return;
 
-    if (c.id.startsWith(ITO_APP_ID)) {
-      pickItoApp(c);
-      return;
-    }
     if (c.id.startsWith(WILDCARD_ID)) {
       pickWildcard(c);
       return;
@@ -453,42 +415,6 @@ export function GameScreen({
       const nextEx = exchange + 1;
       setExchange(nextEx);
       void next({ chosenReply: c.say, replySource: "card", forExchange: nextEx });
-    }, 480);
-  }
-
-  function pickItoApp(c: Card) {
-    setActiveCardId(null);
-    setPlayingCardId(c.id);
-    track("ito_app_card_played", {
-      friend_id: friend.id,
-      exchange,
-      label: c.label,
-    });
-
-    const closer = pickFrom(ITO_APP_CLOSERS);
-
-    // Same flow as the real-talk wildcard: player's advice bubble flies up,
-    // friend sends a natural closer, round ends. EndCard handles the actual link.
-    window.setTimeout(() => {
-      const ts = Date.now();
-      setChat((prev) => [...prev, { kind: "you", text: c.say, ts, pop: true }]);
-      setHand([]);
-      setPlayingCardId(null);
-
-      window.setTimeout(() => {
-        setChat((prev) => [
-          ...prev,
-          { kind: "them", text: closer, ts: Date.now(), pop: true },
-        ]);
-        setIsFinished(true);
-        track("round_ended", {
-          friend_id: friend.id,
-          friend_name: friend.name,
-          exchanges: exchange,
-          via: "ito_app",
-        });
-        markUnlocked();
-      }, 700);
     }, 480);
   }
 
@@ -549,7 +475,7 @@ export function GameScreen({
           </div>
 
           {/* Conversation header */}
-          <header className="relative flex items-center px-3 pt-2 pb-2.5 border-b border-white/[0.06] bg-background">
+          <header className="relative flex items-center px-3 pt-2 pb-3 border-b border-white/[0.06] bg-background min-h-[72px] shrink-0">
             <button
               onClick={() => {
                 track("exit_clicked", { friend_id: friend.id, exchange, finished: isFinished });
@@ -560,7 +486,7 @@ export function GameScreen({
             >
               ‹
             </button>
-            <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 max-w-[240px]">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 w-[260px] max-w-[calc(100%-88px)] pointer-events-none">
               {(() => {
                 const isGroupMode = mode.id === "group_guys" || mode.id === "group_mixed";
                 // Build display roster: main friend first, then any side characters in stable order.
@@ -748,43 +674,31 @@ export function GameScreen({
           {/* Bottom-anchored handoff link — mt-auto pins it to the bottom even
               when the cards have floated up to meet a short thread. */}
           <div className="shrink-0 mt-auto safe-bottom px-2">
-            {/* Handoff CTA — appears once the complication has landed, plus on end */}
-            {(exchange >= FREETEXT_FROM || isFinished) ? (
-              <button
-                onClick={handoffToIto}
-                className="block w-full text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight"
-              >
-                want to keep talking this through?
-              </button>
-            ) : (
-              <a
-                ref={itoLinkRef}
-                href="https://isthisok.app/check-in"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() =>
-                  track("ito_link_clicked", {
-                    source: "game_screen_inline",
-                    friend_id: friend.id,
-                    exchange,
-                    is_deep_link: isDeepLinkSession(),
-                    messages_read_before_click: friendMessagesSeenRef.current,
-                    elapsed_ms: roundStartMsRef.current
-                      ? Date.now() - roundStartMsRef.current
-                      : 0,
-                  })
-                }
-                className="flex items-center justify-center min-h-[44px] py-3 text-center text-[14px] text-[var(--ito)]/90 hover:text-[var(--ito)] lowercase tracking-tight"
-              >
-                <span>
-                  got your own situation?{" "}
-                  <span className="underline underline-offset-4 decoration-[var(--ito)]/50 font-semibold">
-                    isthisok.app
-                  </span>{" "}
-                  →
-                </span>
-              </a>
-            )}
+            <a
+              ref={itoLinkRef}
+              href={ITO_CHECKIN_URL}
+              onClick={() => {
+                track("ito_link_clicked", {
+                  source: "game_screen_inline",
+                  friend_id: friend.id,
+                  exchange,
+                  is_deep_link: isDeepLinkSession(),
+                  messages_read_before_click: friendMessagesSeenRef.current,
+                  elapsed_ms: roundStartMsRef.current
+                    ? Date.now() - roundStartMsRef.current
+                    : 0,
+                });
+                track("handoff_clicked", {
+                  source: "game_screen",
+                  friend_id: friend.id,
+                  exchange,
+                  finished: isFinished,
+                });
+              }}
+              className="flex items-center justify-center min-h-[44px] py-3 text-center text-[14px] text-[var(--ito)]/90 hover:text-[var(--ito)] lowercase tracking-tight underline underline-offset-4 decoration-[var(--ito)]/50 font-semibold"
+            >
+              have your own situation to talk through?
+            </a>
           </div>
 
           {/* Mid-round review overlay — sits inside the phone frame, fades in

@@ -97,7 +97,7 @@ export function MidReview({
       friend_id: friend.id,
       kind,
     });
-    window.open("https://isthisok.app/check-in", "_self");
+    window.open("https://gameboi.isthisok.app/check-in", "_self");
   }
 
   return (
@@ -161,7 +161,7 @@ export function MidReview({
               border: "1px solid color-mix(in oklab, var(--ito) 45%, transparent)",
             }}
           >
-            want to think through something real?
+            have your own situation to talk through?
           </button>
         </div>
       </div>
