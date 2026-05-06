@@ -511,6 +511,9 @@ export function GameScreen({
               </div>
               <div className="text-[11px] text-foreground/85 lowercase truncate">
                 {friend.name.toLowerCase()}
+                {isGroupMode && (
+                  <span className="ml-1 text-muted-foreground/70">· {mode.label}</span>
+                )}
               </div>
             </div>
             <div className="ml-auto text-[11px] uppercase tracking-widest text-muted-foreground/70 font-semibold">
