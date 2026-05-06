@@ -293,14 +293,20 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const mode: "turn" | "recap" | "handoff" =
+    const mode: "turn" | "recap" | "handoff" | "review" =
       body.mode === "recap"
         ? "recap"
         : body.mode === "handoff"
         ? "handoff"
+        : body.mode === "review"
+        ? "review"
         : "turn";
     const history: AnthropicMsg[] = Array.isArray(body.history) ? body.history : [];
     const friendContext: string | undefined = body.friendContext;
+    const modeDirective: string | undefined =
+      typeof body.modeDirective === "string" ? body.modeDirective : undefined;
+    const sessionMode: string | undefined =
+      typeof body.sessionMode === "string" ? body.sessionMode : undefined;
 
     // ---------- RECAP MODE ----------
     if (mode === "recap") {
@@ -308,7 +314,7 @@ Deno.serve(async (req) => {
       const userTurn = `Here is the full thread. Generate the recap + open question.\n\n${transcript}`;
       const raw = await callClaude(
         [{ role: "user", content: userTurn }],
-        buildSystem("recap", friendContext),
+        buildSystem("recap", friendContext, modeDirective, sessionMode),
       );
       const parsed = extractJson(raw);
       return new Response(
@@ -327,7 +333,7 @@ Deno.serve(async (req) => {
       const userTurn = `The friend's name is "${friendName}". Here is the thread so far. Generate the third-person situation summary that will be passed into a separate reflection tool.\n\n${transcript}`;
       const raw = await callClaude(
         [{ role: "user", content: userTurn }],
-        buildSystem("handoff", friendContext),
+        buildSystem("handoff", friendContext, modeDirective, sessionMode),
       );
       const parsed = extractJson(raw);
       return new Response(
@@ -337,6 +343,25 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
+    // ---------- REVIEW MODE (mid-round check-in) ----------
+    if (mode === "review") {
+      const transcript: string = String(body.transcript || "");
+      const userTurn = `The round is still in progress. Here is the thread so far. Generate the mid-round review + noticing question.\n\n${transcript}`;
+      const raw = await callClaude(
+        [{ role: "user", content: userTurn }],
+        buildSystem("review", friendContext, modeDirective, sessionMode),
+      );
+      const parsed = extractJson(raw);
+      return new Response(
+        JSON.stringify({
+          review: String(parsed.review || "").slice(0, 600),
+          question: String(parsed.question || "").slice(0, 240),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
 
     // ---------- NORMAL TURN MODE ----------
     // The client sends `exchange` (1..MAX). For backward compatibility also accept `turn`.
