@@ -88,6 +88,8 @@ export function GameScreen({
   const [reviewIndex, setReviewIndex] = useState<1 | 2>(1);
   const [previousObservation, setPreviousObservation] = useState<string | null>(null);
   const midReviewsShownRef = useRef<Set<number>>(new Set());
+  const [inlineBeatVisible, setInlineBeatVisible] = useState(false);
+  const inlineBeatShownRef = useRef(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
