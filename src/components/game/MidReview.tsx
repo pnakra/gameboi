@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Friend } from "@/components/game/friends";
 import type { Mode } from "@/components/game/modes";
 import { track } from "@/lib/analytics";
+import { itoUrl } from "@/lib/ito";
 
 type Props = {
   friend: Friend;
