@@ -5,6 +5,7 @@ import { FriendSelect } from "@/components/game/FriendSelect";
 import { ModeSelect } from "@/components/game/ModeSelect";
 import { EndCard } from "@/components/game/EndCard";
 import { Interstitial } from "@/components/game/Interstitial";
+import { Briefing, prefetchFirstTurn, type AdvisePayload } from "@/components/game/Briefing";
 import { FRIENDS, type Friend, isUnlocked, markUnlocked } from "@/components/game/friends";
 import { getMode, type Mode, DEFAULT_MODE } from "@/components/game/modes";
 import { track } from "@/lib/analytics";
@@ -21,19 +22,18 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Stage = "select" | "mode" | "play" | "end" | "interstitial";
+type Stage = "select" | "mode" | "briefing" | "play" | "end" | "interstitial";
 
 function Index() {
   const [stage, setStage] = useState<Stage>("select");
   const [friend, setFriend] = useState<Friend | null>(null);
   const [mode, setMode] = useState<Mode>(getMode(DEFAULT_MODE));
   const [endPayload, setEndPayload] = useState<EndPayload | null>(null);
-  // Bump to remount GameScreen on "play again"
+  const [firstTurnPromise, setFirstTurnPromise] = useState<Promise<AdvisePayload> | null>(null);
   const [playKey, setPlayKey] = useState(0);
 
-  // Deep link: ?friend=<id> drops the user straight into that round, skipping
-  // the friend select (and mode select) screens. Defaults to the standard
-  // 1:1 guy-friend mode so the experience matches the creative.
+  // Deep link: ?friend=<id> drops the user straight into the briefing for that
+  // round, skipping friend select (and mode select). Defaults to solo guy.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
@@ -44,9 +44,10 @@ function Index() {
     if (match.locked && !isUnlocked()) markUnlocked();
     track("deep_link_friend", { friend_id: match.id });
     const requestedMode = params.get("mode");
-    setMode(getMode(requestedMode ?? DEFAULT_MODE));
+    const m = getMode(requestedMode ?? DEFAULT_MODE);
+    setMode(m);
     setFriend(match);
-    setStage("play");
+    setStage("briefing");
   }, []);
 
   if (stage === "play" && friend) {
@@ -55,8 +56,10 @@ function Index() {
         key={playKey}
         friend={friend}
         mode={mode}
+        prefetchedFirstTurn={firstTurnPromise}
         onExit={() => {
           setFriend(null);
+          setFirstTurnPromise(null);
           setStage("select");
         }}
         onEnd={(payload) => {
@@ -76,6 +79,7 @@ function Index() {
         onSwitchFriend={() => {
           setEndPayload(null);
           setFriend(null);
+          setFirstTurnPromise(null);
           setStage("select");
         }}
       />
@@ -87,7 +91,22 @@ function Index() {
       <Interstitial
         onContinue={() => {
           setEndPayload(null);
+          // Prefetch a fresh first turn for the replay so it's ready instantly.
+          setFirstTurnPromise(prefetchFirstTurn(friend, mode));
           setPlayKey((k) => k + 1);
+          setStage("play");
+        }}
+      />
+    );
+  }
+
+  if (stage === "briefing" && friend) {
+    return (
+      <Briefing
+        friend={friend}
+        mode={mode}
+        onContinue={(p) => {
+          setFirstTurnPromise(p);
           setStage("play");
         }}
       />
@@ -100,7 +119,7 @@ function Index() {
         friend={friend}
         onPick={(m) => {
           setMode(m);
-          setStage("play");
+          setStage("briefing");
         }}
         onBack={() => {
           setFriend(null);
