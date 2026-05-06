@@ -249,7 +249,7 @@ export function GameScreen({
 
       // Stagger reveal — first message has a "thinking" pause, subsequent ones are quicker
       for (let i = 0; i < friendMsgs.length; i++) {
-        await new Promise((r) => setTimeout(r, i === 0 ? 750 : 550));
+        await new Promise((r) => setTimeout(r, i === 0 ? 220 : 480));
         const ts = Date.now();
         const parsed = parseSpeaker(friendMsgs[i]);
         // In group modes, surface the speaker label for EVERY voice — including
