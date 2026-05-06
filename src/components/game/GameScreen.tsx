@@ -750,6 +750,15 @@ export function GameScreen({
           </div>
         </div>
       </div>
+      {showMidReview && (
+        <MidReview
+          friend={friend}
+          mode={mode}
+          exchange={exchange}
+          transcript={buildTranscript(chat)}
+          onContinue={() => setShowMidReview(false)}
+        />
+      )}
     </div>
   );
 }
