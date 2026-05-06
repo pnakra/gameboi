@@ -4,8 +4,38 @@ import { Bubble, TypingBubble } from "@/components/game/Bubble";
 import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
 import { type Friend, markUnlocked } from "@/components/game/friends";
 import { type Mode } from "@/components/game/modes";
+import { MidReview } from "@/components/game/MidReview";
 import { cn } from "@/lib/utils";
 import { track, logExchange, isDeepLinkSession } from "@/lib/analytics";
+
+const MID_REVIEW_AT_EXCHANGE = 3;
+
+// Stable palette for side-character initial chips. Picked deterministically
+// from the speaker name so the same person keeps the same color all round.
+const SIDE_CHAR_COLORS = [
+  "color-mix(in oklch, var(--accent) 70%, white)",
+  "color-mix(in oklch, var(--primary) 65%, white)",
+  "color-mix(in oklch, var(--ito) 70%, white)",
+  "color-mix(in oklch, var(--accent) 50%, var(--primary))",
+  "color-mix(in oklch, var(--primary) 55%, var(--ito))",
+];
+
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function speakerInitials(name: string): string {
+  const parts = name.replace(/[_-]+/g, " ").trim().split(/\s+/);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function speakerColor(name: string): string {
+  return SIDE_CHAR_COLORS[hashStr(name) % SIDE_CHAR_COLORS.length];
+}
 
 type Card = { id: string; label: string; message: string; vibe: Vibe; entering?: boolean };
 type RosterEntry = { name: string; gender: "m" | "f" };
@@ -83,6 +113,8 @@ export function GameScreen({
   // Group-chat roster: stable cast of speakers (lowercase name + gender) the
   // model declares once and reuses across exchanges. Empty for solo modes.
   const [roster, setRoster] = useState<RosterEntry[]>([]);
+  const [showMidReview, setShowMidReview] = useState(false);
+  const midReviewShownRef = useRef(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
@@ -326,6 +358,16 @@ export function GameScreen({
           vibe: "ito_app",
         });
         await dealCards(incoming);
+        // Mid-round check-in: surface once after the complication beat lands
+        // (around exchange 3). Doesn't consume an exchange — the arc stays 4–6.
+        if (
+          !midReviewShownRef.current &&
+          opts.forExchange === MID_REVIEW_AT_EXCHANGE &&
+          !data.isFinal
+        ) {
+          midReviewShownRef.current = true;
+          setShowMidReview(true);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -556,17 +598,28 @@ export function GameScreen({
               return (
                 <div key={`b-${i}`}>
                   {showSpeakerLabel && (
-                    <div
-                      className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold mt-2 mb-1 ml-2"
-                      style={
-                        isMainFriend
-                          ? { color: `var(--${friend.accent})` }
-                          : speakerEntry?.gender === "f"
-                          ? { color: "color-mix(in oklch, var(--accent) 80%, white)" }
-                          : undefined
-                      }
-                    >
-                      {item.speaker}
+                    <div className="flex items-center gap-1.5 mt-2 mb-1 ml-1">
+                      {!isMainFriend && (
+                        <span
+                          className="inline-grid place-items-center w-[18px] h-[18px] rounded-full text-[9px] font-bold text-background"
+                          style={{ background: speakerColor(item.speaker!) }}
+                          aria-hidden
+                        >
+                          {speakerInitials(item.speaker!)}
+                        </span>
+                      )}
+                      <span
+                        className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold"
+                        style={
+                          isMainFriend
+                            ? { color: `var(--${friend.accent})` }
+                            : speakerEntry?.gender === "f"
+                            ? { color: "color-mix(in oklch, var(--accent) 80%, white)" }
+                            : undefined
+                        }
+                      >
+                        {item.speaker}
+                      </span>
                     </div>
                   )}
                   <Bubble
@@ -697,6 +750,15 @@ export function GameScreen({
           </div>
         </div>
       </div>
+      {showMidReview && (
+        <MidReview
+          friend={friend}
+          mode={mode}
+          exchange={exchange}
+          transcript={buildTranscript(chat)}
+          onContinue={() => setShowMidReview(false)}
+        />
+      )}
     </div>
   );
 }
