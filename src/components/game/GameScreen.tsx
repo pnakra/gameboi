@@ -207,9 +207,27 @@ export function GameScreen({
           history,
           friendContext: friend.context,
           exchange: opts.forExchange,
+          mode: "turn",
+          modeDirective: mode.promptDirective,
+          sessionMode: mode.id,
         },
       });
       if (error) throw error;
+
+      // Capture roster from group-mode responses. The edge function omits it
+      // for solo, so we just keep whatever the most recent turn declared.
+      if (Array.isArray(data.roster) && data.roster.length > 0) {
+        setRoster(
+          data.roster
+            .filter((r: unknown): r is RosterEntry =>
+              !!r && typeof (r as RosterEntry).name === "string",
+            )
+            .map((r: RosterEntry) => ({
+              name: r.name.toLowerCase(),
+              gender: r.gender === "f" ? "f" : "m",
+            })),
+        );
+      }
 
       const friendMsgs: string[] = data.friend ?? [];
       // Stagger reveal — first message of the ROUND lands fast (user already
@@ -219,7 +237,19 @@ export function GameScreen({
         const isVeryFirst = opts.start && i === 0;
         await new Promise((r) => setTimeout(r, isVeryFirst ? 120 : i === 0 ? 750 : 550));
         const ts = Date.now();
-        setChat((c) => [...c, { kind: "them", text: friendMsgs[i], ts, pop: true }]);
+        // In group modes, every line is "speaker: text". Strip the prefix and
+        // attribute the bubble. In solo modes, no prefix exists.
+        const raw = friendMsgs[i];
+        let speaker: string | undefined;
+        let text = raw;
+        if (isGroupMode) {
+          const m = raw.match(/^\s*([a-z][a-z0-9_-]{0,30})\s*:\s*([\s\S]+)$/i);
+          if (m) {
+            speaker = m[1].toLowerCase();
+            text = m[2].trim();
+          }
+        }
+        setChat((c) => [...c, { kind: "them", text, ts, pop: true, speaker }]);
         friendMessagesSeenRef.current += 1;
         if (!firstMessageTrackedRef.current) {
           firstMessageTrackedRef.current = true;
@@ -230,6 +260,7 @@ export function GameScreen({
           });
         }
       }
+
 
       setHistory((h) => [
         ...h,
