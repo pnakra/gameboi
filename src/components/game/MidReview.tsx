@@ -161,7 +161,7 @@ export function MidReview({
               border: "1px solid color-mix(in oklab, var(--ito) 45%, transparent)",
             }}
           >
-            want to think through something real?
+            have your own situation to talk through?
           </button>
         </div>
       </div>
