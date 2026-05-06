@@ -8,6 +8,7 @@ import type { Mode } from "@/components/game/modes";
 import { avatarFor, type Gender } from "@/components/game/avatars";
 import { cn } from "@/lib/utils";
 import { track, logExchange, isDeepLinkSession } from "@/lib/analytics";
+import { itoUrl } from "@/lib/ito";
 
 type RosterEntry = { name: string; gender: Gender; avatar: string; isMain?: boolean };
 
