@@ -3,15 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Bubble, TypingBubble } from "@/components/game/Bubble";
 import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
 import { type Friend, markUnlocked } from "@/components/game/friends";
+import { type Mode } from "@/components/game/modes";
 import { cn } from "@/lib/utils";
 import { track, logExchange, isDeepLinkSession } from "@/lib/analytics";
 
 type Card = { id: string; label: string; message: string; vibe: Vibe; entering?: boolean };
+type RosterEntry = { name: string; gender: "m" | "f" };
 type ChatItem =
-  | { kind: "them"; text: string; ts: number; pop?: boolean }
+  | { kind: "them"; text: string; ts: number; pop?: boolean; speaker?: string }
   | { kind: "you"; text: string; ts: number; pop?: boolean }
   | { kind: "stamp"; text: string };
 type ApiTurn = { role: "user" | "assistant"; content: string };
+
 
 const MIN_EXCHANGES = 4;
 const MAX_EXCHANGES = 6;
