@@ -1,4 +1,4 @@
-export type ModeId = "solo_guy" | "group_guys" | "solo_girl" | "group_mixed";
+export type ModeId = "solo_guy" | "group_guys" | "group_mixed";
 
 export type Mode = {
   id: ModeId;
@@ -19,10 +19,10 @@ export const MODES: Mode[] = [
   },
   {
     id: "group_guys",
-    label: "the group chat",
+    label: "the boys chat",
     sub: "him plus two of his guys",
     harder: true,
-    promptDirective: `MODE: Group chat — all guys. You are generating a group chat between the player and three guys including the named friend from the friend context. Generate responses for the named friend PLUS two unnamed friends — one who tends to minimize or push forward, one who is more hesitant but inarticulate about it. Both additional voices should sound like real teenage guys, not archetypes. The player is one voice in this group. Their card choice represents their contribution to the group conversation.
+    promptDirective: `MODE: Group chat — all guys. You are generating a group chat between the player and three guys including the named friend from the friend context. The named friend is still the protagonist asking for advice; the player is one of his friends in the chat advising him. Generate responses for the named friend PLUS two unnamed friends — one who tends to minimize or push forward, one who is more hesitant but inarticulate about it. Both additional voices should sound like real teenage guys, not archetypes.
 
 INVENT the two additional guys: short lowercase first names (3-7 letters), KEEP THE NAMES + VOICES CONSISTENT across every exchange in this session. Neither is a villain, neither is the moral authority. The minimizer might be right sometimes; the hesitant one might be overthinking. The player has to navigate the tension.
 
@@ -38,21 +38,13 @@ The player's advice goes to the WHOLE GROUP. The next exchange shows TWO OR THRE
 2-4 messages per exchange. The main friend still drives the arc — the complication still lands by exchange 3, the head still arrives at the end. Cards remain the player's advice to the MAIN friend in the existing voice — "tell him X". Side characters never get cards directed at them.`,
   },
   {
-    id: "solo_girl",
-    label: "talking to her",
-    sub: "1:1 with a girl friend",
-    promptDirective: `MODE: 1:1 with a girl. You are generating a conversation where the player is advising a girl friend who is navigating a situation from the other side. She may be the person whose signals got misread, or she may be navigating her own uncertainty about what she wanted. Her voice should be specific and real — not a victim, not a villain, just a person in a complicated situation. The player's advice should feel different in this context — less about strategy, more about listening.
-
-Invent her: short lowercase first name, distinct voice, her own emotional register. She reads as a real teen girl texting her closest friend — lowercase, "idk", "i feel insane", more verbal than the guys but still guarded in places. The friend context tells you the underlying situation — translate it from her POV. Cards remain the player's advice to HER (e.g. "tell her she doesn't owe him a reply tonight"). Only her voice appears in the thread.`,
-  },
-  {
     id: "group_mixed",
-    label: "the whole group",
-    sub: "everyone weighing in",
+    label: "guys and girls",
+    sub: "his friends, mixed group",
     harder: true,
-    promptDirective: `MODE: Group chat — mixed. You are generating a group chat with multiple voices of different genders. Each voice has a distinct read on the situation. The player is navigating social pressure and conflicting perspectives simultaneously. Generate 2-3 character reactions after each card play, with at least one perspective that complicates or challenges the player's choice.
+    promptDirective: `MODE: Group chat — mixed. You are generating a group chat where the named friend from the friend context is the protagonist asking his friends for advice, and the player is one of those friends. The thread includes the main friend plus 2-3 additional invented characters who are HIS FRIENDS — not the love interest, not the person the situation is about. AT LEAST ONE of these additional friends MUST be a girl who is part of his friend group. Her read on the situation should differ from the guys' read — not as moral authority, just a different seat at the table.
 
-The thread includes the main friend (named in the friend context) plus 2-3 additional invented characters. AT LEAST ONE of the additional characters MUST be a girl, and her read should differ from the guys' read — not as moral authority, just a different seat at the table. Invent the others with short lowercase first names (3-7 letters), distinct voices, KEPT CONSISTENT across every exchange. None of them are right, none are wrong — the differing reads are COMPLEXITY, not the answer.
+Invent the side characters with short lowercase first names (3-7 letters), distinct voices, KEPT CONSISTENT across every exchange. The girl(s) in the chat are platonic friends weighing in — they are NOT the romantic subject of the friend's situation. None of the friends are right, none are wrong — the differing reads are COMPLEXITY, not the answer.
 
 == FORMAT — STRICT ==
 Every entry in the "friend" array MUST be prefixed with the speaker's name and a colon:
@@ -60,7 +52,7 @@ Every entry in the "friend" array MUST be prefixed with the speaker's name and a
 Use the EXACT same lowercase names every time.
 
 == EXCHANGE RHYTHM ==
-2-4 messages per exchange. Capture group-chat texture: side characters can argue with each other in passing, the girl might call out the minimizer, the main friend cuts in to refocus. The main friend is still the protagonist — the complication still lands by exchange 3 and he still drives the arc. Cards from the player are still advice to the MAIN friend in the existing voice — "tell him X".`,
+2-4 messages per exchange. Capture group-chat texture: side characters can argue with each other in passing, the girl friend might call out the minimizer, the main friend cuts in to refocus. The main friend is still the protagonist — the complication still lands by exchange 3 and he still drives the arc. Cards from the player are still advice to the MAIN friend in the existing voice — "tell him X".`,
   },
 ];
 
