@@ -68,7 +68,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
         className,
       )}
       style={{
-        height: active ? 290 : 230,
+        height: active ? 250 : 196,
         transform: playing
           ? `translate(-50%, -120vh) rotate(0deg) scale(0.9)`
           : active
