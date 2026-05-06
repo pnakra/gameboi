@@ -49,33 +49,7 @@ const WILDCARD_CARDS: { label: string; say: string }[] = [
 
 // (Real-talk wildcard no longer ends the round, so it has no closer pool.)
 
-// isthisok.app card — advice to the friend that gently surfaces the tool by name.
-// Plays in-chat like the other wildcard, then EndCard handles the actual link.
-const ITO_APP_CARDS: { label: string; say: string }[] = [
-  {
-    label: "tell him to do an isthisok.app check-in before he replies",
-    say: "do an isthisok.app check-in before u reply. it actually helps",
-  },
-  {
-    label: "honestly send him to isthisok.app — let him work it out there first",
-    say: "go to isthisok.app and work it out there first. then come back",
-  },
-  {
-    label: "tell him to run it through isthisok.app before he does anything",
-    say: "run it through isthisok.app before u do anything bro",
-  },
-  {
-    label: "this feels like an isthisok.app moment — tell him to check in with himself",
-    say: "this feels like an isthisok.app moment. check in w yourself first",
-  },
-];
-
-const ITO_APP_CLOSERS = [
-  "yeah ok. gonna actually do that before i reply. thanks man",
-  "true. lemme go check in with myself first. appreciate it",
-  "fair. ill run through it on there before i text her back",
-  "ok yeah. gonna sit with it on there for a sec. thanks dude",
-];
+// (isthisok.app card removed — surface the tool via the persistent footer link instead.)
 
 function pickFrom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
