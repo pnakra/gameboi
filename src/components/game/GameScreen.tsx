@@ -4,8 +4,38 @@ import { Bubble, TypingBubble } from "@/components/game/Bubble";
 import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
 import { type Friend, markUnlocked } from "@/components/game/friends";
 import { type Mode } from "@/components/game/modes";
+import { MidReview } from "@/components/game/MidReview";
 import { cn } from "@/lib/utils";
 import { track, logExchange, isDeepLinkSession } from "@/lib/analytics";
+
+const MID_REVIEW_AT_EXCHANGE = 3;
+
+// Stable palette for side-character initial chips. Picked deterministically
+// from the speaker name so the same person keeps the same color all round.
+const SIDE_CHAR_COLORS = [
+  "color-mix(in oklch, var(--accent) 70%, white)",
+  "color-mix(in oklch, var(--primary) 65%, white)",
+  "color-mix(in oklch, var(--ito) 70%, white)",
+  "color-mix(in oklch, var(--accent) 50%, var(--primary))",
+  "color-mix(in oklch, var(--primary) 55%, var(--ito))",
+];
+
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function speakerInitials(name: string): string {
+  const parts = name.replace(/[_-]+/g, " ").trim().split(/\s+/);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function speakerColor(name: string): string {
+  return SIDE_CHAR_COLORS[hashStr(name) % SIDE_CHAR_COLORS.length];
+}
 
 type Card = { id: string; label: string; message: string; vibe: Vibe; entering?: boolean };
 type RosterEntry = { name: string; gender: "m" | "f" };
