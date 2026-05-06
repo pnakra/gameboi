@@ -77,7 +77,7 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
             disabled={handoffLoading || loading}
             className="w-full h-13 py-3.5 rounded-2xl bg-[var(--ito)] text-background font-bold tracking-tight active:scale-[0.98] transition-transform disabled:opacity-50 shadow-[0_18px_40px_-18px_var(--ito)]"
           >
-            {handoffLoading ? "one sec..." : "want to keep talking this through?"}
+            {handoffLoading ? "one sec..." : "have your own situation to talk through?"}
           </button>
           <button
             onClick={() => {
