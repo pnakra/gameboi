@@ -12,6 +12,7 @@ export function Bubble({
   last = true,
   pop = false,
   delay = 0,
+  speaker,
 }: {
   from: "them" | "you";
   children: React.ReactNode;
@@ -20,18 +21,25 @@ export function Bubble({
   /** When true, use the punchy bubble-pop entrance (real-time arrival). */
   pop?: boolean;
   delay?: number;
+  /** When set (and not tight), shows a small lowercase name label above the bubble — used for group-chat side characters. */
+  speaker?: string;
 }) {
   const isYou = from === "you";
   return (
     <div
       className={cn(
-        "flex w-full",
-        isYou ? "justify-end" : "justify-start",
+        "flex w-full flex-col",
+        isYou ? "items-end" : "items-start",
         tight ? "mt-[3px]" : "mt-2",
         pop ? "animate-bubble-pop" : "animate-float-in",
       )}
       style={{ animationDelay: `${delay}ms`, transformOrigin: isYou ? "bottom right" : "bottom left" }}
     >
+      {speaker && !tight && !isYou && (
+        <div className="text-[10.5px] text-muted-foreground/80 lowercase font-medium ml-3 mb-[2px] tracking-tight">
+          {speaker}
+        </div>
+      )}
       <div
         className={cn(
           // iOS bubble proportions: ~16.5px text, ~75% max width, ~20px radius

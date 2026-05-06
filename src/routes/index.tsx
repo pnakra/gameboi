@@ -6,7 +6,7 @@ import { ModeSelect } from "@/components/game/ModeSelect";
 import { EndCard } from "@/components/game/EndCard";
 import { Interstitial } from "@/components/game/Interstitial";
 import { FRIENDS, type Friend, isUnlocked, markUnlocked } from "@/components/game/friends";
-import { MODES, DEFAULT_MODE, getMode, type Mode } from "@/components/game/modes";
+import { getMode, type Mode, DEFAULT_MODE } from "@/components/game/modes";
 import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/")({
@@ -26,35 +26,26 @@ type Stage = "select" | "mode" | "play" | "end" | "interstitial";
 function Index() {
   const [stage, setStage] = useState<Stage>("select");
   const [friend, setFriend] = useState<Friend | null>(null);
-  const [mode, setMode] = useState<Mode>(() => getMode(DEFAULT_MODE));
+  const [mode, setMode] = useState<Mode>(getMode(DEFAULT_MODE));
   const [endPayload, setEndPayload] = useState<EndPayload | null>(null);
   // Bump to remount GameScreen on "play again"
   const [playKey, setPlayKey] = useState(0);
 
-  // Deep link: ?friend=<id>&mode=<id> drops the user straight into that round,
-  // skipping both the friend select AND mode select screens. Used by ad
-  // campaigns so users land in the exact scenario the creative showed.
+  // Deep link: ?friend=<id> drops the user straight into that round, skipping
+  // the friend select (and mode select) screens. Defaults to the standard
+  // 1:1 guy-friend mode so the experience matches the creative.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const requested = params.get("friend")?.toLowerCase();
     if (!requested) return;
-    const matchFriend = FRIENDS.find((f) => f.id === requested);
-    if (!matchFriend) return;
-
-    const requestedMode = params.get("mode")?.toLowerCase();
-    const matchMode =
-      MODES.find((m) => m.id === requestedMode) ?? getMode(DEFAULT_MODE);
-
-    // Locked friends are gated behind one completed round — but for deep-link
-    // ad traffic, unlock immediately so the experience matches the creative.
-    if (matchFriend.locked && !isUnlocked()) markUnlocked();
-    track("deep_link_friend", {
-      friend_id: matchFriend.id,
-      mode_id: matchMode.id,
-    });
-    setFriend(matchFriend);
-    setMode(matchMode);
+    const match = FRIENDS.find((f) => f.id === requested);
+    if (!match) return;
+    if (match.locked && !isUnlocked()) markUnlocked();
+    track("deep_link_friend", { friend_id: match.id });
+    const requestedMode = params.get("mode");
+    setMode(getMode(requestedMode ?? DEFAULT_MODE));
+    setFriend(match);
     setStage("play");
   }, []);
 
@@ -81,7 +72,6 @@ function Index() {
       <EndCard
         friend={friend}
         transcript={endPayload.transcript}
-        
         onPlayAgain={() => setStage("interstitial")}
         onSwitchFriend={() => {
           setEndPayload(null);

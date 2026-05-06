@@ -46,26 +46,26 @@ You decide WHEN to end within the 4–6 window based on what feels natural. Set 
 
 == CARDS (3 advice cards per exchange) ==
 Each card has TWO parts:
-  1. "label" — the advice ABOUT the friend, shown on the card. Third-person, directed at the player. Starts with a verb like "tell him", "get him to", "have him". 6–12 words. This is NOT what gets texted — it's the strategy.
-  2. "message" — the ACTUAL TEXT the player would send back to the friend in the chat. First/second person, talking TO the friend, in casual texting voice. 4–14 words. Mostly lowercase. This is what appears as the player's text bubble.
+  • "label" — a short summary of the advice the player is giving the friend, written ABOUT the friend in third/second person ("tell him to...", "ask her...", "back off"). This is what shows on the card face.
+  • "say" — the ACTUAL text message the player would send to the friend in their own voice, first-person, talking TO the friend like a real person texting. This is what gets sent as the player's bubble in the chat.
 
-The "message" must be a natural-texting-voice rewrite of the "label" — the same advice, but as the player would actually type it to their friend. Same intent, different grammar.
+The label is the strategy. The "say" is the words. They must match in meaning but read completely differently — never identical, never near-identical.
 
-Examples:
-  • label: "tell him to pick one and commit to it"
-    message: "just pick one and stick with it dude"
-  • label: "get him to check in with her before he spirals"
-    message: "bro just text her and ask if she's good"
-  • label: "tell him to back off tonight and see how she acts tomorrow"
-    message: "give her space tonight man, see how she is tmrw"
-  • label: "have him own it — apologize without smoothing it over"
-    message: "you gotta actually apologize, not just brush past it"
-  • label: "tell him to ask her directly what she's looking for"
-    message: "just ask her what she actually wants from this"
+LABEL — STRICT: 6–14 words. Verb-led, directed at the friend ("tell him to...", "ask her...", "don't push it", "back off", "own it", "check in"). Mostly lowercase. No quotes. Like the title of the move.
 
-NEVER make label and message identical. NEVER make message sound like a card / advice header — it's a real text reply to a friend. NEVER make message a literal script for the friend to send to the OTHER person — it's what the player texts the friend.
+SAY — STRICT: How the player would actually text the friend. First-person from the player, second-person to the friend ("you", "u", "bro", "dude", or just direct). Casual texting voice — fragments, lowercase, contractions, occasional shorthand (idk, fr, ngl, tbh, lowkey). 1 short sentence, sometimes 2. Under ~120 chars. No quotes around it. NEVER starts with "tell him" / "tell her" / "ask her" — those are label words, not text-message words.
 
-All 3 cards must be plausibly different reads of the same moment. NONE are right or wrong. Once the complication has landed, at least one card should engage with it directly (not avoid it) — but never moralize or signal that engaging is the "correct" choice.
+Examples (label → say):
+  • "tell him to just ask if she's doing okay"  →  "just ask her if she's good. doesn't have to be deep"
+  • "tell him to back off tonight and see how she acts tomorrow"  →  "give it the night man. see how she's acting tmrw before u do anything"
+  • "get him to check in before he spirals"  →  "you're spiraling a little. just check in with her instead of guessing"
+  • "tell him to actually own it"  →  "just own it bro. 'hey i couldn't tell if that was ok and it's been on my mind'"
+  • "tell him to leave it on read for a few hours"  →  "leave it for a few hrs. let her sit with it"
+  • "ask her directly what she's looking for"  →  "honestly just ask her straight up what she actually wants here"
+
+NEVER write the label as the message itself ("just say it", "send: hey i miss you"). NEVER write the "say" as advice about the friend ("tell him to chill"). The label is the move; the "say" is the text.
+
+All 3 must be plausibly different reads of the same moment. NONE are right or wrong. Once the complication has landed, at least one card should engage with it directly (not avoid it) — but never moralize or signal that engaging is the "correct" choice.
 
 Vibes available: direct, chill, bold, soft, chaos. Use 3 different ones per exchange.
 
@@ -74,11 +74,22 @@ Return ONLY this JSON, no prose, no markdown:
 {
   "friend": ["msg 1", "msg 2"],
   "cards": [
-    { "label": "card text (advice ABOUT friend)", "message": "what player actually texts the friend", "vibe": "direct" | "chill" | "bold" | "soft" | "chaos" }
+    { "label": "card text", "say": "what the player actually texts", "vibe": "direct" | "chill" | "bold" | "soft" | "chaos" }
   ],
   "done": false
 }
-Set "done": true only on the exchange you intend to be the last (between exchange ${MIN_EXCHANGES} and ${MAX_EXCHANGES}).`;
+Set "done": true only on the exchange you intend to be the last (between exchange ${MIN_EXCHANGES} and ${MAX_EXCHANGES}).
+
+== ROSTER (group-chat modes only — REQUIRED if you generated any side characters) ==
+If this session is a group chat AND you have invented side characters (anyone other than the main friend speaking in the thread), you MUST also return a "roster" array listing EVERY speaker that appears in the thread including the main friend. Use the EXACT same lowercase names as in the "friend:" prefixes. Each entry: { "name": "lowercase-name", "gender": "m" | "f" }. Keep the roster CONSISTENT across every exchange in the session — same names, same genders, every time. For solo modes (1:1) omit the roster entirely.
+
+Updated output shape with roster:
+{
+  "friend": ["name: msg 1", "name: msg 2"],
+  "cards": [...],
+  "roster": [{ "name": "dev", "gender": "m" }, { "name": "tyler", "gender": "m" }, { "name": "kai", "gender": "m" }],
+  "done": false
+}`;
 
 // === MODE-SPECIFIC ADDENDUM (recap) ===
 const RECAP_ADDENDUM = `
@@ -99,6 +110,50 @@ Output JSON ONLY:
 }
 
 Never reference scoring, performance, or right answers. The recap should feel like the last beat of a real conversation with someone who noticed exactly what you said and didn't say — and isn't telling you what to think about it.`;
+
+// === MODE-SPECIFIC ADDENDUM (mid-round review) ===
+const REVIEW_ADDENDUM = `
+== FORMAT (mid-round review mode) ==
+
+You are generating a mid-round review card for a consent education game. You have access to the full conversation history so far between the player and their friend. Your job is to identify the single most significant moment in the conversation and surface it specifically — not a general observation about the player's style, but a reference to something that was actually said.
+
+You will be told which review this is (1 of 2 or 2 of 2), the thread so far, and — for review #2 — the observation that was surfaced at review #1. Lines prefixed "player advice:" are what the PLAYER said. Other lines are prefixed with the speaker's name (the main friend, plus in group-chat sessions, additional characters with their own names).
+
+Look for one of the following:
+
+A FLAG THAT WENT UNADDRESSED — a detail the friend mentioned that changed the situation (alcohol, hesitation, going quiet, someone else knowing something) that the player's advice didn't acknowledge. Reference it directly.
+  Shape: "when dev mentioned she was pretty drunk, you told him to keep initiating — that detail didn't come up again."
+
+A STOPPING POINT THAT GOT SKIPPED — a natural moment where the situation called for pause and the player's card kept things moving instead. Reference the specific exchange.
+  Shape: "she said she wasn't sure, and you advised him to stay the course — worth sitting with why."
+
+A MOMENT THE PLAYER HANDLED GENUINELY WELL — something specific they caught that most people miss. Reference it.
+  Shape: "you noticed he was being impulsive about her story posts and told him to wait — that's the signal most players blow past."
+
+== RULES — STRICT ==
+
+- Always reference a specific moment. Never speak in generalities.
+- Two sentences maximum.
+- No verdict — observe, don't judge.
+- Lowercase throughout.
+- Do not use the word "consent."
+- Do not moralize.
+- Do not summarize the whole conversation — zoom in on one moment only.
+- No emoji. No exclamation marks. No questions.
+- Use the friend's name (you'll be told it). In group sessions, also use side characters' names that actually appear in the thread.
+
+== IF THIS IS REVIEW #2 ==
+
+Build on the first card — do not start fresh. The second card should feel like a continuation of the same conversation, not a fresh observation.
+- If the first card flagged something unaddressed, note whether the player course-corrected or not (look at the messages since review #1).
+- If the first card affirmed something, note whether they maintained it.
+- Reference the first observation lightly so the continuity is felt, then zoom in on the specific moment that proves the follow-up.
+
+Output JSON ONLY:
+{
+  "observation": "one or two lowercase sentences, zoomed in on one specific moment.",
+  "kind": "skipped" | "dropped" | "positive" | "group"
+}`;
 
 // === MODE-SPECIFIC ADDENDUM (handoff) ===
 const HANDOFF_ADDENDUM = `
@@ -121,72 +176,10 @@ Lowercase ok throughout. No moralizing. Don't address the friend. Don't address 
 Output JSON ONLY:
 { "situation": "paragraph 1\\n\\nparagraph 2" }`;
 
-// === MODE-SPECIFIC ADDENDUM (review — mid-round check-in) ===
-// Used when the player pauses mid-round and asks for a quick read on what's
-// happened so far. NOT a recap (round isn't over) and NOT a handoff. Should
-// feel like a friend tapping the player's shoulder and saying "hey — here's
-// where we are, here's what you've done so far, what are you noticing?"
-const REVIEW_ADDENDUM = `
-== FORMAT (review mode — mid-round check-in) ==
-
-The round is NOT over. The player paused to look at where things stand. You'll
-get the thread so far. Lines prefixed "player advice:" are what the PLAYER
-("you") said. Lines prefixed with a name are speakers in the thread.
-
-Output 2 short beats:
-1. WHERE WE ARE (1-2 sentences): the situation as it currently stands — what
-   the friend has revealed so far, what's still hanging in the air. Past/present
-   tense. No spoilers, no predictions about what comes next.
-2. WHAT YOU'VE DONE (1 sentence): name the shape of the player's moves so far —
-   the angle they've been taking — using a SHORT quoted fragment if a phrase
-   stands out. Neutral, not graded.
-
-End with ONE small noticing question that turns the player back toward the
-thread: "what are you tracking?" / "what's the part you keep coming back to?" /
-"what haven't you said yet?" — pick one that fits THIS round, don't reuse.
-
-Output JSON ONLY:
-{
-  "review": "2-3 sentences total covering both beats. Lowercase ok. Neutral. No verdict, no advice for the player.",
-  "question": "ONE genuine noticing question, one sentence."
-}
-
-Never reference scoring or right answers. The review is a pause, not a judgment.`;
-
-// === GROUP-CHAT ROSTER ADDENDUM ===
-// Appended ONLY when the session is a group chat (the mode directive will say
-// so). Forces the model to declare and reuse a stable cast of speakers.
-const GROUP_ROSTER_ADDENDUM = `
-== GROUP-CHAT ROSTER (REQUIRED for group modes) ==
-
-Because this round is a GROUP CHAT, every message in the "friend" array MUST
-begin with a lowercase speaker prefix, a colon, and a space (e.g. "dev: idk
-man", "maya: wait back up"). The main friend speaks under his own id (the
-friend_id from his context, lowercase). Side characters use the names you
-invented in exchange 1.
-
-You MUST also return a "roster" array alongside "friend" and "cards", listing
-EVERY speaker who has appeared or will appear in this round, including the
-main friend. The roster must stay CONSISTENT across exchanges — same names,
-same genders, same order — once you've established it. Do not introduce new
-speakers mid-round unless you also extend the roster.
-
-Roster shape:
-  "roster": [
-    { "name": "marcus", "gender": "m" },   // the main friend
-    { "name": "dev", "gender": "m" },
-    { "name": "maya", "gender": "f" }
-  ]
-
-Names lowercase. Gender is "m" or "f" only — pick the one that fits the voice
-you're writing for that speaker. The main friend's name MUST be his friend_id
-(lowercase). For solo (non-group) modes, OMIT the roster field entirely.`;
-
 function buildSystem(
   mode: "turn" | "recap" | "handoff" | "review",
   friendContext?: string,
   modeDirective?: string,
-  sessionMode?: string,
 ) {
   const addendum =
     mode === "recap"
@@ -202,13 +195,8 @@ function buildSystem(
   const modeBlock = modeDirective
     ? `\n\n== THIS SESSION'S MODE ==\n${modeDirective}\n== END MODE ==`
     : "";
-  // Only attach the roster requirement for turn-mode rounds that are group chats.
-  const isGroupSession =
-    !!sessionMode && (sessionMode === "group_guys" || sessionMode === "group_mixed");
-  const rosterBlock = mode === "turn" && isGroupSession ? `\n${GROUP_ROSTER_ADDENDUM}` : "";
-  return `${MASTER_PROMPT}\n${addendum}${friendBlock}${modeBlock}${rosterBlock}`;
+  return `${MASTER_PROMPT}\n${addendum}${friendBlock}${modeBlock}`;
 }
-
 
 function phaseFor(exchange: number): "setup" | "complication" | "head" {
   if (exchange <= 1) return "setup";
@@ -304,9 +292,9 @@ Deno.serve(async (req) => {
     const history: AnthropicMsg[] = Array.isArray(body.history) ? body.history : [];
     const friendContext: string | undefined = body.friendContext;
     const modeDirective: string | undefined =
-      typeof body.modeDirective === "string" ? body.modeDirective : undefined;
-    const sessionMode: string | undefined =
-      typeof body.sessionMode === "string" ? body.sessionMode : undefined;
+      typeof body.modeDirective === "string" && body.modeDirective.trim()
+        ? body.modeDirective
+        : undefined;
 
     // ---------- RECAP MODE ----------
     if (mode === "recap") {
@@ -314,13 +302,41 @@ Deno.serve(async (req) => {
       const userTurn = `Here is the full thread. Generate the recap + open question.\n\n${transcript}`;
       const raw = await callClaude(
         [{ role: "user", content: userTurn }],
-        buildSystem("recap", friendContext, modeDirective, sessionMode),
+        buildSystem("recap", friendContext, modeDirective),
       );
       const parsed = extractJson(raw);
       return new Response(
         JSON.stringify({
           recap: String(parsed.recap || "").slice(0, 600),
           question: String(parsed.question || "").slice(0, 240),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ---------- REVIEW MODE (mid-round observation at halfway point) ----------
+    if (mode === "review") {
+      const transcript: string = String(body.transcript || "");
+      const friendName: string = String(body.friendName || "your friend");
+      const reviewIndex: 1 | 2 = body.reviewIndex === 2 ? 2 : 1;
+      const previousObservation: string =
+        typeof body.previousObservation === "string" ? body.previousObservation.trim() : "";
+      const reviewLabel = reviewIndex === 1 ? "REVIEW #1 OF 2" : "REVIEW #2 OF 2";
+      const priorBlock =
+        reviewIndex === 2 && previousObservation
+          ? `\n\nPREVIOUS OBSERVATION (from review #1 — build on this, don't repeat it):\n"${previousObservation}"`
+          : "";
+      const userTurn = `${reviewLabel}. The friend's name is "${friendName}". Here is the thread so far. Generate the mid-round observation per the rules — point to a specific exchange, quote or paraphrase what was said, two sentences max.${priorBlock}\n\nTHREAD:\n${transcript}`;
+      const raw = await callClaude(
+        [{ role: "user", content: userTurn }],
+        buildSystem("review", friendContext, modeDirective),
+      );
+      const parsed = extractJson(raw);
+      const kind = ["skipped", "dropped", "positive", "group"].includes(parsed.kind) ? parsed.kind : "skipped";
+      return new Response(
+        JSON.stringify({
+          observation: String(parsed.observation || "").slice(0, 320),
+          kind,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -333,7 +349,7 @@ Deno.serve(async (req) => {
       const userTurn = `The friend's name is "${friendName}". Here is the thread so far. Generate the third-person situation summary that will be passed into a separate reflection tool.\n\n${transcript}`;
       const raw = await callClaude(
         [{ role: "user", content: userTurn }],
-        buildSystem("handoff", friendContext, modeDirective, sessionMode),
+        buildSystem("handoff", friendContext, modeDirective),
       );
       const parsed = extractJson(raw);
       return new Response(
@@ -343,25 +359,6 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
-
-    // ---------- REVIEW MODE (mid-round check-in) ----------
-    if (mode === "review") {
-      const transcript: string = String(body.transcript || "");
-      const userTurn = `The round is still in progress. Here is the thread so far. Generate the mid-round review + noticing question.\n\n${transcript}`;
-      const raw = await callClaude(
-        [{ role: "user", content: userTurn }],
-        buildSystem("review", friendContext, modeDirective, sessionMode),
-      );
-      const parsed = extractJson(raw);
-      return new Response(
-        JSON.stringify({
-          review: String(parsed.review || "").slice(0, 600),
-          question: String(parsed.question || "").slice(0, 240),
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
 
     // ---------- NORMAL TURN MODE ----------
     // The client sends `exchange` (1..MAX). For backward compatibility also accept `turn`.
@@ -378,48 +375,44 @@ Deno.serve(async (req) => {
       ? [{ role: "user", content: userTurn }]
       : [...history, { role: "user", content: userTurn }];
 
-    const raw = await callClaude(
-      messages,
-      buildSystem("turn", friendContext, modeDirective, sessionMode),
-    );
+    const raw = await callClaude(messages, buildSystem("turn", friendContext, modeDirective));
     const parsed = extractJson(raw);
 
     // 3 AI advice cards per exchange.
     const cards = (parsed.cards || []).slice(0, 3).map((c: any, i: number) => {
       const label = String(c.label || "").slice(0, 140);
-      const message = String(c.message || c.label || "").slice(0, 200);
+      // "say" is what the player actually texts. Fall back to the label if the
+      // model forgot to provide one (older clients / occasional miss).
+      const say = String(c.say || c.label || "").slice(0, 200);
       return {
         id: `${Date.now()}-${i}`,
         label,
-        message,
+        say,
         vibe: ["direct", "chill", "bold", "soft", "chaos"].includes(c.vibe) ? c.vibe : "chill",
       };
     });
-
-    // Group-chat roster: pass through verbatim if present, otherwise omit.
-    // Only meaningful for group sessions; we don't synthesize one for solo.
-    let roster: Array<{ name: string; gender: "m" | "f" }> | undefined;
-    if (Array.isArray(parsed.roster)) {
-      roster = parsed.roster
-        .map((r: any) => ({
-          name: String(r?.name || "").toLowerCase().slice(0, 40),
-          gender: r?.gender === "f" ? "f" : "m",
-        }))
-        .filter((r: { name: string }) => r.name.length > 0)
-        .slice(0, 8);
-      if (roster.length === 0) roster = undefined;
-    }
 
     // Decide whether this exchange is final.
     // Force continue before MIN, force end at MAX, otherwise honor model's `done`.
     const aiDone = parsed.done === true;
     const isFinal = exchange >= MAX_EXCHANGES || (exchange >= MIN_EXCHANGES && aiDone);
 
+    // Roster (group modes) — list of {name, gender} for every speaker. Optional.
+    const roster = Array.isArray(parsed.roster)
+      ? parsed.roster
+          .map((r: any) => ({
+            name: String(r?.name || "").toLowerCase().trim(),
+            gender: r?.gender === "f" ? "f" : "m",
+          }))
+          .filter((r: any) => r.name.length > 0 && r.name.length < 20)
+          .slice(0, 6)
+      : [];
+
     return new Response(
       JSON.stringify({
         friend: parsed.friend || [],
         cards,
-        ...(roster ? { roster } : {}),
+        roster,
         assistantRaw: raw,
         exchange,
         phase: phaseFor(exchange),

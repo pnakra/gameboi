@@ -2,75 +2,72 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Bubble, TypingBubble } from "@/components/game/Bubble";
 import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
-import { type Friend, markUnlocked } from "@/components/game/friends";
-import { type Mode } from "@/components/game/modes";
 import { MidReview } from "@/components/game/MidReview";
+import { type Friend, markUnlocked } from "@/components/game/friends";
+import type { Mode } from "@/components/game/modes";
+import { avatarFor, type Gender } from "@/components/game/avatars";
 import { cn } from "@/lib/utils";
 import { track, logExchange, isDeepLinkSession } from "@/lib/analytics";
 
-const MID_REVIEW_AT_EXCHANGE = 3;
+type RosterEntry = { name: string; gender: Gender; avatar: string; isMain?: boolean };
 
-// Stable palette for side-character initial chips. Picked deterministically
-// from the speaker name so the same person keeps the same color all round.
-const SIDE_CHAR_COLORS = [
-  "color-mix(in oklch, var(--accent) 70%, white)",
-  "color-mix(in oklch, var(--primary) 65%, white)",
-  "color-mix(in oklch, var(--ito) 70%, white)",
-  "color-mix(in oklch, var(--accent) 50%, var(--primary))",
-  "color-mix(in oklch, var(--primary) 55%, var(--ito))",
-];
-
-function hashStr(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
-
-function speakerInitials(name: string): string {
-  const parts = name.replace(/[_-]+/g, " ").trim().split(/\s+/);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-}
-
-function speakerColor(name: string): string {
-  return SIDE_CHAR_COLORS[hashStr(name) % SIDE_CHAR_COLORS.length];
-}
-
-type Card = { id: string; label: string; message: string; vibe: Vibe; entering?: boolean };
-type RosterEntry = { name: string; gender: "m" | "f" };
+type Card = { id: string; label: string; say: string; vibe: Vibe; entering?: boolean };
 type ChatItem =
-  | { kind: "them"; text: string; ts: number; pop?: boolean; speaker?: string }
+  | { kind: "them"; text: string; ts: number; pop?: boolean; speaker?: string; transcriptSpeaker?: string }
   | { kind: "you"; text: string; ts: number; pop?: boolean }
   | { kind: "stamp"; text: string };
 type ApiTurn = { role: "user" | "assistant"; content: string };
 
-
 const MIN_EXCHANGES = 4;
-const MAX_EXCHANGES = 6;
+const MAX_EXCHANGES = 8;
+const MID_REVIEW_EXCHANGES = [4, 6] as const;
 const FREETEXT_FROM = 3;
 const HAND_SIZE = 2;
 const WILDCARD_ID = "__wildcard_ito__";
 const ITO_APP_ID = "__wildcard_ito_app__";
 
-// Wildcard cards: { label } shows on the card (advice ABOUT friend),
-// { message } is what the player actually texts the friend (first/second-person).
-const WILDCARD_VARIANTS: { label: string; message: string }[] = [
-  { label: "tell him to just sit with this one", message: "honestly bro just sit with it for a sec" },
-  { label: "maybe he needs to think it through more", message: "i think u need to think this through more" },
-  { label: "tell him to slow down on this", message: "slow down man, don't rush this" },
-  { label: "tell him to take a beat before replying", message: "take a beat before u reply, no rush" },
+// Wildcard advice: each entry pairs the LABEL (what the card says — advice
+// about the friend) with the SAY (what the player actually texts the friend).
+const WILDCARD_CARDS: { label: string; say: string }[] = [
+  {
+    label: "tell him to just sit with this one",
+    say: "honestly just sit with it for a bit before u do anything",
+  },
+  {
+    label: "maybe he needs to think it through more",
+    say: "i think u need to think this through a little more man",
+  },
+  {
+    label: "honestly might be worth slowing down on this",
+    say: "slow down a sec. doesn't have to be figured out tonight",
+  },
+  {
+    label: "tell him to just take a beat before replying",
+    say: "take a beat before u reply. no rush on this",
+  },
 ];
 
 // (Real-talk wildcard no longer ends the round, so it has no closer pool.)
 
 // isthisok.app card — advice to the friend that gently surfaces the tool by name.
 // Plays in-chat like the other wildcard, then EndCard handles the actual link.
-const ITO_APP_VARIANTS: { label: string; message: string }[] = [
-  { label: "tell him to do an isthisok.app check-in before he replies", message: "do an isthisok.app check-in before u reply" },
-  { label: "send him to isthisok.app — let him work it out there first", message: "go to isthisok.app and work it out there first" },
-  { label: "tell him to run it through isthisok.app before he does anything", message: "run it through isthisok.app before u do anything" },
-  { label: "this feels like an isthisok.app moment", message: "this feels like an isthisok.app moment ngl" },
+const ITO_APP_CARDS: { label: string; say: string }[] = [
+  {
+    label: "tell him to do an isthisok.app check-in before he replies",
+    say: "do an isthisok.app check-in before u reply. it actually helps",
+  },
+  {
+    label: "honestly send him to isthisok.app — let him work it out there first",
+    say: "go to isthisok.app and work it out there first. then come back",
+  },
+  {
+    label: "tell him to run it through isthisok.app before he does anything",
+    say: "run it through isthisok.app before u do anything bro",
+  },
+  {
+    label: "this feels like an isthisok.app moment — tell him to check in with himself",
+    say: "this feels like an isthisok.app moment. check in w yourself first",
+  },
 ];
 
 const ITO_APP_CLOSERS = [
@@ -99,8 +96,6 @@ export function GameScreen({
   onExit: () => void;
   onEnd: (payload: EndPayload) => void;
 }) {
-  const isGroupMode = mode.id === "group_guys" || mode.id === "group_mixed";
-
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [hand, setHand] = useState<Card[]>([]);
   const [history, setHistory] = useState<ApiTurn[]>([]);
@@ -110,11 +105,12 @@ export function GameScreen({
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
-  // Group-chat roster: stable cast of speakers (lowercase name + gender) the
-  // model declares once and reuses across exchanges. Empty for solo modes.
-  const [roster, setRoster] = useState<RosterEntry[]>([]);
   const [showMidReview, setShowMidReview] = useState(false);
-  const midReviewShownRef = useRef(false);
+  const [pendingHand, setPendingHand] = useState<Card[] | null>(null);
+  const [roster, setRoster] = useState<RosterEntry[]>([]);
+  const [reviewIndex, setReviewIndex] = useState<1 | 2>(1);
+  const [previousObservation, setPreviousObservation] = useState<string | null>(null);
+  const midReviewsShownRef = useRef<Set<number>>(new Set());
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
@@ -137,12 +133,10 @@ export function GameScreen({
     if (startedRef.current) return;
     startedRef.current = true;
     roundStartMsRef.current = Date.now();
-    const deep = isDeepLinkSession();
     track("round_started", {
       friend_id: friend.id,
       friend_name: friend.name,
-      is_deep_link: deep,
-      path: deep ? "deeplink" : "picker",
+      is_deep_link: isDeepLinkSession(),
     });
     setChat([{ kind: "stamp", text: `today ${openTime}` }]);
     void next({ start: true, forExchange: 1 });
@@ -238,50 +232,75 @@ export function GameScreen({
           chosenReply: opts.chosenReply,
           history,
           friendContext: friend.context,
-          exchange: opts.forExchange,
-          mode: "turn",
+          friendName: friend.name,
+          mode: mode.id,
           modeDirective: mode.promptDirective,
-          sessionMode: mode.id,
+          exchange: opts.forExchange,
         },
       });
       if (error) throw error;
 
-      // Capture roster from group-mode responses. The edge function omits it
-      // for solo, so we just keep whatever the most recent turn declared.
-      if (Array.isArray(data.roster) && data.roster.length > 0) {
-        setRoster(
-          data.roster
-            .filter((r: unknown): r is RosterEntry =>
-              !!r && typeof (r as RosterEntry).name === "string",
-            )
-            .map((r: RosterEntry) => ({
-              name: r.name.toLowerCase(),
-              gender: r.gender === "f" ? "f" : "m",
-            })),
-        );
+      const friendMsgs: string[] = data.friend ?? [];
+      const isGroupMode = mode.id === "group_guys" || mode.id === "group_mixed";
+      const mainName = friend.name.toLowerCase();
+
+      // Merge any returned roster (group modes) into our session-wide roster.
+      // Always make sure the main friend is in the roster as `isMain` with their avatar.
+      if (isGroupMode) {
+        const incoming: { name: string; gender: "m" | "f" }[] = Array.isArray(data.roster)
+          ? data.roster
+          : [];
+        setRoster((prev) => {
+          const map = new Map<string, RosterEntry>();
+          // seed with main friend
+          map.set(mainName, {
+            name: mainName,
+            gender: "m",
+            avatar: friend.avatar,
+            isMain: true,
+          });
+          for (const r of prev) map.set(r.name, r);
+          for (const r of incoming) {
+            const name = r.name.toLowerCase();
+            if (!name) continue;
+            if (name === mainName) continue; // never overwrite main
+            if (!map.has(name)) {
+              const gender: Gender = r.gender === "f" ? "f" : "m";
+              map.set(name, { name, gender, avatar: avatarFor(name, gender) });
+            }
+          }
+          return Array.from(map.values());
+        });
       }
 
-      const friendMsgs: string[] = data.friend ?? [];
-      // Stagger reveal — first message of the ROUND lands fast (user already
-      // waited the API call), first message of subsequent turns gets a
-      // "thinking" pause to sell the friend writing back.
+      // Stagger reveal — first message has a "thinking" pause, subsequent ones are quicker
       for (let i = 0; i < friendMsgs.length; i++) {
-        const isVeryFirst = opts.start && i === 0;
-        await new Promise((r) => setTimeout(r, isVeryFirst ? 120 : i === 0 ? 750 : 550));
+        await new Promise((r) => setTimeout(r, i === 0 ? 750 : 550));
         const ts = Date.now();
-        // In group modes, every line is "speaker: text". Strip the prefix and
-        // attribute the bubble. In solo modes, no prefix exists.
-        const raw = friendMsgs[i];
-        let speaker: string | undefined;
-        let text = raw;
-        if (isGroupMode) {
-          const m = raw.match(/^\s*([a-z][a-z0-9_-]{0,30})\s*:\s*([\s\S]+)$/i);
-          if (m) {
-            speaker = m[1].toLowerCase();
-            text = m[2].trim();
-          }
-        }
-        setChat((c) => [...c, { kind: "them", text, ts, pop: true, speaker }]);
+        const parsed = parseSpeaker(friendMsgs[i]);
+        // In group modes, surface the speaker label for EVERY voice — including
+        // the main friend — so it's clear who's talking. The Bubble component
+        // only renders the label on the first bubble of a group anyway.
+        const visibleSpeaker =
+          isGroupMode
+            ? (parsed.speaker?.toLowerCase() ?? mainName)
+            : undefined;
+        // Transcript speaker — kept on the item so buildTranscript can attribute lines accurately
+        // even when no UI label is shown (e.g. solo modes).
+        const transcriptSpeaker = isGroupMode
+          ? (parsed.speaker?.toLowerCase() ?? mainName)
+          : undefined;
+        setChat((c) => [
+          ...c,
+          {
+            kind: "them",
+            text: parsed.text,
+            ts,
+            pop: true,
+            speaker: visibleSpeaker,
+            transcriptSpeaker,
+          } as ChatItem,
+        ]);
         friendMessagesSeenRef.current += 1;
         if (!firstMessageTrackedRef.current) {
           firstMessageTrackedRef.current = true;
@@ -292,7 +311,6 @@ export function GameScreen({
           });
         }
       }
-
 
       setHistory((h) => [
         ...h,
@@ -338,35 +356,39 @@ export function GameScreen({
         const incoming: Card[] = (data.cards ?? []).slice(0, HAND_SIZE).map((c: any) => ({
           id: c.id,
           label: c.label,
-          message: c.message || c.label,
+          // Fallback to label if the model didn't return a "say" (defensive — the
+          // edge function already does this, but belt-and-suspenders for old caches).
+          say: c.say || c.label,
           vibe: c.vibe,
         }));
         // Append the "real talk" wildcard as the 3rd card.
-        const wild = pickFrom(WILDCARD_VARIANTS);
+        const wild = pickFrom(WILDCARD_CARDS);
         incoming.push({
           id: `${WILDCARD_ID}-${opts.forExchange}`,
           label: wild.label,
-          message: wild.message,
+          say: wild.say,
           vibe: "ito",
         });
         // Append the isthisok.app card as the 4th card — branded, optional, surfaces the tool.
-        const itoApp = pickFrom(ITO_APP_VARIANTS);
+        const itoApp = pickFrom(ITO_APP_CARDS);
         incoming.push({
           id: `${ITO_APP_ID}-${opts.forExchange}`,
           label: itoApp.label,
-          message: itoApp.message,
+          say: itoApp.say,
           vibe: "ito_app",
         });
-        await dealCards(incoming);
-        // Mid-round check-in: surface once after the complication beat lands
-        // (around exchange 3). Doesn't consume an exchange — the arc stays 4–6.
-        if (
-          !midReviewShownRef.current &&
-          opts.forExchange === MID_REVIEW_AT_EXCHANGE &&
-          !data.isFinal
-        ) {
-          midReviewShownRef.current = true;
+        // Mid-round review beats: trigger when we're about to deal cards for
+        // exchange 4 (first review) and exchange 6 (second review). Stash the
+        // hand so it deals once the player chooses "keep going".
+        const isReviewExchange = (MID_REVIEW_EXCHANGES as readonly number[]).includes(opts.forExchange);
+        if (isReviewExchange && !midReviewsShownRef.current.has(opts.forExchange)) {
+          midReviewsShownRef.current.add(opts.forExchange);
+          setReviewIndex(opts.forExchange === MID_REVIEW_EXCHANGES[0] ? 1 : 2);
+          setPendingHand(incoming);
+          setHand([]);
           setShowMidReview(true);
+        } else {
+          await dealCards(incoming);
         }
       }
     } catch (e) {
@@ -401,13 +423,13 @@ export function GameScreen({
     // After the card's fly-up animation completes, push the bubble + clear hand + request next exchange
     window.setTimeout(() => {
       const ts = Date.now();
-      setChat((prev) => [...prev, { kind: "you", text: c.message, ts, pop: true }]);
+      setChat((prev) => [...prev, { kind: "you", text: c.say, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
 
       const nextEx = exchange + 1;
       setExchange(nextEx);
-      void next({ chosenReply: c.message, replySource: "card", forExchange: nextEx });
+      void next({ chosenReply: c.say, replySource: "card", forExchange: nextEx });
     }, 480);
   }
 
@@ -424,13 +446,13 @@ export function GameScreen({
     // and request the next exchange so the friend reacts in voice and the arc continues.
     window.setTimeout(() => {
       const ts = Date.now();
-      setChat((prev) => [...prev, { kind: "you", text: c.message, ts, pop: true }]);
+      setChat((prev) => [...prev, { kind: "you", text: c.say, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
 
       const nextEx = exchange + 1;
       setExchange(nextEx);
-      void next({ chosenReply: c.message, replySource: "card", forExchange: nextEx });
+      void next({ chosenReply: c.say, replySource: "card", forExchange: nextEx });
     }, 480);
   }
 
@@ -449,7 +471,7 @@ export function GameScreen({
     // friend sends a natural closer, round ends. EndCard handles the actual link.
     window.setTimeout(() => {
       const ts = Date.now();
-      setChat((prev) => [...prev, { kind: "you", text: c.message, ts, pop: true }]);
+      setChat((prev) => [...prev, { kind: "you", text: c.say, ts, pop: true }]);
       setHand([]);
       setPlayingCardId(null);
 
@@ -538,24 +560,77 @@ export function GameScreen({
             >
               ‹
             </button>
-            <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 max-w-[200px]">
-              <div
-                className="w-9 h-9 rounded-full overflow-hidden ring-1 ring-white/10"
-                style={{ boxShadow: `0 0 0 1.5px var(--${friend.accent})` }}
-              >
-                <img
-                  src={friend.avatar}
-                  alt={friend.name}
-                  width={72}
-                  height={72}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="text-[11px] text-foreground/85 lowercase truncate">
-                {friend.name.toLowerCase()}
-                {isGroupMode && (
-                  <span className="ml-1 text-muted-foreground/70">· {mode.label}</span>
-                )}
+            <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 max-w-[240px]">
+              {(() => {
+                const isGroupMode = mode.id === "group_guys" || mode.id === "group_mixed";
+                // Build display roster: main friend first, then any side characters in stable order.
+                const displayRoster: RosterEntry[] = isGroupMode
+                  ? (() => {
+                      const main: RosterEntry = {
+                        name: friend.name.toLowerCase(),
+                        gender: "m",
+                        avatar: friend.avatar,
+                        isMain: true,
+                      };
+                      const others = roster.filter((r) => !r.isMain);
+                      return [main, ...others];
+                    })()
+                  : [];
+
+                if (isGroupMode && displayRoster.length > 1) {
+                  return (
+                    <>
+                      <div className="flex items-center -space-x-2">
+                        {displayRoster.slice(0, 4).map((r) => (
+                          <div
+                            key={r.name}
+                            className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-background"
+                            style={
+                              r.isMain
+                                ? { boxShadow: `0 0 0 1.5px var(--${friend.accent})` }
+                                : undefined
+                            }
+                            title={r.name}
+                          >
+                            <img
+                              src={r.avatar}
+                              alt={r.name}
+                              width={64}
+                              height={64}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-[11px] text-foreground/85 lowercase truncate">
+                        you + {displayRoster.length}
+                      </div>
+                    </>
+                  );
+                }
+
+                return (
+                  <>
+                    <div
+                      className="w-9 h-9 rounded-full overflow-hidden ring-1 ring-white/10"
+                      style={{ boxShadow: `0 0 0 1.5px var(--${friend.accent})` }}
+                    >
+                      <img
+                        src={friend.avatar}
+                        alt={friend.name}
+                        width={72}
+                        height={72}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="text-[11px] text-foreground/85 lowercase truncate">
+                      {friend.name.toLowerCase()}
+                    </div>
+                  </>
+                );
+              })()}
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground/70 font-semibold truncate max-w-full">
+                {mode.label}
               </div>
             </div>
             <div className="ml-auto text-[11px] uppercase tracking-widest text-muted-foreground/70 font-semibold">
@@ -583,54 +658,17 @@ export function GameScreen({
                   </div>
                 );
               }
-              // In group mode, show a small "name" caption above the first
-              // bubble of each new speaker block so the player can attribute
-              // who said what. Solo mode renders bubbles unchanged.
-              const showSpeakerLabel =
-                isGroupMode &&
-                item.from === "them" &&
-                !!item.speaker &&
-                !item.tight;
-              const speakerEntry = item.speaker
-                ? roster.find((r) => r.name === item.speaker)
-                : undefined;
-              const isMainFriend = item.speaker === friend.id;
               return (
-                <div key={`b-${i}`}>
-                  {showSpeakerLabel && (
-                    <div className="flex items-center gap-1.5 mt-2 mb-1 ml-1">
-                      {!isMainFriend && (
-                        <span
-                          className="inline-grid place-items-center w-[18px] h-[18px] rounded-full text-[9px] font-bold text-background"
-                          style={{ background: speakerColor(item.speaker!) }}
-                          aria-hidden
-                        >
-                          {speakerInitials(item.speaker!)}
-                        </span>
-                      )}
-                      <span
-                        className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold"
-                        style={
-                          isMainFriend
-                            ? { color: `var(--${friend.accent})` }
-                            : speakerEntry?.gender === "f"
-                            ? { color: "color-mix(in oklch, var(--accent) 80%, white)" }
-                            : undefined
-                        }
-                      >
-                        {item.speaker}
-                      </span>
-                    </div>
-                  )}
-                  <Bubble
-                    from={item.from}
-                    tight={item.tight}
-                    last={item.last}
-                    pop={item.pop}
-                  >
-                    {item.text}
-                  </Bubble>
-                </div>
+                <Bubble
+                  key={`b-${i}`}
+                  from={item.from}
+                  tight={item.tight}
+                  last={item.last}
+                  pop={item.pop}
+                  speaker={item.speaker}
+                >
+                  {item.text}
+                </Bubble>
               );
             })}
             {loading && <TypingBubble />}
@@ -748,17 +786,27 @@ export function GameScreen({
               </a>
             )}
           </div>
+
+          {/* Mid-round review overlay — sits inside the phone frame, fades in
+              over the thread, hides the cards, awaits "keep going". */}
+          {showMidReview && (
+            <MidReview
+              friend={friend}
+              mode={mode}
+              transcript={buildTranscript([...chatRef.current])}
+              reviewIndex={reviewIndex}
+              previousObservation={previousObservation}
+              onObservation={(obs) => setPreviousObservation(obs)}
+              onContinue={() => {
+                setShowMidReview(false);
+                const stash = pendingHand;
+                setPendingHand(null);
+                if (stash) void dealCards(stash);
+              }}
+            />
+          )}
         </div>
       </div>
-      {showMidReview && (
-        <MidReview
-          friend={friend}
-          mode={mode}
-          exchange={exchange}
-          transcript={buildTranscript(chat)}
-          onContinue={() => setShowMidReview(false)}
-        />
-      )}
     </div>
   );
 }
@@ -845,16 +893,16 @@ function groupBubbles(chat: ChatItem[]): GroupedItem[] {
     }
     const prev = chat[i - 1];
     const nextC = chat[i + 1];
-    const speaker = c.kind === "them" ? c.speaker : undefined;
-    // In group mode, two consecutive "them" bubbles from DIFFERENT speakers
-    // should NOT be treated as one tight group — each speaker gets their own
-    // tail and breathing room.
     const prevSpeaker = prev && prev.kind === "them" ? prev.speaker : undefined;
     const nextSpeaker = nextC && nextC.kind === "them" ? nextC.speaker : undefined;
+    const thisSpeaker = c.kind === "them" ? c.speaker : undefined;
+    // Two bubbles from the same sender group together only if they're from the
+    // same kind AND (in the case of "them" bubbles in group mode) from the same
+    // speaker. Different speakers in a group chat always start a new visual group.
     const samePrev =
-      prev && prev.kind === c.kind && (c.kind !== "them" || prevSpeaker === speaker);
+      prev && prev.kind === c.kind && prevSpeaker === thisSpeaker;
     const sameNext =
-      nextC && nextC.kind === c.kind && (c.kind !== "them" || nextSpeaker === speaker);
+      nextC && nextC.kind === c.kind && nextSpeaker === thisSpeaker;
     out.push({
       kind: "bubble",
       from: c.kind,
@@ -862,7 +910,7 @@ function groupBubbles(chat: ChatItem[]): GroupedItem[] {
       tight: !!samePrev,
       last: !sameNext,
       pop: c.pop,
-      speaker,
+      speaker: thisSpeaker,
     });
   }
   return out;
@@ -872,12 +920,24 @@ function buildTranscript(chat: ChatItem[]): string {
   return chat
     .filter((c) => c.kind !== "stamp")
     .map((c) => {
-      if (c.kind === "them") return `friend: ${c.text}`;
+      if (c.kind === "them") {
+        // Prefer the explicit transcriptSpeaker (set in group modes), then any
+        // visible label, then a generic "friend" for legacy solo lines.
+        const name = c.transcriptSpeaker || c.speaker || "friend";
+        return `${name}: ${c.text}`;
+      }
       if (c.kind === "you") return `player advice: ${c.text}`;
       return "";
     })
     .filter(Boolean)
     .join("\n");
+}
+
+/** Parse a "name: text" prefix (used by group-chat AI output). */
+function parseSpeaker(raw: string): { speaker?: string; text: string } {
+  const m = /^\s*([a-z][a-z0-9_-]{1,14})\s*:\s*([\s\S]+)$/i.exec(raw);
+  if (!m) return { text: raw.trim() };
+  return { speaker: m[1].trim(), text: m[2].trim() };
 }
 
 function formatTime(d: Date) {
