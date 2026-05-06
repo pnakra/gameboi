@@ -674,43 +674,31 @@ export function GameScreen({
           {/* Bottom-anchored handoff link — mt-auto pins it to the bottom even
               when the cards have floated up to meet a short thread. */}
           <div className="shrink-0 mt-auto safe-bottom px-2">
-            {/* Handoff CTA — appears once the complication has landed, plus on end */}
-            {(exchange >= FREETEXT_FROM || isFinished) ? (
-              <button
-                onClick={handoffToIto}
-                className="block w-full text-center text-[12px] text-[var(--ito)]/85 hover:text-[var(--ito)] py-2 lowercase tracking-tight"
-              >
-                want to keep talking this through?
-              </button>
-            ) : (
-              <a
-                ref={itoLinkRef}
-                href="https://isthisok.app/check-in"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() =>
-                  track("ito_link_clicked", {
-                    source: "game_screen_inline",
-                    friend_id: friend.id,
-                    exchange,
-                    is_deep_link: isDeepLinkSession(),
-                    messages_read_before_click: friendMessagesSeenRef.current,
-                    elapsed_ms: roundStartMsRef.current
-                      ? Date.now() - roundStartMsRef.current
-                      : 0,
-                  })
-                }
-                className="flex items-center justify-center min-h-[44px] py-3 text-center text-[14px] text-[var(--ito)]/90 hover:text-[var(--ito)] lowercase tracking-tight"
-              >
-                <span>
-                  got your own situation?{" "}
-                  <span className="underline underline-offset-4 decoration-[var(--ito)]/50 font-semibold">
-                    isthisok.app
-                  </span>{" "}
-                  →
-                </span>
-              </a>
-            )}
+            <a
+              ref={itoLinkRef}
+              href={ITO_CHECKIN_URL}
+              onClick={() => {
+                track("ito_link_clicked", {
+                  source: "game_screen_inline",
+                  friend_id: friend.id,
+                  exchange,
+                  is_deep_link: isDeepLinkSession(),
+                  messages_read_before_click: friendMessagesSeenRef.current,
+                  elapsed_ms: roundStartMsRef.current
+                    ? Date.now() - roundStartMsRef.current
+                    : 0,
+                });
+                track("handoff_clicked", {
+                  source: "game_screen",
+                  friend_id: friend.id,
+                  exchange,
+                  finished: isFinished,
+                });
+              }}
+              className="flex items-center justify-center min-h-[44px] py-3 text-center text-[14px] text-[var(--ito)]/90 hover:text-[var(--ito)] lowercase tracking-tight underline underline-offset-4 decoration-[var(--ito)]/50 font-semibold"
+            >
+              have your own situation to talk through?
+            </a>
           </div>
 
           {/* Mid-round review overlay — sits inside the phone frame, fades in
