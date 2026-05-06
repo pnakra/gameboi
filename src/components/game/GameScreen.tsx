@@ -708,15 +708,88 @@ export function GameScreen({
             )}
           </div>
 
+          {/* Inline ito "beat" — surfaces once per round at a high-conviction
+              moment. Dismissable. Designed to look like a soft system note,
+              not a marketing CTA. */}
+          {inlineBeatVisible && !isFinished && (
+            <div className="shrink-0 px-3 pt-1 pb-2 animate-fade-in">
+              <div
+                className="relative flex items-start gap-3 rounded-2xl px-4 py-3"
+                style={{
+                  background:
+                    "linear-gradient(160deg, color-mix(in oklab, var(--ito) 14%, var(--surface)) 0%, var(--surface) 70%)",
+                  border: "1px solid color-mix(in oklab, var(--ito) 30%, transparent)",
+                }}
+              >
+                <div className="flex-1 min-w-0">
+                  <div
+                    className="text-[9px] uppercase tracking-[0.3em] font-semibold mb-1"
+                    style={{ color: "var(--ito)" }}
+                  >
+                    a beat
+                  </div>
+                  <p className="text-[13px] leading-[1.45] text-foreground/90">
+                    if any of this is hitting close,{" "}
+                    <a
+                      href={itoUrl({
+                        surface: "game_inline_beat",
+                        friendId: friend.id,
+                        modeId: mode.id,
+                        exchange,
+                      })}
+                      onClick={() => {
+                        track("inline_beat_clicked", {
+                          friend_id: friend.id,
+                          exchange,
+                        });
+                        track("ito_link_clicked", {
+                          source: "game_inline_beat",
+                          friend_id: friend.id,
+                          exchange,
+                        });
+                      }}
+                      className="font-semibold underline underline-offset-4"
+                      style={{
+                        color: "var(--ito)",
+                        textDecorationColor:
+                          "color-mix(in oklab, var(--ito) 50%, transparent)",
+                      }}
+                    >
+                      isthisok has a 2-min check-in →
+                    </a>
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    track("inline_beat_dismissed", {
+                      friend_id: friend.id,
+                      exchange,
+                    });
+                    setInlineBeatVisible(false);
+                  }}
+                  aria-label="dismiss"
+                  className="text-foreground/40 hover:text-foreground/70 text-[18px] leading-none w-6 h-6 -mr-1 -mt-0.5 grid place-items-center active:opacity-60"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Bottom-anchored handoff link — mt-auto pins it to the bottom even
               when the cards have floated up to meet a short thread. */}
           <div className="shrink-0 mt-auto safe-bottom px-2">
             <a
               ref={itoLinkRef}
-              href={ITO_CHECKIN_URL}
+              href={itoUrl({
+                surface: "game_footer",
+                friendId: friend.id,
+                modeId: mode.id,
+                exchange,
+              })}
               onClick={() => {
                 track("ito_link_clicked", {
-                  source: "game_screen_inline",
+                  source: "game_footer",
                   friend_id: friend.id,
                   exchange,
                   is_deep_link: isDeepLinkSession(),
@@ -734,7 +807,7 @@ export function GameScreen({
               }}
               className="flex items-center justify-center min-h-[44px] py-3 text-center text-[14px] text-[var(--ito)]/90 hover:text-[var(--ito)] lowercase tracking-tight underline underline-offset-4 decoration-[var(--ito)]/50 font-semibold"
             >
-              have your own situation to talk through?
+              want to talk through something real?
             </a>
           </div>
 
