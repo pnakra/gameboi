@@ -202,9 +202,12 @@ export function GameScreen({
       if (error) throw error;
 
       const friendMsgs: string[] = data.friend ?? [];
-      // Stagger reveal — first message has a "thinking" pause, subsequent ones are quicker
+      // Stagger reveal — first message of the ROUND lands fast (user already
+      // waited the API call), first message of subsequent turns gets a
+      // "thinking" pause to sell the friend writing back.
       for (let i = 0; i < friendMsgs.length; i++) {
-        await new Promise((r) => setTimeout(r, i === 0 ? 750 : 550));
+        const isVeryFirst = opts.start && i === 0;
+        await new Promise((r) => setTimeout(r, isVeryFirst ? 120 : i === 0 ? 750 : 550));
         const ts = Date.now();
         setChat((c) => [...c, { kind: "them", text: friendMsgs[i], ts, pop: true }]);
         friendMessagesSeenRef.current += 1;
