@@ -26,6 +26,9 @@ export const MODES: Mode[] = [
 
 INVENT the two additional guys: short lowercase first names (3-7 letters), KEEP THE NAMES + VOICES CONSISTENT across every exchange in this session. Neither is a villain, neither is the moral authority. The minimizer might be right sometimes; the hesitant one might be overthinking. The player has to navigate the tension.
 
+== NAME COLLISION — CRITICAL ==
+Before picking names, scan the friend context for ANY named person in the situation (love interest, ex, crush, mutual referenced by name). The invented side characters' names MUST NOT match — or sound similar to — any of those names. Side characters are NEW people not present in the underlying situation. Pick clearly distinct names.
+
 == FORMAT — STRICT ==
 Every entry in the "friend" array MUST be prefixed with the speaker's name and a colon, e.g.:
   ["dev: idk man she got real quiet at one point", "tyler: bro u prob fine she texted u first", "kai: idk dude that part… i guess just see"]
