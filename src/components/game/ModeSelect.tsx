@@ -136,26 +136,24 @@ function ModeGlyph({ id }: { id: string }) {
   const base =
     "shrink-0 w-12 h-12 rounded-2xl grid place-items-center bg-surface-2 ring-1 ring-white/5";
   if (id === "solo_guy") {
+    // Two-bubble back-and-forth — you + him.
     return (
       <div className={base}>
-        <Bubble x={6} y={9} w={20} h={10} />
-      </div>
-    );
-  }
-  if (id === "solo_girl") {
-    return (
-      <div className={base} style={{ background: "color-mix(in oklch, var(--card-bold) 14%, var(--surface-2))" }}>
-        <Bubble x={6} y={9} w={20} h={10} fill="var(--card-bold)" />
+        <svg width="32" height="22" viewBox="0 0 32 22" fill="none" aria-hidden>
+          <Bubble x={2} y={3} w={18} h={7} />
+          <Bubble x={12} y={12} w={18} h={7} />
+        </svg>
       </div>
     );
   }
   if (id === "group_guys") {
+    // Same shape as mixed group, but all-blue (no pink tint).
     return (
       <div className={base}>
         <svg width="32" height="22" viewBox="0 0 32 22" fill="none" aria-hidden>
-          <Bubble x={2} y={2} w={16} h={7} />
-          <Bubble x={10} y={11} w={20} h={7} />
-          <Bubble x={4} y={20} w={12} h={2} fillOpacity={0.4} />
+          <Bubble x={2} y={2} w={14} h={6} />
+          <Bubble x={14} y={9} w={16} h={6} />
+          <Bubble x={2} y={15} w={18} h={6} />
         </svg>
       </div>
     );
