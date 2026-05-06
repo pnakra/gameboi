@@ -18,7 +18,7 @@ const HEADLINES: Record<
 > = {
   control: {
     eyebrow: "tonight",
-    headline: "pick your homeboi",
+    headline: "someone's about to text you",
     sub: "tap a friend to see what's going on",
   },
   buzz: {
