@@ -4,6 +4,7 @@ import { AdVideo } from "./compositions/AdVideo";
 import { TikTokAdVideo } from "./compositions/TikTokAdVideo";
 import { RedditAdVideo } from "./compositions/RedditAdVideo";
 import { RedditPaidAdVideo } from "./compositions/RedditPaidAdVideo";
+import { TikTokPOVAd } from "./compositions/TikTokPOVAd";
 
 export const RemotionRoot = () => {
   return (
@@ -52,6 +53,15 @@ export const RemotionRoot = () => {
         fps={30}
         width={1080}
         height={1350}
+      />
+      {/* TikTok POV — vertical 7.5s, no branding, group chat going silent */}
+      <Composition
+        id="tiktok-pov"
+        component={TikTokPOVAd}
+        durationInFrames={225}
+        fps={30}
+        width={1080}
+        height={1920}
       />
     </>
   );
