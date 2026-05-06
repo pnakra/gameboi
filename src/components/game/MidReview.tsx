@@ -184,7 +184,7 @@ export function MidReview({
               border: "1px solid color-mix(in oklab, var(--ito) 45%, transparent)",
             }}
           >
-            have your own situation to talk through?
+            {itoCtaLabel}
           </button>
         </div>
       </div>
