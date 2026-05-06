@@ -121,18 +121,94 @@ Lowercase ok throughout. No moralizing. Don't address the friend. Don't address 
 Output JSON ONLY:
 { "situation": "paragraph 1\\n\\nparagraph 2" }`;
 
-function buildSystem(mode: "turn" | "recap" | "handoff", friendContext?: string) {
+// === MODE-SPECIFIC ADDENDUM (review — mid-round check-in) ===
+// Used when the player pauses mid-round and asks for a quick read on what's
+// happened so far. NOT a recap (round isn't over) and NOT a handoff. Should
+// feel like a friend tapping the player's shoulder and saying "hey — here's
+// where we are, here's what you've done so far, what are you noticing?"
+const REVIEW_ADDENDUM = `
+== FORMAT (review mode — mid-round check-in) ==
+
+The round is NOT over. The player paused to look at where things stand. You'll
+get the thread so far. Lines prefixed "player advice:" are what the PLAYER
+("you") said. Lines prefixed with a name are speakers in the thread.
+
+Output 2 short beats:
+1. WHERE WE ARE (1-2 sentences): the situation as it currently stands — what
+   the friend has revealed so far, what's still hanging in the air. Past/present
+   tense. No spoilers, no predictions about what comes next.
+2. WHAT YOU'VE DONE (1 sentence): name the shape of the player's moves so far —
+   the angle they've been taking — using a SHORT quoted fragment if a phrase
+   stands out. Neutral, not graded.
+
+End with ONE small noticing question that turns the player back toward the
+thread: "what are you tracking?" / "what's the part you keep coming back to?" /
+"what haven't you said yet?" — pick one that fits THIS round, don't reuse.
+
+Output JSON ONLY:
+{
+  "review": "2-3 sentences total covering both beats. Lowercase ok. Neutral. No verdict, no advice for the player.",
+  "question": "ONE genuine noticing question, one sentence."
+}
+
+Never reference scoring or right answers. The review is a pause, not a judgment.`;
+
+// === GROUP-CHAT ROSTER ADDENDUM ===
+// Appended ONLY when the session is a group chat (the mode directive will say
+// so). Forces the model to declare and reuse a stable cast of speakers.
+const GROUP_ROSTER_ADDENDUM = `
+== GROUP-CHAT ROSTER (REQUIRED for group modes) ==
+
+Because this round is a GROUP CHAT, every message in the "friend" array MUST
+begin with a lowercase speaker prefix, a colon, and a space (e.g. "dev: idk
+man", "maya: wait back up"). The main friend speaks under his own id (the
+friend_id from his context, lowercase). Side characters use the names you
+invented in exchange 1.
+
+You MUST also return a "roster" array alongside "friend" and "cards", listing
+EVERY speaker who has appeared or will appear in this round, including the
+main friend. The roster must stay CONSISTENT across exchanges — same names,
+same genders, same order — once you've established it. Do not introduce new
+speakers mid-round unless you also extend the roster.
+
+Roster shape:
+  "roster": [
+    { "name": "marcus", "gender": "m" },   // the main friend
+    { "name": "dev", "gender": "m" },
+    { "name": "maya", "gender": "f" }
+  ]
+
+Names lowercase. Gender is "m" or "f" only — pick the one that fits the voice
+you're writing for that speaker. The main friend's name MUST be his friend_id
+(lowercase). For solo (non-group) modes, OMIT the roster field entirely.`;
+
+function buildSystem(
+  mode: "turn" | "recap" | "handoff" | "review",
+  friendContext?: string,
+  modeDirective?: string,
+  sessionMode?: string,
+) {
   const addendum =
     mode === "recap"
       ? RECAP_ADDENDUM
       : mode === "handoff"
       ? HANDOFF_ADDENDUM
+      : mode === "review"
+      ? REVIEW_ADDENDUM
       : TURN_ADDENDUM;
   const friendBlock = friendContext
     ? `\n\n== THIS SESSION'S FRIEND ==\n${friendContext}\n== END FRIEND ==\n\nEvery message and card must sound like THIS friend specifically. Match his voice. Keep the situation grounded in his specific ongoing thing.`
     : "";
-  return `${MASTER_PROMPT}\n${addendum}${friendBlock}`;
+  const modeBlock = modeDirective
+    ? `\n\n== THIS SESSION'S MODE ==\n${modeDirective}\n== END MODE ==`
+    : "";
+  // Only attach the roster requirement for turn-mode rounds that are group chats.
+  const isGroupSession =
+    !!sessionMode && (sessionMode === "group_guys" || sessionMode === "group_mixed");
+  const rosterBlock = mode === "turn" && isGroupSession ? `\n${GROUP_ROSTER_ADDENDUM}` : "";
+  return `${MASTER_PROMPT}\n${addendum}${friendBlock}${modeBlock}${rosterBlock}`;
 }
+
 
 function phaseFor(exchange: number): "setup" | "complication" | "head" {
   if (exchange <= 1) return "setup";
@@ -217,14 +293,20 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const mode: "turn" | "recap" | "handoff" =
+    const mode: "turn" | "recap" | "handoff" | "review" =
       body.mode === "recap"
         ? "recap"
         : body.mode === "handoff"
         ? "handoff"
+        : body.mode === "review"
+        ? "review"
         : "turn";
     const history: AnthropicMsg[] = Array.isArray(body.history) ? body.history : [];
     const friendContext: string | undefined = body.friendContext;
+    const modeDirective: string | undefined =
+      typeof body.modeDirective === "string" ? body.modeDirective : undefined;
+    const sessionMode: string | undefined =
+      typeof body.sessionMode === "string" ? body.sessionMode : undefined;
 
     // ---------- RECAP MODE ----------
     if (mode === "recap") {
@@ -232,7 +314,7 @@ Deno.serve(async (req) => {
       const userTurn = `Here is the full thread. Generate the recap + open question.\n\n${transcript}`;
       const raw = await callClaude(
         [{ role: "user", content: userTurn }],
-        buildSystem("recap", friendContext),
+        buildSystem("recap", friendContext, modeDirective, sessionMode),
       );
       const parsed = extractJson(raw);
       return new Response(
@@ -251,7 +333,7 @@ Deno.serve(async (req) => {
       const userTurn = `The friend's name is "${friendName}". Here is the thread so far. Generate the third-person situation summary that will be passed into a separate reflection tool.\n\n${transcript}`;
       const raw = await callClaude(
         [{ role: "user", content: userTurn }],
-        buildSystem("handoff", friendContext),
+        buildSystem("handoff", friendContext, modeDirective, sessionMode),
       );
       const parsed = extractJson(raw);
       return new Response(
@@ -261,6 +343,25 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
+    // ---------- REVIEW MODE (mid-round check-in) ----------
+    if (mode === "review") {
+      const transcript: string = String(body.transcript || "");
+      const userTurn = `The round is still in progress. Here is the thread so far. Generate the mid-round review + noticing question.\n\n${transcript}`;
+      const raw = await callClaude(
+        [{ role: "user", content: userTurn }],
+        buildSystem("review", friendContext, modeDirective, sessionMode),
+      );
+      const parsed = extractJson(raw);
+      return new Response(
+        JSON.stringify({
+          review: String(parsed.review || "").slice(0, 600),
+          question: String(parsed.question || "").slice(0, 240),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
 
     // ---------- NORMAL TURN MODE ----------
     // The client sends `exchange` (1..MAX). For backward compatibility also accept `turn`.
@@ -277,7 +378,10 @@ Deno.serve(async (req) => {
       ? [{ role: "user", content: userTurn }]
       : [...history, { role: "user", content: userTurn }];
 
-    const raw = await callClaude(messages, buildSystem("turn", friendContext));
+    const raw = await callClaude(
+      messages,
+      buildSystem("turn", friendContext, modeDirective, sessionMode),
+    );
     const parsed = extractJson(raw);
 
     // 3 AI advice cards per exchange.
@@ -292,6 +396,20 @@ Deno.serve(async (req) => {
       };
     });
 
+    // Group-chat roster: pass through verbatim if present, otherwise omit.
+    // Only meaningful for group sessions; we don't synthesize one for solo.
+    let roster: Array<{ name: string; gender: "m" | "f" }> | undefined;
+    if (Array.isArray(parsed.roster)) {
+      roster = parsed.roster
+        .map((r: any) => ({
+          name: String(r?.name || "").toLowerCase().slice(0, 40),
+          gender: r?.gender === "f" ? "f" : "m",
+        }))
+        .filter((r: { name: string }) => r.name.length > 0)
+        .slice(0, 8);
+      if (roster.length === 0) roster = undefined;
+    }
+
     // Decide whether this exchange is final.
     // Force continue before MIN, force end at MAX, otherwise honor model's `done`.
     const aiDone = parsed.done === true;
@@ -301,6 +419,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         friend: parsed.friend || [],
         cards,
+        ...(roster ? { roster } : {}),
         assistantRaw: raw,
         exchange,
         phase: phaseFor(exchange),
