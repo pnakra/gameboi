@@ -73,32 +73,38 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
           loading={loading}
         />
 
-        <div className="mt-auto pt-10 space-y-3">
+        <div className="mt-auto pt-10">
+          <p className="text-[13px] leading-[1.5] text-foreground/70 lowercase mb-3 text-balance">
+            that whole round was reading what you can't ask out loud. isthisok has a 2-minute check-in for the real version of it.
+          </p>
           <button
             onClick={handoffToIto}
             disabled={handoffLoading || loading}
-            className="w-full h-13 py-3.5 rounded-2xl bg-[var(--ito)] text-background font-bold tracking-tight active:scale-[0.98] transition-transform disabled:opacity-50 shadow-[0_18px_40px_-18px_var(--ito)]"
+            className="w-full h-[60px] py-4 rounded-2xl bg-[var(--ito)] text-background font-bold text-[16px] tracking-tight active:scale-[0.98] transition-transform disabled:opacity-50 shadow-[0_18px_40px_-18px_var(--ito)]"
           >
-            {handoffLoading ? "one sec..." : "have your own situation to talk through?"}
+            {handoffLoading ? "one sec..." : "start a check-in →"}
           </button>
-          <button
-            onClick={() => {
-              track("play_again_clicked", { friend_id: friend.id });
-              onPlayAgain();
-            }}
-            className="w-full h-12 rounded-2xl bg-surface text-foreground/90 font-semibold tracking-tight active:scale-[0.98] transition-transform border border-white/[0.08]"
-          >
-            play again with {friend.name.toLowerCase()}
-          </button>
-          <button
-            onClick={() => {
-              track("switch_friend_clicked", { friend_id: friend.id });
-              onSwitchFriend();
-            }}
-            className="w-full h-11 rounded-2xl text-muted-foreground/80 font-medium tracking-tight active:scale-[0.98] transition-transform"
-          >
-            switch friends
-          </button>
+          <div className="flex items-center justify-center gap-5 pt-5 text-[13px] text-muted-foreground/70 lowercase">
+            <button
+              onClick={() => {
+                track("play_again_clicked", { friend_id: friend.id });
+                onPlayAgain();
+              }}
+              className="active:opacity-60 transition-opacity"
+            >
+              play again
+            </button>
+            <span className="text-foreground/15">·</span>
+            <button
+              onClick={() => {
+                track("switch_friend_clicked", { friend_id: friend.id });
+                onSwitchFriend();
+              }}
+              className="active:opacity-60 transition-opacity"
+            >
+              switch friends
+            </button>
+          </div>
         </div>
       </div>
     </div>
