@@ -3,15 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Bubble, TypingBubble } from "@/components/game/Bubble";
 import { AdviceCard, type Vibe } from "@/components/game/AdviceCard";
 import { type Friend, markUnlocked } from "@/components/game/friends";
+import { type Mode } from "@/components/game/modes";
 import { cn } from "@/lib/utils";
 import { track, logExchange, isDeepLinkSession } from "@/lib/analytics";
 
 type Card = { id: string; label: string; message: string; vibe: Vibe; entering?: boolean };
+type RosterEntry = { name: string; gender: "m" | "f" };
 type ChatItem =
-  | { kind: "them"; text: string; ts: number; pop?: boolean }
+  | { kind: "them"; text: string; ts: number; pop?: boolean; speaker?: string }
   | { kind: "you"; text: string; ts: number; pop?: boolean }
   | { kind: "stamp"; text: string };
 type ApiTurn = { role: "user" | "assistant"; content: string };
+
 
 const MIN_EXCHANGES = 4;
 const MAX_EXCHANGES = 6;
@@ -57,13 +60,17 @@ export type EndPayload = {
 
 export function GameScreen({
   friend,
+  mode,
   onExit,
   onEnd,
 }: {
   friend: Friend;
+  mode: Mode;
   onExit: () => void;
   onEnd: (payload: EndPayload) => void;
 }) {
+  const isGroupMode = mode.id === "group_guys" || mode.id === "group_mixed";
+
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [hand, setHand] = useState<Card[]>([]);
   const [history, setHistory] = useState<ApiTurn[]>([]);
@@ -73,6 +80,9 @@ export function GameScreen({
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  // Group-chat roster: stable cast of speakers (lowercase name + gender) the
+  // model declares once and reuses across exchanges. Empty for solo modes.
+  const [roster, setRoster] = useState<RosterEntry[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
@@ -197,9 +207,27 @@ export function GameScreen({
           history,
           friendContext: friend.context,
           exchange: opts.forExchange,
+          mode: "turn",
+          modeDirective: mode.promptDirective,
+          sessionMode: mode.id,
         },
       });
       if (error) throw error;
+
+      // Capture roster from group-mode responses. The edge function omits it
+      // for solo, so we just keep whatever the most recent turn declared.
+      if (Array.isArray(data.roster) && data.roster.length > 0) {
+        setRoster(
+          data.roster
+            .filter((r: unknown): r is RosterEntry =>
+              !!r && typeof (r as RosterEntry).name === "string",
+            )
+            .map((r: RosterEntry) => ({
+              name: r.name.toLowerCase(),
+              gender: r.gender === "f" ? "f" : "m",
+            })),
+        );
+      }
 
       const friendMsgs: string[] = data.friend ?? [];
       // Stagger reveal — first message of the ROUND lands fast (user already
@@ -209,7 +237,19 @@ export function GameScreen({
         const isVeryFirst = opts.start && i === 0;
         await new Promise((r) => setTimeout(r, isVeryFirst ? 120 : i === 0 ? 750 : 550));
         const ts = Date.now();
-        setChat((c) => [...c, { kind: "them", text: friendMsgs[i], ts, pop: true }]);
+        // In group modes, every line is "speaker: text". Strip the prefix and
+        // attribute the bubble. In solo modes, no prefix exists.
+        const raw = friendMsgs[i];
+        let speaker: string | undefined;
+        let text = raw;
+        if (isGroupMode) {
+          const m = raw.match(/^\s*([a-z][a-z0-9_-]{0,30})\s*:\s*([\s\S]+)$/i);
+          if (m) {
+            speaker = m[1].toLowerCase();
+            text = m[2].trim();
+          }
+        }
+        setChat((c) => [...c, { kind: "them", text, ts, pop: true, speaker }]);
         friendMessagesSeenRef.current += 1;
         if (!firstMessageTrackedRef.current) {
           firstMessageTrackedRef.current = true;
@@ -220,6 +260,7 @@ export function GameScreen({
           });
         }
       }
+
 
       setHistory((h) => [
         ...h,
@@ -470,6 +511,9 @@ export function GameScreen({
               </div>
               <div className="text-[11px] text-foreground/85 lowercase truncate">
                 {friend.name.toLowerCase()}
+                {isGroupMode && (
+                  <span className="ml-1 text-muted-foreground/70">· {mode.label}</span>
+                )}
               </div>
             </div>
             <div className="ml-auto text-[11px] uppercase tracking-widest text-muted-foreground/70 font-semibold">
@@ -497,16 +541,43 @@ export function GameScreen({
                   </div>
                 );
               }
+              // In group mode, show a small "name" caption above the first
+              // bubble of each new speaker block so the player can attribute
+              // who said what. Solo mode renders bubbles unchanged.
+              const showSpeakerLabel =
+                isGroupMode &&
+                item.from === "them" &&
+                !!item.speaker &&
+                !item.tight;
+              const speakerEntry = item.speaker
+                ? roster.find((r) => r.name === item.speaker)
+                : undefined;
+              const isMainFriend = item.speaker === friend.id;
               return (
-                <Bubble
-                  key={`b-${i}`}
-                  from={item.from}
-                  tight={item.tight}
-                  last={item.last}
-                  pop={item.pop}
-                >
-                  {item.text}
-                </Bubble>
+                <div key={`b-${i}`}>
+                  {showSpeakerLabel && (
+                    <div
+                      className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold mt-2 mb-1 ml-2"
+                      style={
+                        isMainFriend
+                          ? { color: `var(--${friend.accent})` }
+                          : speakerEntry?.gender === "f"
+                          ? { color: "color-mix(in oklch, var(--accent) 80%, white)" }
+                          : undefined
+                      }
+                    >
+                      {item.speaker}
+                    </div>
+                  )}
+                  <Bubble
+                    from={item.from}
+                    tight={item.tight}
+                    last={item.last}
+                    pop={item.pop}
+                  >
+                    {item.text}
+                  </Bubble>
+                </div>
               );
             })}
             {loading && <TypingBubble />}
@@ -699,6 +770,7 @@ type GroupedItem =
       tight: boolean;
       last: boolean;
       pop?: boolean;
+      speaker?: string;
     };
 
 function groupBubbles(chat: ChatItem[]): GroupedItem[] {
@@ -711,8 +783,16 @@ function groupBubbles(chat: ChatItem[]): GroupedItem[] {
     }
     const prev = chat[i - 1];
     const nextC = chat[i + 1];
-    const samePrev = prev && prev.kind === c.kind;
-    const sameNext = nextC && nextC.kind === c.kind;
+    const speaker = c.kind === "them" ? c.speaker : undefined;
+    // In group mode, two consecutive "them" bubbles from DIFFERENT speakers
+    // should NOT be treated as one tight group — each speaker gets their own
+    // tail and breathing room.
+    const prevSpeaker = prev && prev.kind === "them" ? prev.speaker : undefined;
+    const nextSpeaker = nextC && nextC.kind === "them" ? nextC.speaker : undefined;
+    const samePrev =
+      prev && prev.kind === c.kind && (c.kind !== "them" || prevSpeaker === speaker);
+    const sameNext =
+      nextC && nextC.kind === c.kind && (c.kind !== "them" || nextSpeaker === speaker);
     out.push({
       kind: "bubble",
       from: c.kind,
@@ -720,6 +800,7 @@ function groupBubbles(chat: ChatItem[]): GroupedItem[] {
       tight: !!samePrev,
       last: !sameNext,
       pop: c.pop,
+      speaker,
     });
   }
   return out;
