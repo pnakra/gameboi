@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Friend } from "@/components/game/friends";
 import type { Mode } from "@/components/game/modes";
 import { track } from "@/lib/analytics";
+import { itoUrl } from "@/lib/ito";
 
 type Props = {
   friend: Friend;
@@ -96,9 +97,31 @@ export function MidReview({
     track("mid_review_handoff_clicked", {
       friend_id: friend.id,
       kind,
+      review_index: reviewIndex,
     });
-    window.open("https://gameboi.isthisok.app/check-in", "_self");
+    track("ito_link_clicked", {
+      source: reviewIndex === 2 ? "mid_review_2" : "mid_review_1",
+      friend_id: friend.id,
+      kind,
+    });
+    window.open(
+      itoUrl({
+        surface: reviewIndex === 2 ? "mid_review_2" : "mid_review_1",
+        friendId: friend.id,
+        modeId: mode.id,
+      }),
+      "_self",
+    );
   }
+
+  // On review #2, when the AI flagged the player as skipping/dropping the
+  // hard part, the moment is unusually high-conviction for ito. Sharpen the
+  // CTA copy so it reads as a direct offer, not a footer afterthought.
+  const showSharperItoCta =
+    reviewIndex === 2 && (kind === "skipped" || kind === "dropped");
+  const itoCtaLabel = showSharperItoCta
+    ? "if a real version of this is sitting with you →"
+    : "have your own situation to talk through?";
 
   return (
     <div className="absolute inset-0 z-30 flex items-end sm:items-center justify-center bg-background/80 backdrop-blur-md animate-fade-in">
@@ -161,7 +184,7 @@ export function MidReview({
               border: "1px solid color-mix(in oklab, var(--ito) 45%, transparent)",
             }}
           >
-            have your own situation to talk through?
+            {itoCtaLabel}
           </button>
         </div>
       </div>
