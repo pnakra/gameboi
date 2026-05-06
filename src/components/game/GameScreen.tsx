@@ -335,21 +335,13 @@ export function GameScreen({
           say: c.say || c.label,
           vibe: c.vibe,
         }));
-        // Append the "real talk" wildcard as the 3rd card.
+        // Append the "real talk" wildcard as the final card.
         const wild = pickFrom(WILDCARD_CARDS);
         incoming.push({
           id: `${WILDCARD_ID}-${opts.forExchange}`,
           label: wild.label,
           say: wild.say,
           vibe: "ito",
-        });
-        // Append the isthisok.app card as the 4th card — branded, optional, surfaces the tool.
-        const itoApp = pickFrom(ITO_APP_CARDS);
-        incoming.push({
-          id: `${ITO_APP_ID}-${opts.forExchange}`,
-          label: itoApp.label,
-          say: itoApp.say,
-          vibe: "ito_app",
         });
         // Mid-round review beats: trigger when we're about to deal cards for
         // exchange 4 (first review) and exchange 6 (second review). Stash the
