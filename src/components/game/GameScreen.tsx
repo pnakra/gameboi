@@ -95,10 +95,12 @@ export function GameScreen({
     if (startedRef.current) return;
     startedRef.current = true;
     roundStartMsRef.current = Date.now();
+    const deep = isDeepLinkSession();
     track("round_started", {
       friend_id: friend.id,
       friend_name: friend.name,
-      is_deep_link: isDeepLinkSession(),
+      is_deep_link: deep,
+      path: deep ? "deeplink" : "picker",
     });
     setChat([{ kind: "stamp", text: `today ${openTime}` }]);
     void next({ start: true, forExchange: 1 });
