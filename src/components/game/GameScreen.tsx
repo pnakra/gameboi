@@ -770,6 +770,7 @@ type GroupedItem =
       tight: boolean;
       last: boolean;
       pop?: boolean;
+      speaker?: string;
     };
 
 function groupBubbles(chat: ChatItem[]): GroupedItem[] {
@@ -782,8 +783,16 @@ function groupBubbles(chat: ChatItem[]): GroupedItem[] {
     }
     const prev = chat[i - 1];
     const nextC = chat[i + 1];
-    const samePrev = prev && prev.kind === c.kind;
-    const sameNext = nextC && nextC.kind === c.kind;
+    const speaker = c.kind === "them" ? c.speaker : undefined;
+    // In group mode, two consecutive "them" bubbles from DIFFERENT speakers
+    // should NOT be treated as one tight group — each speaker gets their own
+    // tail and breathing room.
+    const prevSpeaker = prev && prev.kind === "them" ? prev.speaker : undefined;
+    const nextSpeaker = nextC && nextC.kind === "them" ? nextC.speaker : undefined;
+    const samePrev =
+      prev && prev.kind === c.kind && (c.kind !== "them" || prevSpeaker === speaker);
+    const sameNext =
+      nextC && nextC.kind === c.kind && (c.kind !== "them" || nextSpeaker === speaker);
     out.push({
       kind: "bubble",
       from: c.kind,
@@ -791,6 +800,7 @@ function groupBubbles(chat: ChatItem[]): GroupedItem[] {
       tight: !!samePrev,
       last: !sameNext,
       pop: c.pop,
+      speaker,
     });
   }
   return out;
