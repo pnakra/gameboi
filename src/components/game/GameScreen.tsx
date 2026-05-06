@@ -358,6 +358,16 @@ export function GameScreen({
           vibe: "ito_app",
         });
         await dealCards(incoming);
+        // Mid-round check-in: surface once after the complication beat lands
+        // (around exchange 3). Doesn't consume an exchange — the arc stays 4–6.
+        if (
+          !midReviewShownRef.current &&
+          opts.forExchange === MID_REVIEW_AT_EXCHANGE &&
+          !data.isFinal
+        ) {
+          midReviewShownRef.current = true;
+          setShowMidReview(true);
+        }
       }
     } catch (e) {
       console.error(e);
