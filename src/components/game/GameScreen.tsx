@@ -486,7 +486,7 @@ export function GameScreen({
             >
               ‹
             </button>
-            <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 max-w-[240px]">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 w-[260px] max-w-[calc(100%-88px)] pointer-events-none">
               {(() => {
                 const isGroupMode = mode.id === "group_guys" || mode.id === "group_mixed";
                 // Build display roster: main friend first, then any side characters in stable order.
