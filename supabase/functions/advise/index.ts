@@ -241,9 +241,43 @@ interface AnthropicMsg {
   content: string;
 }
 
+async function callLovableAI(messages: AnthropicMsg[], system: string) {
+  const apiKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!apiKey) throw new Error("Missing LOVABLE_API_KEY");
+
+  const model = Deno.env.get("ADVISE_MODEL") || "google/gemini-2.5-flash";
+
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 700,
+      messages: [{ role: "system", content: system }, ...messages],
+    }),
+  });
+
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Lovable AI ${res.status}: ${t}`);
+  }
+  const data = await res.json();
+  return data?.choices?.[0]?.message?.content ?? "";
+}
+
 async function callClaude(messages: AnthropicMsg[], system: string) {
+  // Toggle: set AI_PROVIDER="claude" to use Anthropic Claude Sonnet (slower, higher quality).
+  // Default uses Lovable AI Gateway (Gemini 2.5 Flash) — much faster.
+  const provider = Deno.env.get("AI_PROVIDER") || "lovable";
+  if (provider !== "claude") {
+    return callLovableAI(messages, system);
+  }
+
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
+  if (!apiKey) return callLovableAI(messages, system);
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
