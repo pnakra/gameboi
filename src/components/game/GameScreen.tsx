@@ -409,6 +409,25 @@ export function GameScreen({
 
       const nextEx = exchange + 1;
       setExchange(nextEx);
+
+      // Inline ito "beat" — surfaces once per round, after the player picks
+      // an emotionally weighty card (soft / direct) past the early setup.
+      // High-conviction moment, low frequency, dismissable.
+      if (
+        !inlineBeatShownRef.current &&
+        nextEx >= 3 &&
+        nextEx <= MAX_EXCHANGES - 1 &&
+        (c.vibe === "soft" || c.vibe === "direct")
+      ) {
+        inlineBeatShownRef.current = true;
+        setInlineBeatVisible(true);
+        track("inline_beat_shown", {
+          friend_id: friend.id,
+          exchange: nextEx,
+          vibe: c.vibe,
+        });
+      }
+
       void next({ chosenReply: c.say, replySource: "card", forExchange: nextEx });
     }, 480);
   }
