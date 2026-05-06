@@ -60,13 +60,17 @@ export type EndPayload = {
 
 export function GameScreen({
   friend,
+  mode,
   onExit,
   onEnd,
 }: {
   friend: Friend;
+  mode: Mode;
   onExit: () => void;
   onEnd: (payload: EndPayload) => void;
 }) {
+  const isGroupMode = mode.id === "group_guys" || mode.id === "group_mixed";
+
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [hand, setHand] = useState<Card[]>([]);
   const [history, setHistory] = useState<ApiTurn[]>([]);
