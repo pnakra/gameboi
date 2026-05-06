@@ -97,6 +97,15 @@ function getAttribution(): Attribution {
     (attribution as Record<string, unknown>).is_deep_link = isDeepLink;
     (attribution as Record<string, unknown>).deep_link_friend = params.get("friend") || undefined;
 
+    // Capture user agent + in-app browser detection so we can isolate webview-
+    // specific drop-off (Reddit/IG/TikTok in-app browsers are notorious for
+    // breaking storage, JS, and deep links).
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent || "" : "";
+    (attribution as Record<string, unknown>).user_agent = ua || undefined;
+    (attribution as Record<string, unknown>).is_in_app_browser = detectInAppBrowser(ua);
+    (attribution as Record<string, unknown>).in_app_browser_name = inAppBrowserName(ua);
+
+
     // Drop undefined keys so the JSON stays clean
     const clean: Attribution = {};
     (Object.keys(attribution) as (keyof Attribution)[]).forEach((k) => {
