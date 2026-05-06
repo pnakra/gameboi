@@ -97,7 +97,7 @@ export function MidReview({
       friend_id: friend.id,
       kind,
     });
-    window.open("https://isthisok.app/check-in", "_self");
+    window.open("https://gameboi.isthisok.app/check-in", "_self");
   }
 
   return (
