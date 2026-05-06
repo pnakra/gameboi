@@ -202,18 +202,31 @@ export function GameScreen({
   }) {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("advise", {
-        body: {
-          start: opts.start ?? false,
-          chosenReply: opts.chosenReply,
-          history,
-          friendContext: friend.context,
-          friendName: friend.name,
-          mode: mode.id,
-          modeDirective: mode.promptDirective,
-          exchange: opts.forExchange,
-        },
-      });
+      let data: any;
+      let error: any = null;
+      if (opts.start && prefetchedFirstTurn) {
+        try {
+          data = await prefetchedFirstTurn;
+        } catch (e) {
+          error = e;
+        }
+      }
+      if (!data) {
+        const res = await supabase.functions.invoke("advise", {
+          body: {
+            start: opts.start ?? false,
+            chosenReply: opts.chosenReply,
+            history,
+            friendContext: friend.context,
+            friendName: friend.name,
+            mode: mode.id,
+            modeDirective: mode.promptDirective,
+            exchange: opts.forExchange,
+          },
+        });
+        data = res.data;
+        error = res.error;
+      }
       if (error) throw error;
 
       const friendMsgs: string[] = data.friend ?? [];
