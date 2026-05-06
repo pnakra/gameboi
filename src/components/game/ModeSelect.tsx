@@ -136,24 +136,36 @@ function ModeGlyph({ id }: { id: string }) {
   const base =
     "shrink-0 w-12 h-12 rounded-2xl grid place-items-center bg-surface-2 ring-1 ring-white/5";
   if (id === "solo_guy") {
-    // Two-bubble back-and-forth — you + him.
+    // Two-bubble back-and-forth — you + him. Tinted to match the energy of the other glyphs.
     return (
-      <div className={base}>
+      <div
+        className={base}
+        style={{
+          background:
+            "linear-gradient(135deg, color-mix(in oklch, var(--card-chill) 22%, var(--surface-2)), color-mix(in oklch, var(--card-chill) 8%, var(--surface-2)))",
+        }}
+      >
         <svg width="32" height="22" viewBox="0 0 32 22" fill="none" aria-hidden>
-          <Bubble x={2} y={3} w={18} h={7} />
-          <Bubble x={12} y={12} w={18} h={7} />
+          <Bubble x={2} y={3} w={18} h={7} fill="var(--card-chill)" />
+          <Bubble x={12} y={12} w={18} h={7} fill="var(--card-chill)" />
         </svg>
       </div>
     );
   }
   if (id === "group_guys") {
-    // Same shape as mixed group, but all-blue (no pink tint).
+    // Same shape as mixed group, all-blue gradient (no pink tint).
     return (
-      <div className={base}>
+      <div
+        className={base}
+        style={{
+          background:
+            "linear-gradient(135deg, color-mix(in oklch, var(--card-chill) 24%, var(--surface-2)), color-mix(in oklch, var(--card-chill) 10%, var(--surface-2)))",
+        }}
+      >
         <svg width="32" height="22" viewBox="0 0 32 22" fill="none" aria-hidden>
-          <Bubble x={2} y={2} w={14} h={6} />
-          <Bubble x={14} y={9} w={16} h={6} />
-          <Bubble x={2} y={15} w={18} h={6} />
+          <Bubble x={2} y={2} w={14} h={6} fill="var(--card-chill)" />
+          <Bubble x={14} y={9} w={16} h={6} fill="var(--card-chill)" />
+          <Bubble x={2} y={15} w={18} h={6} fill="var(--card-chill)" />
         </svg>
       </div>
     );
