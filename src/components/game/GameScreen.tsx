@@ -541,16 +541,43 @@ export function GameScreen({
                   </div>
                 );
               }
+              // In group mode, show a small "name" caption above the first
+              // bubble of each new speaker block so the player can attribute
+              // who said what. Solo mode renders bubbles unchanged.
+              const showSpeakerLabel =
+                isGroupMode &&
+                item.from === "them" &&
+                !!item.speaker &&
+                !item.tight;
+              const speakerEntry = item.speaker
+                ? roster.find((r) => r.name === item.speaker)
+                : undefined;
+              const isMainFriend = item.speaker === friend.id;
               return (
-                <Bubble
-                  key={`b-${i}`}
-                  from={item.from}
-                  tight={item.tight}
-                  last={item.last}
-                  pop={item.pop}
-                >
-                  {item.text}
-                </Bubble>
+                <div key={`b-${i}`}>
+                  {showSpeakerLabel && (
+                    <div
+                      className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold mt-2 mb-1 ml-2"
+                      style={
+                        isMainFriend
+                          ? { color: `var(--${friend.accent})` }
+                          : speakerEntry?.gender === "f"
+                          ? { color: "color-mix(in oklch, var(--accent) 80%, white)" }
+                          : undefined
+                      }
+                    >
+                      {item.speaker}
+                    </div>
+                  )}
+                  <Bubble
+                    from={item.from}
+                    tight={item.tight}
+                    last={item.last}
+                    pop={item.pop}
+                  >
+                    {item.text}
+                  </Bubble>
+                </div>
               );
             })}
             {loading && <TypingBubble />}
