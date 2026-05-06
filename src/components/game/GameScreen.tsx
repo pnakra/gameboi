@@ -80,6 +80,9 @@ export function GameScreen({
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  // Group-chat roster: stable cast of speakers (lowercase name + gender) the
+  // model declares once and reuses across exchanges. Empty for solo modes.
+  const [roster, setRoster] = useState<RosterEntry[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
