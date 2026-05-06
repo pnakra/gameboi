@@ -26,6 +26,9 @@ export const MODES: Mode[] = [
 
 INVENT the two additional guys: short lowercase first names (3-7 letters), KEEP THE NAMES + VOICES CONSISTENT across every exchange in this session. Neither is a villain, neither is the moral authority. The minimizer might be right sometimes; the hesitant one might be overthinking. The player has to navigate the tension.
 
+== NAME COLLISION — CRITICAL ==
+Before picking names, scan the friend context for ANY named person in the situation (love interest, ex, crush, mutual referenced by name). The invented side characters' names MUST NOT match — or sound similar to — any of those names. Side characters are NEW people not present in the underlying situation. Pick clearly distinct names.
+
 == FORMAT — STRICT ==
 Every entry in the "friend" array MUST be prefixed with the speaker's name and a colon, e.g.:
   ["dev: idk man she got real quiet at one point", "tyler: bro u prob fine she texted u first", "kai: idk dude that part… i guess just see"]
@@ -44,7 +47,12 @@ The player's advice goes to the WHOLE GROUP. The next exchange shows TWO OR THRE
     harder: true,
     promptDirective: `MODE: Group chat — mixed. You are generating a group chat where the named friend from the friend context is the protagonist asking his friends for advice, and the player is one of those friends. The thread includes the main friend plus 2-3 additional invented characters who are HIS FRIENDS — not the love interest, not the person the situation is about. AT LEAST ONE of these additional friends MUST be a girl who is part of his friend group. Her read on the situation should differ from the guys' read — not as moral authority, just a different seat at the table.
 
-Invent the side characters with short lowercase first names (3-7 letters), distinct voices, KEPT CONSISTENT across every exchange. The girl(s) in the chat are platonic friends weighing in — they are NOT the romantic subject of the friend's situation. None of the friends are right, none are wrong — the differing reads are COMPLEXITY, not the answer.
+Invent the side characters with short lowercase first names (3-7 letters), distinct voices, KEPT CONSISTENT across every exchange. The girl(s) in the chat are platonic friends weighing in — they are NOT the romantic subject of the friend's situation.
+
+== NAME COLLISION — CRITICAL ==
+Before you pick names for the side characters, scan the friend context for ANY named person already in the situation (love interest, ex, crush, hookup, person being talked about, mutual friend referenced by name, etc.). The invented side characters' names MUST NOT match — and MUST NOT sound similar to — any of those names. If the friend context mentions "Maya", do not name a side character Maya, Mara, May, Mia, etc. Side characters are NEW people who don't appear in the underlying situation. If you accidentally use a colliding name, the chat becomes incoherent (the player can't tell whether the side character IS the love interest). Pick clearly distinct names.
+
+None of the friends are right, none are wrong — the differing reads are COMPLEXITY, not the answer.
 
 == FORMAT — STRICT ==
 Every entry in the "friend" array MUST be prefixed with the speaker's name and a colon:
