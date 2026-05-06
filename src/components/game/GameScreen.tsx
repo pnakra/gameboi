@@ -64,11 +64,13 @@ export function GameScreen({
   mode,
   onExit,
   onEnd,
+  prefetchedFirstTurn,
 }: {
   friend: Friend;
   mode: Mode;
   onExit: () => void;
   onEnd: (payload: EndPayload) => void;
+  prefetchedFirstTurn?: Promise<any> | null;
 }) {
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [hand, setHand] = useState<Card[]>([]);
