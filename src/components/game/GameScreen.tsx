@@ -22,9 +22,9 @@ const MIN_EXCHANGES = 4;
 const MAX_EXCHANGES = 8;
 const MID_REVIEW_EXCHANGES = [4, 6] as const;
 const FREETEXT_FROM = 3;
-const HAND_SIZE = 2;
+const HAND_SIZE = 3;
 const WILDCARD_ID = "__wildcard_ito__";
-const ITO_APP_ID = "__wildcard_ito_app__";
+const ITO_CHECKIN_URL = "https://gameboi.isthisok.app/check-in";
 
 // Wildcard advice: each entry pairs the LABEL (what the card says — advice
 // about the friend) with the SAY (what the player actually texts the friend).
