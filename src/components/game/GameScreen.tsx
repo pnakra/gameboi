@@ -598,17 +598,28 @@ export function GameScreen({
               return (
                 <div key={`b-${i}`}>
                   {showSpeakerLabel && (
-                    <div
-                      className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold mt-2 mb-1 ml-2"
-                      style={
-                        isMainFriend
-                          ? { color: `var(--${friend.accent})` }
-                          : speakerEntry?.gender === "f"
-                          ? { color: "color-mix(in oklch, var(--accent) 80%, white)" }
-                          : undefined
-                      }
-                    >
-                      {item.speaker}
+                    <div className="flex items-center gap-1.5 mt-2 mb-1 ml-1">
+                      {!isMainFriend && (
+                        <span
+                          className="inline-grid place-items-center w-[18px] h-[18px] rounded-full text-[9px] font-bold text-background"
+                          style={{ background: speakerColor(item.speaker!) }}
+                          aria-hidden
+                        >
+                          {speakerInitials(item.speaker!)}
+                        </span>
+                      )}
+                      <span
+                        className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/70 font-semibold"
+                        style={
+                          isMainFriend
+                            ? { color: `var(--${friend.accent})` }
+                            : speakerEntry?.gender === "f"
+                            ? { color: "color-mix(in oklch, var(--accent) 80%, white)" }
+                            : undefined
+                        }
+                      >
+                        {item.speaker}
+                      </span>
                     </div>
                   )}
                   <Bubble
