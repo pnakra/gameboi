@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { track } from "@/lib/analytics";
+import { itoUrl } from "@/lib/ito";
 
 export function Interstitial({ onContinue }: { onContinue: () => void }) {
   const [ready, setReady] = useState(false);
@@ -19,22 +20,27 @@ export function Interstitial({ onContinue }: { onContinue: () => void }) {
         <p className="display text-[26px] leading-[1.25] font-bold text-balance text-foreground">
           if any of that hit close to home, the real thing has a real tool for it.
         </p>
+        <p className="mt-4 text-[14px] text-muted-foreground/85 lowercase text-balance">
+          a 2-minute check-in. anonymous. nothing to download.
+        </p>
+
         <a
-          href="https://gameboi.isthisok.app/check-in"
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => track("isthisok_link_clicked", { source: "interstitial" })}
-          className="mt-6 text-[var(--ito)] text-[20px] font-bold underline underline-offset-4 decoration-[var(--ito)]/40"
+          href={itoUrl({ surface: "interstitial" })}
+          onClick={() => {
+            track("isthisok_link_clicked", { source: "interstitial" });
+            track("ito_link_clicked", { source: "interstitial" });
+          }}
+          className="mt-9 w-full h-[60px] grid place-items-center rounded-2xl bg-[var(--ito)] text-background font-bold text-[16px] tracking-tight active:scale-[0.98] transition-transform shadow-[0_18px_40px_-18px_var(--ito)]"
         >
-          have your own situation to talk through? →
+          start a check-in →
         </a>
 
         <button
           onClick={ready ? () => { track("interstitial_continue_clicked"); onContinue(); } : undefined}
           disabled={!ready}
-          className="mt-12 w-full h-13 py-3.5 rounded-2xl bg-surface border border-white/[0.08] text-foreground/90 font-semibold tracking-tight transition-all disabled:opacity-30 active:scale-[0.98]"
+          className="mt-5 text-[13px] text-muted-foreground/70 lowercase tracking-tight active:opacity-60 transition-opacity disabled:opacity-30"
         >
-          {ready ? "keep playing" : "..."}
+          {ready ? "or keep playing" : "..."}
         </button>
       </div>
     </div>
