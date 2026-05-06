@@ -113,6 +113,8 @@ export function GameScreen({
   // Group-chat roster: stable cast of speakers (lowercase name + gender) the
   // model declares once and reuses across exchanges. Empty for solo modes.
   const [roster, setRoster] = useState<RosterEntry[]>([]);
+  const [showMidReview, setShowMidReview] = useState(false);
+  const midReviewShownRef = useRef(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
