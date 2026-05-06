@@ -1,6 +1,7 @@
 import React from "react";
 import {
   AbsoluteFill,
+  Img,
   interpolate,
   spring,
   staticFile,
@@ -25,11 +26,11 @@ const C = {
   read: "#6a5f7a",
 };
 
-// Phone dims — leave 280px on top for POV title and 200px on bottom for subtext.
-const SCREEN_W = 860;
-const SCREEN_H = 1440;
+// Phone dims — leave generous bottom safe area for TikTok caption / CTA chrome.
+const SCREEN_W = 790;
+const SCREEN_H = 1280;
 const SCREEN_X = (1080 - SCREEN_W) / 2;
-const SCREEN_Y = 280;
+const SCREEN_Y = 240;
 
 export const TikTokPOVAd: React.FC = () => {
   const frame = useCurrentFrame();
@@ -50,19 +51,15 @@ export const TikTokPOVAd: React.FC = () => {
         overflow: "hidden",
       }}
     >
-      {/* Static ambient glow — no animation */}
+      {/* Static background only — no blur/compositor-heavy effects that can shimmer between frames */}
       <div
         style={{
           position: "absolute",
-          left: "50%",
-          top: "50%",
-          width: 1600,
-          height: 1600,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${C.bgGlow} 0%, transparent 60%)`,
-          filter: "blur(60px)",
-          transform: "translate(-50%, -50%)",
-          opacity: 0.85,
+          inset: 0,
+          background: [
+            `radial-gradient(circle at 50% 18%, ${C.bgGlow} 0%, rgba(26,16,41,0.7) 24%, rgba(10,6,18,0.96) 56%)`,
+            "linear-gradient(180deg, #120a1f 0%, #0b0714 42%, #08050f 100%)",
+          ].join(", "),
         }}
       />
 
@@ -105,7 +102,7 @@ export const TikTokPOVAd: React.FC = () => {
           background: "#0d0818",
           borderRadius: 80,
           overflow: "hidden",
-          boxShadow: `0 0 0 8px #000, 0 50px 100px -10px rgba(0,0,0,0.85)`,
+          boxShadow: `0 0 0 8px #000, 0 28px 60px -20px rgba(0,0,0,0.82)`,
           display: "flex",
           flexDirection: "column",
         }}
@@ -119,7 +116,7 @@ export const TikTokPOVAd: React.FC = () => {
       <div
         style={{
           position: "absolute",
-          bottom: 100,
+          top: SCREEN_Y + SCREEN_H + 54,
           left: 0,
           right: 0,
           textAlign: "center",
@@ -225,7 +222,7 @@ const ChatHeader: React.FC = () => (
               zIndex: 3 - i,
             }}
           >
-            <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+             <Img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
         ))}
       </div>
@@ -301,7 +298,7 @@ const Thread: React.FC = () => {
             opacity: 0.9,
           }}
         >
-          <img
+          <Img
             src={staticFile("images/friend-jordan.jpg")}
             alt=""
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
