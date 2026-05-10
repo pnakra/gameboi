@@ -480,7 +480,9 @@ export function GameScreen({
       exchange,
       finished: isFinished,
     });
-    window.location.href = "https://gameboi.isthisok.app/check-in";
+    const url = "https://gameboi.isthisok.app/check-in";
+    const w = window.open(url, "_blank", "noopener,noreferrer");
+    if (!w) window.location.href = url;
   }
 
   const groupedChat = useMemo(() => groupBubbles(chat), [chat]);
@@ -737,6 +739,8 @@ export function GameScreen({
                         modeId: mode.id,
                         exchange,
                       })}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       onClick={() => {
                         track("inline_beat_clicked", {
                           friend_id: friend.id,
@@ -787,6 +791,8 @@ export function GameScreen({
                 modeId: mode.id,
                 exchange,
               })}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => {
                 track("ito_link_clicked", {
                   source: "game_footer",

@@ -104,14 +104,13 @@ export function MidReview({
       friend_id: friend.id,
       kind,
     });
-    window.open(
-      itoUrl({
-        surface: reviewIndex === 2 ? "mid_review_2" : "mid_review_1",
-        friendId: friend.id,
-        modeId: mode.id,
-      }),
-      "_self",
-    );
+    const url = itoUrl({
+      surface: reviewIndex === 2 ? "mid_review_2" : "mid_review_1",
+      friendId: friend.id,
+      modeId: mode.id,
+    });
+    const w = window.open(url, "_blank", "noopener,noreferrer");
+    if (!w) window.location.href = url;
   }
 
   // On review #2, when the AI flagged the player as skipping/dropping the

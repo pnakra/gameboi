@@ -52,7 +52,11 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
     track("handoff_clicked", { source: "end_card", friend_id: friend.id });
     track("ito_link_clicked", { source: "end_card", friend_id: friend.id });
     setHandoffLoading(true);
-    window.location.href = itoUrl({ surface: "end_card", friendId: friend.id });
+    const url = itoUrl({ surface: "end_card", friendId: friend.id });
+    const w = window.open(url, "_blank", "noopener,noreferrer");
+    // Fall back to same-tab nav if the popup was blocked (rare in webviews).
+    if (!w) window.location.href = url;
+    setHandoffLoading(false);
   }
 
   return (
