@@ -26,6 +26,8 @@ export function Interstitial({ onContinue }: { onContinue: () => void }) {
 
         <a
           href={itoUrl({ surface: "interstitial" })}
+          target="_blank"
+          rel="noopener noreferrer"
           onClick={() => {
             track("isthisok_link_clicked", { source: "interstitial" });
             track("ito_link_clicked", { source: "interstitial" });
