@@ -242,7 +242,17 @@ function turnInstruction(exchange: number, chosenReply?: string): string {
   let phaseGuidance = "";
   if (phase === "setup") {
     phaseGuidance = isOpener
-      ? `Open the convo. Casual greeting + briefly drop what just happened, holding back a key detail.`
+      ? `OPENER (exchange 1) — CRITICAL. This is the very first text the player sees. Half of all dropoff happens here. Rules:
+- Open with ONE bubble, max two. NEVER three.
+- It must read like a real text he just sent, not a scene-setting paragraph. Think: he's mid-thought, half-distracted, hit send before fully forming it.
+- DO NOT explain the situation in full. Drop a piece. Hold the rest. The player is supposed to want to ask "wait what".
+- Sound like he assumes the player already knows him. No exposition. No "so basically here's what's happening". No backstory dump.
+- Examples of the right SHAPE (do not copy literally):
+    • "bro" / "she texted me"
+    • "ok wait. r u up"
+    • "i think i fucked up lol"
+    • "she just left and idk how to feel"
+- BAD opener (do not do this): "Hey so I wanted to talk to you about something that happened last night with Riley. We were at the party and things got pretty intense and now I'm not sure how she's feeling about it." ← essay. fails everything.`
       : `We're still in SETUP. React in voice, add small new shape, hold back the bigger detail.`;
   } else if (phase === "complication") {
     phaseGuidance = `We're in COMPLICATION. React in voice, then either drop or build on a recontextualizing detail — something you "forgot to mention" / "wasn't gonna say but" — that makes the player rethink the read. This is the pivot phase.`;
