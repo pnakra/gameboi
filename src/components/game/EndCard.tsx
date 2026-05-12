@@ -79,14 +79,14 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
 
         <div className="mt-auto pt-10">
           <p className="text-[13px] leading-[1.5] text-foreground/70 lowercase mb-3 text-balance">
-            that whole round was reading what you can't ask out loud. isthisok has a 2-minute check-in for the real version of it.
+            got a real version of this sitting w/ you? isthisok is a private 2-min check-in. anonymous, no account, no one on the other end — you write it, it reflects it back.
           </p>
           <button
             onClick={handoffToIto}
             disabled={handoffLoading || loading}
             className="w-full h-[60px] py-4 rounded-2xl bg-[var(--ito)] text-background font-bold text-[16px] tracking-tight active:scale-[0.98] transition-transform disabled:opacity-50 shadow-[0_18px_40px_-18px_var(--ito)]"
           >
-            {handoffLoading ? "one sec..." : "start a check-in →"}
+            {handoffLoading ? "one sec..." : "try a check-in →"}
           </button>
           <div className="flex items-center justify-center gap-5 pt-5 text-[13px] text-muted-foreground/70 lowercase">
             <button
