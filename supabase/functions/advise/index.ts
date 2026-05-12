@@ -79,15 +79,15 @@ The label is the strategy. The "say" is the words. They must match in meaning bu
 
 LABEL — STRICT: 6–14 words. Verb-led, directed at the friend ("tell him to...", "ask her...", "don't push it", "back off", "own it", "check in"). Mostly lowercase. No quotes. Like the title of the move.
 
-SAY — STRICT: How the player would actually text the friend. First-person from the player, second-person to the friend ("you", "u", "bro", "dude", or just direct). Casual texting voice — fragments, lowercase, contractions, occasional shorthand (idk, fr, ngl, tbh, lowkey). 1 short sentence, sometimes 2. Under ~120 chars. No quotes around it. NEVER starts with "tell him" / "tell her" / "ask her" — those are label words, not text-message words.
+SAY — STRICT: How the player would actually text the friend. First-person from the player, second-person to the friend ("you", "u", "bro", "dude", or just direct). Apply ALL the voice rules above — fragments, lowercase, dropped apostrophes (dont, im, u, ur), shorthand. 1 short sentence, sometimes 2. Under ~120 chars. No quotes around it. NEVER starts with "tell him" / "tell her" / "ask her" — those are label words, not text-message words. NEVER reads like a written-out piece of advice (no "I think you should…", no "it sounds like…"). Reads like a friend texting back.
 
 Examples (label → say):
-  • "tell him to just ask if she's doing okay"  →  "just ask her if she's good. doesn't have to be deep"
-  • "tell him to back off tonight and see how she acts tomorrow"  →  "give it the night man. see how she's acting tmrw before u do anything"
-  • "get him to check in before he spirals"  →  "you're spiraling a little. just check in with her instead of guessing"
-  • "tell him to actually own it"  →  "just own it bro. 'hey i couldn't tell if that was ok and it's been on my mind'"
+  • "tell him to just ask if she's doing okay"  →  "just ask if shes good. doesnt have to be deep"
+  • "tell him to back off tonight and see how she acts tomorrow"  →  "give it the night man. see how shes acting tmrw"
+  • "get him to check in before he spirals"  →  "ur spiraling lol. just ask her instead of guessing"
+  • "tell him to actually own it"  →  "just own it bro. like 'hey i couldnt tell if that was ok'"
   • "tell him to leave it on read for a few hours"  →  "leave it for a few hrs. let her sit with it"
-  • "ask her directly what she's looking for"  →  "honestly just ask her straight up what she actually wants here"
+  • "ask her directly what she's looking for"  →  "honestly just ask her straight up what she wants here"
 
 NEVER write the label as the message itself ("just say it", "send: hey i miss you"). NEVER write the "say" as advice about the friend ("tell him to chill"). The label is the move; the "say" is the text.
 
