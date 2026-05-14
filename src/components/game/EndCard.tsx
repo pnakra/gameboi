@@ -29,6 +29,7 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
   const [question, setQuestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [handoffLoading, setHandoffLoading] = useState(false);
+  const [shareState, setShareState] = useState<"idle" | "copied">("idle");
 
   useEffect(() => {
     track("end_card_viewed", { friend_id: friend.id, friend_name: friend.name });
