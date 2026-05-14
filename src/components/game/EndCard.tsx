@@ -72,6 +72,38 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
     setHandoffLoading(false);
   }
 
+  async function handleShare() {
+    const url = shareUrlFor(friend.id);
+    const shareText = question
+      ? `${question}\n\nplayed this on gameboi — ${friend.name}'s scenario:`
+      : `played this scenario w/ ${friend.name} on gameboi:`;
+    track("share_clicked", { source: "end_card", friend_id: friend.id, has_question: !!question });
+
+    const nav = typeof navigator !== "undefined" ? navigator : null;
+    if (nav && typeof nav.share === "function") {
+      try {
+        await nav.share({ title: "gameboi", text: shareText, url });
+        track("share_completed", { source: "end_card", friend_id: friend.id, method: "web_share" });
+        return;
+      } catch (e) {
+        const name = (e as { name?: string })?.name;
+        if (name === "AbortError") {
+          track("share_cancelled", { source: "end_card", friend_id: friend.id, method: "web_share" });
+          return;
+        }
+        // fall through to clipboard
+      }
+    }
+    try {
+      await nav?.clipboard?.writeText(`${shareText} ${url}`);
+      setShareState("copied");
+      track("share_completed", { source: "end_card", friend_id: friend.id, method: "clipboard" });
+      window.setTimeout(() => setShareState("idle"), 1800);
+    } catch {
+      track("share_failed", { source: "end_card", friend_id: friend.id });
+    }
+  }
+
   return (
     <div className="relative min-h-[100dvh] w-full bg-background flex items-stretch sm:items-center justify-center sm:py-6 grain overflow-hidden">
       {/* Ambient amber-leaning glow */}
