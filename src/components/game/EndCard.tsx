@@ -133,6 +133,13 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
           >
             {handoffLoading ? "one sec..." : "try a check-in →"}
           </button>
+          <button
+            onClick={handleShare}
+            disabled={loading}
+            className="mt-3 w-full h-[48px] grid place-items-center rounded-2xl border border-foreground/15 text-foreground/85 font-medium text-[14px] tracking-tight active:scale-[0.98] transition-transform disabled:opacity-40 lowercase"
+          >
+            {shareState === "copied" ? "link copied ✓" : "send this to a friend"}
+          </button>
           <div className="flex items-center justify-center gap-5 pt-5 text-[13px] text-muted-foreground/70 lowercase">
             <button
               onClick={() => {
