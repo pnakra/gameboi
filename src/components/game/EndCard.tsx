@@ -5,6 +5,18 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics";
 import { itoUrl } from "@/lib/ito";
 
+const SHARE_BASE = "https://gameboi.online";
+
+function shareUrlFor(friendId: string): string {
+  const params = new URLSearchParams({
+    friend: friendId,
+    utm_source: "share",
+    utm_medium: "end_card",
+    utm_campaign: "organic_share",
+  });
+  return `${SHARE_BASE}/?${params.toString()}`;
+}
+
 type Props = {
   friend: Friend;
   transcript: string;
