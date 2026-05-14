@@ -5,6 +5,18 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics";
 import { itoUrl } from "@/lib/ito";
 
+const SHARE_BASE = "https://gameboi.online";
+
+function shareUrlFor(friendId: string): string {
+  const params = new URLSearchParams({
+    friend: friendId,
+    utm_source: "share",
+    utm_medium: "end_card",
+    utm_campaign: "organic_share",
+  });
+  return `${SHARE_BASE}/?${params.toString()}`;
+}
+
 type Props = {
   friend: Friend;
   transcript: string;
@@ -17,6 +29,7 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
   const [question, setQuestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [handoffLoading, setHandoffLoading] = useState(false);
+  const [shareState, setShareState] = useState<"idle" | "copied">("idle");
 
   useEffect(() => {
     track("end_card_viewed", { friend_id: friend.id, friend_name: friend.name });
@@ -59,6 +72,38 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
     setHandoffLoading(false);
   }
 
+  async function handleShare() {
+    const url = shareUrlFor(friend.id);
+    const shareText = question
+      ? `${question}\n\nplayed this on gameboi — ${friend.name}'s scenario:`
+      : `played this scenario w/ ${friend.name} on gameboi:`;
+    track("share_clicked", { source: "end_card", friend_id: friend.id, has_question: !!question });
+
+    const nav = typeof navigator !== "undefined" ? navigator : null;
+    if (nav && typeof nav.share === "function") {
+      try {
+        await nav.share({ title: "gameboi", text: shareText, url });
+        track("share_completed", { source: "end_card", friend_id: friend.id, method: "web_share" });
+        return;
+      } catch (e) {
+        const name = (e as { name?: string })?.name;
+        if (name === "AbortError") {
+          track("share_cancelled", { source: "end_card", friend_id: friend.id, method: "web_share" });
+          return;
+        }
+        // fall through to clipboard
+      }
+    }
+    try {
+      await nav?.clipboard?.writeText(`${shareText} ${url}`);
+      setShareState("copied");
+      track("share_completed", { source: "end_card", friend_id: friend.id, method: "clipboard" });
+      window.setTimeout(() => setShareState("idle"), 1800);
+    } catch {
+      track("share_failed", { source: "end_card", friend_id: friend.id });
+    }
+  }
+
   return (
     <div className="relative min-h-[100dvh] w-full bg-background flex items-stretch sm:items-center justify-center sm:py-6 grain overflow-hidden">
       {/* Ambient amber-leaning glow */}
@@ -87,6 +132,13 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
             className="w-full h-[60px] py-4 rounded-2xl bg-[var(--ito)] text-background font-bold text-[16px] tracking-tight active:scale-[0.98] transition-transform disabled:opacity-50 shadow-[0_18px_40px_-18px_var(--ito)]"
           >
             {handoffLoading ? "one sec..." : "try a check-in →"}
+          </button>
+          <button
+            onClick={handleShare}
+            disabled={loading}
+            className="mt-3 w-full h-[48px] grid place-items-center rounded-2xl border border-foreground/15 text-foreground/85 font-medium text-[14px] tracking-tight active:scale-[0.98] transition-transform disabled:opacity-40 lowercase"
+          >
+            {shareState === "copied" ? "link copied ✓" : "send this to a friend"}
           </button>
           <div className="flex items-center justify-center gap-5 pt-5 text-[13px] text-muted-foreground/70 lowercase">
             <button
