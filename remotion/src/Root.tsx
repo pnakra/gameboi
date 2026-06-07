@@ -74,6 +74,15 @@ export const RemotionRoot = () => {
         width={1080}
         height={1920}
       />
+      {/* TikTok "pause test" — handheld feel, silent, no mograph, 12s */}
+      <Composition
+        id="pause-test"
+        component={PauseTestAd}
+        durationInFrames={360}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
     </>
   );
 };
