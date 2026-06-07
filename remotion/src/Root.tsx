@@ -6,6 +6,7 @@ import { RedditAdVideo } from "./compositions/RedditAdVideo";
 import { RedditPaidAdVideo } from "./compositions/RedditPaidAdVideo";
 import { TikTokPOVAd } from "./compositions/TikTokPOVAd";
 import { QuietAdVideo } from "./compositions/QuietAdVideo";
+import { PauseTestAd } from "./compositions/PauseTestAd";
 
 export const RemotionRoot = () => {
   return (
@@ -68,6 +69,15 @@ export const RemotionRoot = () => {
       <Composition
         id="quiet-ad"
         component={QuietAdVideo}
+        durationInFrames={360}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      {/* TikTok "pause test" — handheld feel, silent, no mograph, 12s */}
+      <Composition
+        id="pause-test"
+        component={PauseTestAd}
         durationInFrames={360}
         fps={30}
         width={1080}
