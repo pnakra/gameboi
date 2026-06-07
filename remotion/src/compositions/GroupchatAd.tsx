@@ -176,60 +176,6 @@ const ChatStream: React.FC = () => {
   );
 };
 
-const ChatHeader: React.FC = () => (
-  <div
-    style={{
-      position: "absolute",
-      top: 0, left: 0, right: 0,
-      paddingTop: 60,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: 10,
-      borderBottom: "1px solid rgba(255,255,255,0.06)",
-      paddingBottom: 22,
-    }}
-  >
-    {/* Stacked avatars */}
-    <div style={{ display: "flex", marginBottom: 4 }}>
-      {[ "#ff8db4", "#7fd3a8", "#9ab5ff", "#ffd27f" ].map((c, i) => (
-        <div
-          key={i}
-          style={{
-            width: 64, height: 64, borderRadius: 999,
-            background: c,
-            marginLeft: i === 0 ? 0 : -18,
-            border: `3px solid ${CHAT_BG}`,
-          }}
-        />
-      ))}
-    </div>
-    <div style={{ color: INK, fontSize: 32, fontWeight: 600 }}>the chat 🫠</div>
-    <div style={{ color: MUTED, fontSize: 22 }}>maya, tyler, sam, you</div>
-  </div>
-);
-
-const ChatStream: React.FC = () => {
-  const frame = useCurrentFrame();
-  // Auto-scroll: as more messages appear, push everything up
-  const visibleCount = MSGS.filter((m) => frame >= m.appearAt).length;
-  const scrollOffset = Math.max(0, (visibleCount - 5) * 120); // start scrolling after 5 msgs
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 14,
-        transform: `translateY(${-scrollOffset}px)`,
-        transition: "none",
-      }}
-    >
-      {MSGS.map((m, i) => (
-        <ChatBubble key={i} msg={m} />
-      ))}
-    </div>
-  );
-};
 
 const ChatBubble: React.FC<{ msg: Msg }> = ({ msg }) => {
   const frame = useCurrentFrame();
