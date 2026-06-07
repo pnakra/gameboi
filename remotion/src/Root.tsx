@@ -7,6 +7,7 @@ import { RedditPaidAdVideo } from "./compositions/RedditPaidAdVideo";
 import { TikTokPOVAd } from "./compositions/TikTokPOVAd";
 import { QuietAdVideo } from "./compositions/QuietAdVideo";
 import { PauseTestAd } from "./compositions/PauseTestAd";
+import { GroupchatAd } from "./compositions/GroupchatAd";
 
 export const RemotionRoot = () => {
   return (
@@ -78,6 +79,15 @@ export const RemotionRoot = () => {
       <Composition
         id="pause-test"
         component={PauseTestAd}
+        durationInFrames={360}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      {/* Group-chat + card-flip TikTok — 12s vertical */}
+      <Composition
+        id="groupchat-ad"
+        component={GroupchatAd}
         durationInFrames={360}
         fps={30}
         width={1080}
