@@ -6,6 +6,7 @@ import { RedditAdVideo } from "./compositions/RedditAdVideo";
 import { RedditPaidAdVideo } from "./compositions/RedditPaidAdVideo";
 import { TikTokPOVAd } from "./compositions/TikTokPOVAd";
 import { QuietAdVideo } from "./compositions/QuietAdVideo";
+import { PauseTestAd } from "./compositions/PauseTestAd";
 
 export const RemotionRoot = () => {
   return (
