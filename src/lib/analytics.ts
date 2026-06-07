@@ -162,7 +162,40 @@ export function track(eventName: string, properties: Record<string, unknown> = {
     .then(({ error }) => {
       if (error) console.warn("[analytics] track failed:", eventName, error.message);
     });
+  maybePingSlack(eventName, session_id, merged);
 }
+
+// Per-session Slack ping for the two events we actually want to hear about.
+// Dedupe with sessionStorage so refreshes / repeat clicks don't spam.
+const SLACK_DEDUPE_KIND: Record<string, "completed" | "ito_clicked" | undefined> = {
+  end_card_viewed: "completed",
+  ito_link_clicked: "ito_clicked",
+};
+
+function maybePingSlack(
+  eventName: string,
+  session_id: string,
+  properties: Record<string, unknown>,
+): void {
+  if (typeof window === "undefined") return;
+  const kind = SLACK_DEDUPE_KIND[eventName];
+  if (!kind) return;
+  const dedupeKey = `gameboi:slack-pinged:${kind}`;
+  try {
+    if (window.sessionStorage.getItem(dedupeKey)) return;
+    window.sessionStorage.setItem(dedupeKey, "1");
+  } catch {
+    // storage unavailable — fall through and ping anyway (rare)
+  }
+  // Dynamically import so SSR / build doesn't pull the server fn into the
+  // initial client chunk before TanStack rewrites it as an RPC.
+  void import("@/lib/slack-notify.functions")
+    .then(({ notifySlack }) =>
+      notifySlack({ data: { kind, session_id, properties } }),
+    )
+    .catch((err) => console.warn("[analytics] slack ping failed:", err));
+}
+
 
 export type ExchangeLog = {
   friend_id?: string;
