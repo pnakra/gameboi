@@ -108,20 +108,71 @@ const ChatSurface: React.FC = () => {
       <div
         style={{
           position: "absolute",
-          top: 200,
+          top: 280,
           left: 0,
           right: 0,
-          bottom: 760, // leave room for card deck at bottom
-          padding: "20px 36px 0",
+          bottom: 540, // cards live below this
+          padding: "0 36px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-end",
+          overflow: "hidden",
           opacity: dim,
         }}
       >
         <ChatStream />
       </div>
     </AbsoluteFill>
+  );
+};
+
+const ChatHeader: React.FC = () => (
+  <div
+    style={{
+      position: "absolute",
+      top: 0, left: 0, right: 0,
+      paddingTop: 50,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 8,
+      borderBottom: "1px solid rgba(255,255,255,0.06)",
+      paddingBottom: 18,
+      background: CHAT_BG,
+    }}
+  >
+    {/* Stacked avatars */}
+    <div style={{ display: "flex", marginBottom: 2 }}>
+      {[ "#ff8db4", "#7fd3a8", "#9ab5ff", "#ffd27f" ].map((c, i) => (
+        <div
+          key={i}
+          style={{
+            width: 58, height: 58, borderRadius: 999,
+            background: c,
+            marginLeft: i === 0 ? 0 : -16,
+            border: `3px solid ${CHAT_BG}`,
+          }}
+        />
+      ))}
+    </div>
+    <div style={{ color: INK, fontSize: 30, fontWeight: 600 }}>the chat</div>
+    <div style={{ color: MUTED, fontSize: 20 }}>maya, tyler, sam, you</div>
+  </div>
+);
+
+const ChatStream: React.FC = () => {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+      }}
+    >
+      {MSGS.map((m, i) => (
+        <ChatBubble key={i} msg={m} />
+      ))}
+    </div>
   );
 };
 
