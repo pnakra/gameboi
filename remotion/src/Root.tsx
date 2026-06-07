@@ -5,6 +5,7 @@ import { TikTokAdVideo } from "./compositions/TikTokAdVideo";
 import { RedditAdVideo } from "./compositions/RedditAdVideo";
 import { RedditPaidAdVideo } from "./compositions/RedditPaidAdVideo";
 import { TikTokPOVAd } from "./compositions/TikTokPOVAd";
+import { QuietAdVideo } from "./compositions/QuietAdVideo";
 
 export const RemotionRoot = () => {
   return (
@@ -59,6 +60,15 @@ export const RemotionRoot = () => {
         id="tiktok-pov"
         component={TikTokPOVAd}
         durationInFrames={225}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      {/* Quiet, type-driven ad — vertical 12s, real screenshots only */}
+      <Composition
+        id="quiet-ad"
+        component={QuietAdVideo}
+        durationInFrames={360}
         fps={30}
         width={1080}
         height={1920}

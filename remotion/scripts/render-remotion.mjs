@@ -6,8 +6,8 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const target = process.argv[2];
-if (!target || !["demo", "ad", "tiktok", "reddit", "reddit-paid", "tiktok-pov"].includes(target)) {
-  console.error("Usage: node scripts/render-remotion.mjs <demo|ad|tiktok|reddit|reddit-paid|tiktok-pov>");
+if (!target || !["demo", "ad", "tiktok", "reddit", "reddit-paid", "tiktok-pov", "quiet-ad"].includes(target)) {
+  console.error("Usage: node scripts/render-remotion.mjs <demo|ad|tiktok|reddit|reddit-paid|tiktok-pov|quiet-ad>");
   process.exit(1);
 }
 
@@ -18,6 +18,7 @@ const outputs = {
   reddit: "/mnt/documents/gameboi-reddit-ad.mp4",
   "reddit-paid": "/mnt/documents/gameboi-reddit-paid-ad.mp4",
   "tiktok-pov": "/mnt/documents/gameboi-tiktok-pov-groupchat-v3.mp4",
+  "quiet-ad": "/mnt/documents/gameboi-quiet-ad.mp4",
 };
 
 console.log(`Bundling for "${target}"...`);
