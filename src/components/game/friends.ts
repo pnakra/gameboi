@@ -50,7 +50,7 @@ export const FRIENDS: Friend[] = [
     sketch: "Something happened last night. He's not sure how to read it.",
     avatar: theoImg,
     accent: "card-soft",
-    locked: true,
+    // locked: true, // temporarily unlocked for ad test — see if Theo gets picked by choice
     context:
       "Theo is 17. Last night he hooked up with a girl named Maya — they've been talking for a few weeks, it was the first time anything physical happened, both had been drinking. He woke up with a feeling he can't shake: he isn't sure she was as into it in the moment as he thought, and he isn't sure how he handled a couple of moments where she got quiet or pulled back. She hasn't texted him today. He genuinely doesn't know if he did something wrong, if she's just hungover, if he's spiraling, or all three. He cares about her. Theo is the sensitive, self-aware-but-not-articulate type — he texts in fragmented lowercase, says 'idk' a lot, deflects with '😭' when something hits too close, and has a hard time naming what he's actually scared of. He is NOT defensive — he's the one bringing up the discomfort, not minimizing it. Scenes for him should sit in the morning-after gray zone: replaying specific moments, whether to text her, what to say if he does, what 'asking if she's ok' even sounds like without making it weird, whether he's being paranoid or whether the unease is the signal. The situation should NEVER be narrated graphically — Theo is texting about how he's sitting with it, not what happened blow-by-blow.",
   },
