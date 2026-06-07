@@ -64,6 +64,15 @@ export const RemotionRoot = () => {
         width={1080}
         height={1920}
       />
+      {/* Quiet, type-driven ad — vertical 12s, real screenshots only */}
+      <Composition
+        id="quiet-ad"
+        component={QuietAdVideo}
+        durationInFrames={360}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
     </>
   );
 };
