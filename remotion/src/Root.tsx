@@ -84,6 +84,15 @@ export const RemotionRoot = () => {
         width={1080}
         height={1920}
       />
+      {/* Group-chat + card-flip TikTok — 12s vertical */}
+      <Composition
+        id="groupchat-ad"
+        component={GroupchatAd}
+        durationInFrames={360}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
     </>
   );
 };
