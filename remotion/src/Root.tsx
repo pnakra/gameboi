@@ -8,6 +8,7 @@ import { TikTokPOVAd } from "./compositions/TikTokPOVAd";
 import { QuietAdVideo } from "./compositions/QuietAdVideo";
 import { PauseTestAd } from "./compositions/PauseTestAd";
 import { GroupchatAd } from "./compositions/GroupchatAd";
+import { BoysChatAd } from "./compositions/BoysChatAd";
 
 export const RemotionRoot = () => {
   return (
@@ -88,6 +89,15 @@ export const RemotionRoot = () => {
       <Composition
         id="groupchat-ad"
         component={GroupchatAd}
+        durationInFrames={360}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      {/* Boys groupchat → cards → cursor pick → mid-review ito → end card */}
+      <Composition
+        id="boys-chat-ad"
+        component={BoysChatAd}
         durationInFrames={360}
         fps={30}
         width={1080}
