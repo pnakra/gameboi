@@ -42,7 +42,7 @@ type Msg = {
 
 const MSGS: Msg[] = [
   { from: "maya", text: "ok update on last night",        appearAt: 8,   color: "#ff8db4", side: "left" },
-  { from: "maya", text: "ok update on last night 😭", appearAt: 8,  color: "#ff8db4", side: "left" },
+  
   { from: "tyler", text: "oh no what did u do",          appearAt: 22, color: "#7fd3a8", side: "left" },
   { from: "maya", text: "i think i made it weird w james", appearAt: 36, color: "#ff8db4", side: "left" },
   { from: "you",  text: "weird how",                      appearAt: 52, color: BUBBLE_YOU,  side: "right" },
