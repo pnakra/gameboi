@@ -32,9 +32,10 @@ export function MidReview({
     track("mid_review_viewed", {
       friend_id: friend.id,
       friend_name: friend.name,
+      mode_id: mode.id,
       review_index: reviewIndex,
     });
-  }, [friend.id, friend.name, reviewIndex]);
+  }, [friend.id, friend.name, mode.id, reviewIndex]);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,6 +85,8 @@ export function MidReview({
   function handleKeepGoing() {
     track("mid_review_continue_clicked", {
       friend_id: friend.id,
+      mode_id: mode.id,
+      review_index: reviewIndex,
       kind,
     });
     // Hand the observation up to the parent now (not during the fetch) so the
@@ -96,12 +99,15 @@ export function MidReview({
   function handleHandoff() {
     track("mid_review_handoff_clicked", {
       friend_id: friend.id,
+      mode_id: mode.id,
       kind,
       review_index: reviewIndex,
     });
     track("ito_link_clicked", {
       source: reviewIndex === 2 ? "mid_review_2" : "mid_review_1",
       friend_id: friend.id,
+      mode_id: mode.id,
+      review_index: reviewIndex,
       kind,
     });
     const url = itoUrl({

@@ -115,6 +115,7 @@ export function GameScreen({
     track("round_started", {
       friend_id: friend.id,
       friend_name: friend.name,
+      mode_id: mode.id,
       is_deep_link: isDeepLinkSession(),
     });
     setChat([{ kind: "stamp", text: `today ${openTime}` }]);
@@ -340,6 +341,7 @@ export function GameScreen({
         track("round_ended", {
           friend_id: friend.id,
           friend_name: friend.name,
+          mode_id: mode.id,
           exchanges: opts.forExchange,
         });
         markUnlocked();
@@ -395,6 +397,7 @@ export function GameScreen({
     setPlayingCardId(c.id);
     track("card_played", {
       friend_id: friend.id,
+      mode_id: mode.id,
       exchange,
       vibe: c.vibe,
       label: c.label,
@@ -437,6 +440,7 @@ export function GameScreen({
     setPlayingCardId(c.id);
     track("wildcard_played", {
       friend_id: friend.id,
+      mode_id: mode.id,
       exchange,
       label: c.label,
     });
@@ -460,6 +464,7 @@ export function GameScreen({
     if (!text || loading || isFinished || playingCardId) return;
     track("freetext_sent", {
       friend_id: friend.id,
+      mode_id: mode.id,
       exchange,
       length: text.length,
     });
@@ -477,6 +482,7 @@ export function GameScreen({
     track("handoff_clicked", {
       source: "game_screen",
       friend_id: friend.id,
+      mode_id: mode.id,
       exchange,
       finished: isFinished,
     });
@@ -744,11 +750,13 @@ export function GameScreen({
                       onClick={() => {
                         track("inline_beat_clicked", {
                           friend_id: friend.id,
+                          mode_id: mode.id,
                           exchange,
                         });
                         track("ito_link_clicked", {
                           source: "game_inline_beat",
                           friend_id: friend.id,
+                          mode_id: mode.id,
                           exchange,
                         });
                       }}
@@ -794,21 +802,27 @@ export function GameScreen({
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => {
+                const elapsed_ms = roundStartMsRef.current
+                  ? Date.now() - roundStartMsRef.current
+                  : 0;
+                const messages_read_before_click = friendMessagesSeenRef.current;
                 track("ito_link_clicked", {
                   source: "game_footer",
                   friend_id: friend.id,
+                  mode_id: mode.id,
                   exchange,
                   is_deep_link: isDeepLinkSession(),
-                  messages_read_before_click: friendMessagesSeenRef.current,
-                  elapsed_ms: roundStartMsRef.current
-                    ? Date.now() - roundStartMsRef.current
-                    : 0,
+                  messages_read_before_click,
+                  elapsed_ms,
                 });
                 track("handoff_clicked", {
                   source: "game_screen",
                   friend_id: friend.id,
+                  mode_id: mode.id,
                   exchange,
                   finished: isFinished,
+                  messages_read_before_click,
+                  elapsed_ms,
                 });
               }}
               className="flex items-center justify-center min-h-[44px] py-3 text-center text-[14px] text-[var(--ito)]/90 hover:text-[var(--ito)] lowercase tracking-tight underline underline-offset-4 decoration-[var(--ito)]/50 font-semibold"

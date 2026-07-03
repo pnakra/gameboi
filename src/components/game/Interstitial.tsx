@@ -1,14 +1,25 @@
 import { useEffect, useState } from "react";
+import type { Friend } from "@/components/game/friends";
+import type { Mode } from "@/components/game/modes";
 import { track } from "@/lib/analytics";
 import { itoUrl } from "@/lib/ito";
 
-export function Interstitial({ onContinue }: { onContinue: () => void }) {
+type Props = {
+  onContinue: () => void;
+  friend?: Friend;
+  mode?: Mode;
+};
+
+export function Interstitial({ onContinue, friend, mode }: Props) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    track("interstitial_viewed");
+    track("interstitial_viewed", {
+      friend_id: friend?.id,
+      mode_id: mode?.id,
+    });
     const t = window.setTimeout(() => setReady(true), 1000);
     return () => window.clearTimeout(t);
-  }, []);
+  }, [friend?.id, mode?.id]);
 
   return (
     <div className="relative min-h-[100dvh] w-full bg-background flex items-center justify-center px-6 grain overflow-hidden">
@@ -25,12 +36,12 @@ export function Interstitial({ onContinue }: { onContinue: () => void }) {
         </p>
 
         <a
-          href={itoUrl({ surface: "interstitial" })}
+          href={itoUrl({ surface: "interstitial", friendId: friend?.id, modeId: mode?.id })}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => {
-            track("isthisok_link_clicked", { source: "interstitial" });
-            track("ito_link_clicked", { source: "interstitial" });
+            track("isthisok_link_clicked", { source: "interstitial", friend_id: friend?.id, mode_id: mode?.id });
+            track("ito_link_clicked", { source: "interstitial", friend_id: friend?.id, mode_id: mode?.id });
           }}
           className="mt-9 w-full h-[60px] grid place-items-center rounded-2xl bg-[var(--ito)] text-background font-bold text-[16px] tracking-tight active:scale-[0.98] transition-transform shadow-[0_18px_40px_-18px_var(--ito)]"
         >
@@ -38,7 +49,7 @@ export function Interstitial({ onContinue }: { onContinue: () => void }) {
         </a>
 
         <button
-          onClick={ready ? () => { track("interstitial_continue_clicked"); onContinue(); } : undefined}
+          onClick={ready ? () => { track("interstitial_continue_clicked", { friend_id: friend?.id, mode_id: mode?.id }); onContinue(); } : undefined}
           disabled={!ready}
           className="mt-5 text-[13px] text-muted-foreground/70 lowercase tracking-tight active:opacity-60 transition-opacity disabled:opacity-30"
         >
