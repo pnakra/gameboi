@@ -1,30 +1,33 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Friend } from "@/components/game/friends";
+import type { Mode } from "@/components/game/modes";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics";
 import { itoUrl } from "@/lib/ito";
 
 const SHARE_BASE = "https://gameboi.online";
 
-function shareUrlFor(friendId: string): string {
+function shareUrlFor(friendId: string, modeId?: string): string {
   const params = new URLSearchParams({
     friend: friendId,
     utm_source: "share",
     utm_medium: "end_card",
     utm_campaign: "organic_share",
   });
+  if (modeId) params.set("mode", modeId);
   return `${SHARE_BASE}/?${params.toString()}`;
 }
 
 type Props = {
   friend: Friend;
+  mode: Mode;
   transcript: string;
   onPlayAgain: () => void;
   onSwitchFriend: () => void;
 };
 
-export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Props) {
+export function EndCard({ friend, mode, transcript, onPlayAgain, onSwitchFriend }: Props) {
   const [recap, setRecap] = useState<string | null>(null);
   const [question, setQuestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,8 +35,12 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
   const [shareState, setShareState] = useState<"idle" | "copied">("idle");
 
   useEffect(() => {
-    track("end_card_viewed", { friend_id: friend.id, friend_name: friend.name });
-  }, [friend.id, friend.name]);
+    track("end_card_viewed", {
+      friend_id: friend.id,
+      friend_name: friend.name,
+      mode_id: mode.id,
+    });
+  }, [friend.id, friend.name, mode.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,10 +69,10 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
 
   function handoffToIto() {
     if (handoffLoading) return;
-    track("handoff_clicked", { source: "end_card", friend_id: friend.id });
-    track("ito_link_clicked", { source: "end_card", friend_id: friend.id });
+    track("handoff_clicked", { source: "end_card", friend_id: friend.id, mode_id: mode.id });
+    track("ito_link_clicked", { source: "end_card", friend_id: friend.id, mode_id: mode.id });
     setHandoffLoading(true);
-    const url = itoUrl({ surface: "end_card", friendId: friend.id });
+    const url = itoUrl({ surface: "end_card", friendId: friend.id, modeId: mode.id });
     const w = window.open(url, "_blank", "noopener,noreferrer");
     // Fall back to same-tab nav if the popup was blocked (rare in webviews).
     if (!w) window.location.href = url;
@@ -73,22 +80,22 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
   }
 
   async function handleShare() {
-    const url = shareUrlFor(friend.id);
+    const url = shareUrlFor(friend.id, mode.id);
     const shareText = question
       ? `${question}\n\nplayed this on gameboi — ${friend.name}'s scenario:`
       : `played this scenario w/ ${friend.name} on gameboi:`;
-    track("share_clicked", { source: "end_card", friend_id: friend.id, has_question: !!question });
+    track("share_clicked", { source: "end_card", friend_id: friend.id, mode_id: mode.id, has_question: !!question });
 
     const nav = typeof navigator !== "undefined" ? navigator : null;
     if (nav && typeof nav.share === "function") {
       try {
         await nav.share({ title: "gameboi", text: shareText, url });
-        track("share_completed", { source: "end_card", friend_id: friend.id, method: "web_share" });
+        track("share_completed", { source: "end_card", friend_id: friend.id, mode_id: mode.id, method: "web_share" });
         return;
       } catch (e) {
         const name = (e as { name?: string })?.name;
         if (name === "AbortError") {
-          track("share_cancelled", { source: "end_card", friend_id: friend.id, method: "web_share" });
+          track("share_cancelled", { source: "end_card", friend_id: friend.id, mode_id: mode.id, method: "web_share" });
           return;
         }
         // fall through to clipboard
@@ -97,10 +104,10 @@ export function EndCard({ friend, transcript, onPlayAgain, onSwitchFriend }: Pro
     try {
       await nav?.clipboard?.writeText(`${shareText} ${url}`);
       setShareState("copied");
-      track("share_completed", { source: "end_card", friend_id: friend.id, method: "clipboard" });
+      track("share_completed", { source: "end_card", friend_id: friend.id, mode_id: mode.id, method: "clipboard" });
       window.setTimeout(() => setShareState("idle"), 1800);
     } catch {
-      track("share_failed", { source: "end_card", friend_id: friend.id });
+      track("share_failed", { source: "end_card", friend_id: friend.id, mode_id: mode.id });
     }
   }
 

@@ -74,6 +74,7 @@ function Index() {
     return (
       <EndCard
         friend={friend}
+        mode={mode}
         transcript={endPayload.transcript}
         onPlayAgain={() => setStage("interstitial")}
         onSwitchFriend={() => {
@@ -89,6 +90,8 @@ function Index() {
   if (stage === "interstitial" && friend) {
     return (
       <Interstitial
+        friend={friend}
+        mode={mode}
         onContinue={() => {
           setEndPayload(null);
           // Prefetch a fresh first turn for the replay so it's ready instantly.
