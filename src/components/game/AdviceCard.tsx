@@ -132,6 +132,10 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
              inset 0 1px 0 rgba(255,255,255,0.1)`
           : `0 12px 24px -16px rgb(0 0 0 / 0.7),
              0 4px 10px -8px rgb(0 0 0 / 0.5),
+             0 0 0 1.25px color-mix(in oklch, ${tint} 55%, transparent),
+             0 0 14px -2px color-mix(in oklch, ${tint} 42%, transparent),
+             0 0 26px -6px color-mix(in oklch, ${tint} 30%, transparent),
+             inset 0 0 0 1px color-mix(in oklch, ${tint} 22%, transparent),
              inset 0 1px 0 rgba(255,255,255,0.06)`,
         // While dragging, kill the transition so it tracks the finger.
         transition: dragging ? "none" : undefined,
@@ -139,12 +143,9 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
         ...style,
       }}
     >
-      {/* Vibe tag — pinned to the visible top-left edge of a fanned card */}
+      {/* Vibe tag — pinned to the visible top-left edge of a fanned card.
+          The card's border glow already carries the tone; the label just names it. */}
       <div className="flex items-center gap-1.5">
-        <span
-          className="w-2 h-2 rounded-full"
-          style={{ backgroundColor: tint, boxShadow: `0 0 12px ${tint}` }}
-        />
         <span
           className="text-[10px] font-bold uppercase tracking-[0.18em]"
           style={{ color: tint }}
