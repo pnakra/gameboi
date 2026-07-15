@@ -29,6 +29,8 @@ type Props = {
   entering?: boolean;
   /** Live drag state — while true, transform follows dragX/dragY without transition */
   dragging?: boolean;
+  /** True when drag has crossed the release-to-send threshold */
+  armed?: boolean;
   dragX?: number;
   dragY?: number;
   className?: string;
