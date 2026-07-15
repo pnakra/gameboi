@@ -97,12 +97,12 @@
   --bubble-you-foreground: oklch(0.99 0.005 280);
 
   /* Card archetype tints */
-  --card-direct: oklch(0.7 0.22 25);     /* hot orange-red */
-  --card-chill: oklch(0.78 0.16 195);    /* cyan */
-  --card-bold: oklch(0.72 0.24 350);     /* magenta */
-  --card-soft: oklch(0.78 0.14 145);     /* mint */
-  --card-chaos: oklch(0.74 0.2 80);      /* gold */
-  --card-ito: oklch(0.78 0.16 70);       /* amber — ito wildcard */
+  --card-direct: oklch(0.72 0.19 25);    /* coral red — DIRECT */
+  --card-chill: oklch(0.75 0.13 190);    /* teal — CHILL */
+  --card-bold: oklch(0.72 0.24 350);     /* magenta — BOLD (fourth tone) */
+  --card-soft: oklch(0.78 0.12 150);     /* mint — SOFT */
+  --card-chaos: oklch(0.72 0.2 300);     /* violet — CHAOS (distinct from amber) */
+  --card-ito: oklch(0.8 0.16 75);        /* amber — REAL TALK / ito wildcard */
   --ito: oklch(0.8 0.16 70);             /* amber accent for ito CTAs */
 
   --glow: oklch(0.72 0.24 350 / 0.5);
