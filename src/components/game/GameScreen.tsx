@@ -669,7 +669,10 @@ export function GameScreen({
                       friend_id: friend.id,
                       exchanges: exchange,
                     });
-                    onEnd({ transcript: buildTranscript([...chatRef.current]) });
+                    onEnd({
+                      transcript: buildTranscript([...chatRef.current]),
+                      toneCounts: { ...toneCountsRef.current },
+                    });
                   }}
                   className="w-full h-13 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold tracking-tight active:scale-[0.98] transition-transform"
                 >
