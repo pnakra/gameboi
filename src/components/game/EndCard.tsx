@@ -177,7 +177,10 @@ export function EndCard({ friend, mode, transcript, toneCounts, onPlayAgain, onS
           recap={recap}
           question={question}
           loading={loading}
+          toneMix={toneMix}
+          toneChips={toneChips}
         />
+
 
         <div className="mt-auto pt-10">
           <p className="text-[13px] leading-[1.5] text-foreground/70 lowercase mb-3 text-balance">
