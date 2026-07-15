@@ -788,7 +788,7 @@ export function GameScreen({
                       dragX={dragging ? dragOffset.x : 0}
                       dragY={dragging ? dragOffset.y : 0}
                       disabled={loading || !!playingCardId}
-                      style={{ animationDelay: `${i * 0.35}s` }}
+                      style={c.entering ? undefined : { animationDelay: `${i * 0.35}s` }}
                       onPointerDown={(e) => {
                         if (loading || playingCardId) return;
                         dismissDragHint();
