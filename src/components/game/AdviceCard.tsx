@@ -75,7 +75,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
   const translateX = offset * (CARD_WIDTH * (1 - visibleRatio));
   const translateY = Math.abs(offset) * 4;
 
-  const fanTransform = `translate(calc(-50% + ${translateX}px), ${translateY}px) rotate(${rotateDeg}deg)`;
+  const fanTransform = `translate(calc(-50% + ${translateX}px), calc(${translateY}px + var(--card-float, 0px))) rotate(${rotateDeg}deg)`;
   // Peek / active (tap-to-peek fallback): lifted, enlarged, centered.
   const peekTransform = `translate(-50%, -56px) rotate(0deg) scale(1.08)`;
   // Drag: follow the finger from the peek anchor, no rotation, slightly larger.
@@ -83,6 +83,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
   const playTransform = `translate(-50%, -120vh) rotate(0deg) scale(0.9)`;
 
   const lifted = active || dragging;
+  const idle = !lifted && !playing && !entering;
 
   return (
     <button
