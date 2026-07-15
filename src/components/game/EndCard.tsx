@@ -1,10 +1,52 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Friend } from "@/components/game/friends";
 import type { Mode } from "@/components/game/modes";
+import type { Vibe } from "@/components/game/AdviceCard";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics";
 import { itoUrl } from "@/lib/ito";
+
+const VIBE_LABEL: Record<Vibe, string> = {
+  direct: "DIRECT",
+  chill: "CHILL",
+  bold: "BOLD",
+  soft: "SOFT",
+  chaos: "CHAOS",
+  ito: "REAL TALK",
+  ito_app: "REAL TALK",
+};
+
+const VIBE_TINT_VAR: Record<Vibe, string> = {
+  direct: "--card-direct",
+  chill: "--card-chill",
+  bold: "--card-bold",
+  soft: "--card-soft",
+  chaos: "--card-chaos",
+  ito: "--card-ito",
+  ito_app: "--card-ito",
+};
+
+/** e.g. "mostly CHILL · 2 REAL TALK moves" — falls back gracefully at low N. */
+function summarizeToneMix(counts: Partial<Record<Vibe, number>>): string | null {
+  const entries = (Object.entries(counts) as [Vibe, number][]).filter(([, n]) => n > 0);
+  if (entries.length === 0) return null;
+  const total = entries.reduce((s, [, n]) => s + n, 0);
+  entries.sort((a, b) => b[1] - a[1]);
+  const [topVibe, topN] = entries[0];
+  const topLabel = VIBE_LABEL[topVibe];
+  const parts: string[] = [];
+  // Only call it "mostly X" if that tone is a clear plurality.
+  if (topN / total >= 0.5 && total >= 2) parts.push(`mostly ${topLabel}`);
+  else parts.push(`${topN} ${topLabel}`);
+  // Surface REAL TALK separately if it's not already the headline.
+  const rt = (counts.ito ?? 0) + (counts.ito_app ?? 0);
+  if (rt > 0 && topVibe !== "ito" && topVibe !== "ito_app") {
+    parts.push(`${rt} REAL TALK`);
+  }
+  return parts.join(" · ");
+}
+
 
 const SHARE_BASE = "https://gameboi.online";
 
