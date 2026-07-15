@@ -130,9 +130,10 @@ export function EndCard({ friend, mode, transcript, toneCounts, onPlayAgain, onS
 
   async function handleShare() {
     const url = shareUrlFor(friend.id, mode.id);
+    const toneLine = toneMix ? `\n\n(${toneMix})` : "";
     const shareText = question
-      ? `${question}\n\nplayed this on gameboi — ${friend.name}'s scenario:`
-      : `played this scenario w/ ${friend.name} on gameboi:`;
+      ? `${question}\n\nplayed this on gameboi — ${friend.name}'s scenario:${toneLine}`
+      : `played this scenario w/ ${friend.name} on gameboi:${toneLine}`;
     track("share_clicked", { source: "end_card", friend_id: friend.id, mode_id: mode.id, has_question: !!question });
 
     const nav = typeof navigator !== "undefined" ? navigator : null;
