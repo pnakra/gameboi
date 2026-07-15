@@ -58,6 +58,7 @@ function pickFrom<T>(arr: T[]): T {
 
 export type EndPayload = {
   transcript: string;
+  toneCounts: Partial<Record<Vibe, number>>;
 };
 
 export function GameScreen({
@@ -101,6 +102,7 @@ export function GameScreen({
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
   const chatRef = useRef<ChatItem[]>([]);
+  const toneCountsRef = useRef<Partial<Record<Vibe, number>>>({});
   useEffect(() => {
     chatRef.current = chat;
   }, [chat]);
@@ -402,6 +404,7 @@ export function GameScreen({
 
     setActiveCardId(null);
     setPlayingCardId(c.id);
+    toneCountsRef.current[c.vibe] = (toneCountsRef.current[c.vibe] ?? 0) + 1;
     track("card_played", {
       friend_id: friend.id,
       mode_id: mode.id,
@@ -445,6 +448,7 @@ export function GameScreen({
   function pickWildcard(c: Card) {
     setActiveCardId(null);
     setPlayingCardId(c.id);
+    toneCountsRef.current[c.vibe] = (toneCountsRef.current[c.vibe] ?? 0) + 1;
     track("wildcard_played", {
       friend_id: friend.id,
       mode_id: mode.id,
@@ -665,7 +669,10 @@ export function GameScreen({
                       friend_id: friend.id,
                       exchanges: exchange,
                     });
-                    onEnd({ transcript: buildTranscript([...chatRef.current]) });
+                    onEnd({
+                      transcript: buildTranscript([...chatRef.current]),
+                      toneCounts: { ...toneCountsRef.current },
+                    });
                   }}
                   className="w-full h-13 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold tracking-tight active:scale-[0.98] transition-transform"
                 >

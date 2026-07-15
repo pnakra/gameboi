@@ -1,10 +1,52 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Friend } from "@/components/game/friends";
 import type { Mode } from "@/components/game/modes";
+import type { Vibe } from "@/components/game/AdviceCard";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics";
 import { itoUrl } from "@/lib/ito";
+
+const VIBE_LABEL: Record<Vibe, string> = {
+  direct: "DIRECT",
+  chill: "CHILL",
+  bold: "BOLD",
+  soft: "SOFT",
+  chaos: "CHAOS",
+  ito: "REAL TALK",
+  ito_app: "REAL TALK",
+};
+
+const VIBE_TINT_VAR: Record<Vibe, string> = {
+  direct: "--card-direct",
+  chill: "--card-chill",
+  bold: "--card-bold",
+  soft: "--card-soft",
+  chaos: "--card-chaos",
+  ito: "--card-ito",
+  ito_app: "--card-ito",
+};
+
+/** e.g. "mostly CHILL · 2 REAL TALK moves" — falls back gracefully at low N. */
+function summarizeToneMix(counts: Partial<Record<Vibe, number>>): string | null {
+  const entries = (Object.entries(counts) as [Vibe, number][]).filter(([, n]) => n > 0);
+  if (entries.length === 0) return null;
+  const total = entries.reduce((s, [, n]) => s + n, 0);
+  entries.sort((a, b) => b[1] - a[1]);
+  const [topVibe, topN] = entries[0];
+  const topLabel = VIBE_LABEL[topVibe];
+  const parts: string[] = [];
+  // Only call it "mostly X" if that tone is a clear plurality.
+  if (topN / total >= 0.5 && total >= 2) parts.push(`mostly ${topLabel}`);
+  else parts.push(`${topN} ${topLabel}`);
+  // Surface REAL TALK separately if it's not already the headline.
+  const rt = (counts.ito ?? 0) + (counts.ito_app ?? 0);
+  if (rt > 0 && topVibe !== "ito" && topVibe !== "ito_app") {
+    parts.push(`${rt} REAL TALK`);
+  }
+  return parts.join(" · ");
+}
+
 
 const SHARE_BASE = "https://gameboi.online";
 
@@ -23,16 +65,23 @@ type Props = {
   friend: Friend;
   mode: Mode;
   transcript: string;
+  toneCounts?: Partial<Record<Vibe, number>>;
   onPlayAgain: () => void;
   onSwitchFriend: () => void;
 };
 
-export function EndCard({ friend, mode, transcript, onPlayAgain, onSwitchFriend }: Props) {
+export function EndCard({ friend, mode, transcript, toneCounts, onPlayAgain, onSwitchFriend }: Props) {
   const [recap, setRecap] = useState<string | null>(null);
   const [question, setQuestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [handoffLoading, setHandoffLoading] = useState(false);
   const [shareState, setShareState] = useState<"idle" | "copied">("idle");
+
+  const toneMix = useMemo(() => summarizeToneMix(toneCounts ?? {}), [toneCounts]);
+  const toneChips = useMemo(() => {
+    const entries = Object.entries(toneCounts ?? {}) as [Vibe, number][];
+    return entries.filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+  }, [toneCounts]);
 
   useEffect(() => {
     track("end_card_viewed", {
@@ -81,9 +130,10 @@ export function EndCard({ friend, mode, transcript, onPlayAgain, onSwitchFriend 
 
   async function handleShare() {
     const url = shareUrlFor(friend.id, mode.id);
+    const toneLine = toneMix ? `\n\n(${toneMix})` : "";
     const shareText = question
-      ? `${question}\n\nplayed this on gameboi — ${friend.name}'s scenario:`
-      : `played this scenario w/ ${friend.name} on gameboi:`;
+      ? `${question}\n\nplayed this on gameboi — ${friend.name}'s scenario:${toneLine}`
+      : `played this scenario w/ ${friend.name} on gameboi:${toneLine}`;
     track("share_clicked", { source: "end_card", friend_id: friend.id, mode_id: mode.id, has_question: !!question });
 
     const nav = typeof navigator !== "undefined" ? navigator : null;
@@ -127,7 +177,10 @@ export function EndCard({ friend, mode, transcript, onPlayAgain, onSwitchFriend 
           recap={recap}
           question={question}
           loading={loading}
+          toneMix={toneMix}
+          toneChips={toneChips}
         />
+
 
         <div className="mt-auto pt-10">
           <p className="text-[13px] leading-[1.5] text-foreground/70 lowercase mb-3 text-balance">
@@ -165,7 +218,7 @@ export function EndCard({ friend, mode, transcript, onPlayAgain, onSwitchFriend 
               }}
               className="active:opacity-60 transition-opacity"
             >
-              switch friends
+              play another friend
             </button>
           </div>
         </div>
@@ -179,15 +232,19 @@ function RecapFirstLayout({
   recap,
   question,
   loading,
+  toneMix,
+  toneChips,
 }: {
   friend: Friend;
   recap: string | null;
   question: string | null;
   loading: boolean;
+  toneMix: string | null;
+  toneChips: [Vibe, number][];
 }) {
   return (
     <>
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4">
         <div
           className="w-12 h-12 rounded-full overflow-hidden ring-1 ring-white/10"
           style={{ boxShadow: `0 0 0 1.5px var(--${friend.accent})` }}
@@ -199,6 +256,36 @@ function RecapFirstLayout({
           <div className="text-[12px] text-muted-foreground lowercase">went offline</div>
         </div>
       </div>
+
+      {toneChips.length > 0 && (
+        <div className="mb-6 flex flex-col gap-2">
+          <div className="flex flex-wrap gap-1.5">
+            {toneChips.map(([vibe, n]) => {
+              const tint = `var(${VIBE_TINT_VAR[vibe]})`;
+              return (
+                <span
+                  key={vibe}
+                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em]"
+                  style={{
+                    color: tint,
+                    backgroundColor: `color-mix(in oklch, ${tint} 12%, transparent)`,
+                    boxShadow: `inset 0 0 0 1px color-mix(in oklch, ${tint} 40%, transparent)`,
+                  }}
+                >
+                  {VIBE_LABEL[vibe]}
+                  <span className="text-foreground/70 font-semibold">×{n}</span>
+                </span>
+              );
+            })}
+          </div>
+          {toneMix && (
+            <div className="text-[12px] text-muted-foreground lowercase">
+              your mix: {toneMix.toLowerCase()}
+            </div>
+          )}
+        </div>
+      )}
+
 
       <p
         className={cn(

@@ -80,6 +80,7 @@ function Index() {
         friend={friend}
         mode={mode}
         transcript={endPayload.transcript}
+        toneCounts={endPayload.toneCounts}
         onPlayAgain={() => setStage("interstitial")}
         onSwitchFriend={() => {
           setEndPayload(null);
