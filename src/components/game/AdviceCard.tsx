@@ -43,6 +43,14 @@ type Props = {
 
 const CARD_WIDTH = 115; // px; narrow enough that 4 cards fit on a mobile screen
 
+/** Trim a label down to at most `max` words, stripping trailing punctuation. */
+function shortenLabel(label: string, max: number): string {
+  const cleaned = label.trim().replace(/[.!?,;:]+$/g, "");
+  const words = cleaned.split(/\s+/);
+  if (words.length <= max) return cleaned.toLowerCase();
+  return words.slice(0, max).join(" ").toLowerCase();
+}
+
 export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCard(
   {
     label,
