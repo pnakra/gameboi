@@ -89,6 +89,15 @@ export function GameScreen({
   >(null);
   // Upward drag distance (px) needed to release-play a card.
   const DRAG_PLAY_THRESHOLD = 110;
+  // First-session hint teaching the drag-to-play gesture.
+  const [showDragHint, setShowDragHint] = useState(false);
+  const hintDismissedRef = useRef(false);
+  const dismissDragHint = () => {
+    if (hintDismissedRef.current) return;
+    hintDismissedRef.current = true;
+    setShowDragHint(false);
+    try { sessionStorage.setItem("gb_drag_hint_seen", "1"); } catch {}
+  };
   const [draft, setDraft] = useState("");
   const [showMidReview, setShowMidReview] = useState(false);
   const [pendingHand, setPendingHand] = useState<Card[] | null>(null);
