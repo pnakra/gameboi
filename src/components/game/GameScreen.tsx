@@ -678,6 +678,41 @@ export function GameScreen({
             <div className="h-3" />
           </div>
 
+          {/* Drop zone — appears in the lower chat area while dragging a card,
+              highlights when the finger has crossed the release-to-send
+              threshold. Purely visual; play-detection uses dragOffset.y. */}
+          {draggingCardId && !playingCardId && (() => {
+            const inZone = -dragOffset.y >= DRAG_PLAY_THRESHOLD;
+            return (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-3 right-3 z-20 animate-fade-in"
+                style={{ bottom: 232 }}
+              >
+                <div
+                  className={cn(
+                    "rounded-2xl flex items-center justify-center h-24 transition-all duration-200",
+                    inZone ? "animate-drop-zone-pulse" : "",
+                  )}
+                  style={{
+                    border: `1.5px dashed color-mix(in oklch, var(--primary) ${inZone ? 85 : 55}%, transparent)`,
+                    background: `color-mix(in oklch, var(--primary) ${inZone ? 14 : 7}%, transparent)`,
+                    boxShadow: inZone
+                      ? "0 0 40px -4px color-mix(in oklch, var(--primary) 55%, transparent), inset 0 0 30px -6px color-mix(in oklch, var(--primary) 40%, transparent)"
+                      : "0 0 24px -6px color-mix(in oklch, var(--primary) 35%, transparent)",
+                  }}
+                >
+                  <span
+                    className="text-[11px] uppercase tracking-[0.24em] font-semibold"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    {inZone ? "release to send" : "drag here to send"}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* CARD HAND / CONTINUE — sits directly below the thread so on
               early turns it floats up to meet the last bubble. */}
           <div className="shrink-0 px-2 pt-2">
