@@ -58,6 +58,7 @@ function pickFrom<T>(arr: T[]): T {
 
 export type EndPayload = {
   transcript: string;
+  toneCounts: Partial<Record<Vibe, number>>;
 };
 
 export function GameScreen({
