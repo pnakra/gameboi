@@ -138,7 +138,12 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
           linear-gradient(160deg, color-mix(in oklch, ${tint} 22%, var(--surface-2)) 0%, var(--surface) 100%)
         `,
         boxShadow: dragging
-          ? `0 ${44 + 20 * (dragScale - 1.12) * 25}px ${100 + 40 * (dragScale - 1.12) * 25}px -20px color-mix(in oklch, ${tint} 85%, transparent),
+          ? armed
+            ? `0 60px 120px -18px color-mix(in oklch, ${tint} 95%, transparent),
+               0 0 90px 6px color-mix(in oklch, ${tint} 80%, transparent),
+               0 0 0 2.5px color-mix(in oklch, ${tint} 100%, transparent),
+               inset 0 1px 0 rgba(255,255,255,0.2)`
+            : `0 ${44 + 20 * (dragScale - 1.12) * 25}px ${100 + 40 * (dragScale - 1.12) * 25}px -20px color-mix(in oklch, ${tint} 85%, transparent),
              0 0 ${48 + 60 * (dragScale - 1.12) * 25}px 4px color-mix(in oklch, ${tint} 60%, transparent),
              0 0 0 2px color-mix(in oklch, ${tint} 95%, transparent),
              inset 0 1px 0 rgba(255,255,255,0.16)`
