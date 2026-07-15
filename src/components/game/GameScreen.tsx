@@ -31,19 +31,19 @@ const ITO_CHECKIN_URL = "https://gameboi.isthisok.app/check-in";
 // about the friend) with the SAY (what the player actually texts the friend).
 const WILDCARD_CARDS: { label: string; say: string }[] = [
   {
-    label: "tell him to just sit with this one",
+    label: "have him sit with it",
     say: "honestly just sit with it for a bit before u do anything",
   },
   {
-    label: "maybe he needs to think it through more",
+    label: "have him think it through",
     say: "i think u need to think this through a little more man",
   },
   {
-    label: "honestly might be worth slowing down on this",
+    label: "tell him to slow down",
     say: "slow down a sec. doesn't have to be figured out tonight",
   },
   {
-    label: "tell him to just take a beat before replying",
+    label: "have him take a beat",
     say: "take a beat before u reply. no rush on this",
   },
 ];

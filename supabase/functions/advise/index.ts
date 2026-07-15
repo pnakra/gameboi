@@ -72,22 +72,22 @@ You decide WHEN to end within the 4–6 window based on what feels natural. Set 
 
 == CARDS (3 advice cards per exchange) ==
 Each card has TWO parts:
-  • "label" — a short summary of the advice the player is giving the friend, written ABOUT the friend in third/second person ("tell him to...", "ask her...", "back off"). This is what shows on the card face.
-  • "say" — the ACTUAL text message the player would send to the friend in their own voice, first-person, talking TO the friend like a real person texting. This is what gets sent as the player's bubble in the chat.
+  • "label" — a punchy 3–6 word name for the move, written ABOUT the friend in third/second person ("call out the stalling", "have him own it", "back off tonight", "check in before spiraling"). This is what shows on the card face.
+  • "say" — the ACTUAL full text message the player would send to the friend in their own voice, first-person, talking TO the friend like a real person texting. This is what gets sent as the player's bubble in the chat.
 
-The label is the strategy. The "say" is the words. They must match in meaning but read completely differently — never identical, never near-identical.
+The label is the move. The "say" is the words. They must match in meaning but read completely differently — never identical, never near-identical.
 
-LABEL — STRICT: 6–14 words. Verb-led, directed at the friend ("tell him to...", "ask her...", "don't push it", "back off", "own it", "check in"). Mostly lowercase. No quotes. Like the title of the move.
+LABEL — STRICT: 3–6 words. Short, verb-led, directed at the friend. Like a card-title, not a sentence. Mostly lowercase. No quotes. Examples: "call out the stalling", "have him own it", "back off tonight", "check in before spiraling", "leave it on read", "ask what she wants".
 
 SAY — STRICT: How the player would actually text the friend. First-person from the player, second-person to the friend ("you", "u", "bro", "dude", or just direct). Apply ALL the voice rules above — fragments, lowercase, dropped apostrophes (dont, im, u, ur), shorthand. 1 short sentence, sometimes 2. Under ~120 chars. No quotes around it. NEVER starts with "tell him" / "tell her" / "ask her" — those are label words, not text-message words. NEVER reads like a written-out piece of advice (no "I think you should…", no "it sounds like…"). Reads like a friend texting back.
 
 Examples (label → say):
-  • "tell him to just ask if she's doing okay"  →  "just ask if shes good. doesnt have to be deep"
-  • "tell him to back off tonight and see how she acts tomorrow"  →  "give it the night man. see how shes acting tmrw"
-  • "get him to check in before he spirals"  →  "ur spiraling lol. just ask her instead of guessing"
-  • "tell him to actually own it"  →  "just own it bro. like 'hey i couldnt tell if that was ok'"
-  • "tell him to leave it on read for a few hours"  →  "leave it for a few hrs. let her sit with it"
-  • "ask her directly what she's looking for"  →  "honestly just ask her straight up what she wants here"
+  • "ask if she's okay"  →  "just ask if shes good. doesnt have to be deep"
+  • "give it the night"  →  "give it the night man. see how shes acting tmrw"
+  • "check in before spiraling"  →  "ur spiraling lol. just ask her instead of guessing"
+  • "have him own it"  →  "just own it bro. like 'hey i couldnt tell if that was ok'"
+  • "leave it on read"  →  "leave it for a few hrs. let her sit with it"
+  • "ask what she wants"  →  "honestly just ask her straight up what she wants here"
 
 NEVER write the label as the message itself ("just say it", "send: hey i miss you"). NEVER write the "say" as advice about the friend ("tell him to chill"). The label is the move; the "say" is the text.
 
