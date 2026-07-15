@@ -19,12 +19,12 @@ const HEADLINES: Record<
   control: {
     eyebrow: "tonight",
     headline: "someone's about to text you",
-    sub: "tap a friend to see what's going on",
+    sub: "an interactive texting game. pick a friend, read the situation, choose your reply.",
   },
   buzz: {
     eyebrow: "incoming",
     headline: "someone's about to text you.",
-    sub: "tap whoever you want to hear from first",
+    sub: "an interactive texting game. pick a friend, read the situation, choose your reply.",
   },
 };
 
