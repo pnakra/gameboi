@@ -65,16 +65,23 @@ type Props = {
   friend: Friend;
   mode: Mode;
   transcript: string;
+  toneCounts?: Partial<Record<Vibe, number>>;
   onPlayAgain: () => void;
   onSwitchFriend: () => void;
 };
 
-export function EndCard({ friend, mode, transcript, onPlayAgain, onSwitchFriend }: Props) {
+export function EndCard({ friend, mode, transcript, toneCounts, onPlayAgain, onSwitchFriend }: Props) {
   const [recap, setRecap] = useState<string | null>(null);
   const [question, setQuestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [handoffLoading, setHandoffLoading] = useState(false);
   const [shareState, setShareState] = useState<"idle" | "copied">("idle");
+
+  const toneMix = useMemo(() => summarizeToneMix(toneCounts ?? {}), [toneCounts]);
+  const toneChips = useMemo(() => {
+    const entries = Object.entries(toneCounts ?? {}) as [Vibe, number][];
+    return entries.filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+  }, [toneCounts]);
 
   useEffect(() => {
     track("end_card_viewed", {
