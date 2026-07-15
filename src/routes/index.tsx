@@ -13,10 +13,14 @@ import { track } from "@/lib/analytics";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "gameboi" },
-      { name: "description", content: "your friend just texted. play your move." },
-      { property: "og:title", content: "gameboi" },
-      { property: "og:description", content: "your friend just texted. play your move." },
+      { title: "gameboi — your friend just texted. play your move." },
+      { name: "description", content: "an interactive texting game. a friend hits you up mid-dating-crisis and you choose what to say. read the signals, don't fumble it." },
+      { property: "og:title", content: "gameboi — your friend just texted. play your move." },
+      { property: "og:description", content: "an interactive texting game. a friend hits you up mid-dating-crisis and you choose what to say. read the signals, don't fumble it." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "gameboi — your friend just texted. play your move." },
+      { name: "twitter:description", content: "homeboi needs your help" },
     ],
   }),
   component: Index,
