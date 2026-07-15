@@ -462,7 +462,7 @@ export function GameScreen({
       }
 
       void next({ chosenReply: c.say, replySource: "card", forExchange: nextEx });
-    }, 480);
+    }, 240);
   }
 
   function pickWildcard(c: Card) {
@@ -487,7 +487,7 @@ export function GameScreen({
       const nextEx = exchange + 1;
       setExchange(nextEx);
       void next({ chosenReply: c.say, replySource: "card", forExchange: nextEx });
-    }, 480);
+    }, 240);
   }
 
   function sendDraft() {
