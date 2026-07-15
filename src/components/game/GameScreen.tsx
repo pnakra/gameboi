@@ -203,6 +203,25 @@ export function GameScreen({
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [chat, loading]);
 
+  // While a card is being dragged, block native touch behaviors (scroll, text
+  // selection, iOS callout) at the document level with passive:false listeners,
+  // and add a body class that disables pointer events everywhere except the
+  // dragged card itself.
+  useEffect(() => {
+    if (!draggingCardId) return;
+    const prevent = (e: TouchEvent) => {
+      if (e.cancelable) e.preventDefault();
+    };
+    document.addEventListener("touchstart", prevent, { passive: false });
+    document.addEventListener("touchmove", prevent, { passive: false });
+    document.body.classList.add("gb-dragging");
+    return () => {
+      document.removeEventListener("touchstart", prevent);
+      document.removeEventListener("touchmove", prevent);
+      document.body.classList.remove("gb-dragging");
+    };
+  }, [draggingCardId]);
+
   /** Stream new cards into the hand one-by-one (deal animation). */
   async function dealCards(newCards: Card[]) {
     // Clear any leftover (e.g. after first turn there is nothing to clear)
@@ -526,7 +545,7 @@ export function GameScreen({
   const groupedChat = useMemo(() => groupBubbles(chat), [chat]);
 
   return (
-    <div className="relative min-h-[100dvh] w-full bg-background flex items-stretch sm:items-center justify-center sm:py-6">
+    <div className="gb-game-screen relative min-h-[100dvh] w-full bg-background flex items-stretch sm:items-center justify-center sm:py-6">
       <div
         className={cn(
           "relative w-full sm:max-w-[400px] flex flex-col",
