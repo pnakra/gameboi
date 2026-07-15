@@ -214,6 +214,17 @@ export function GameScreen({
     window.setTimeout(() => {
       setHand((h) => h.map((c) => ({ ...c, entering: false })));
     }, 600);
+    // First time this session that a hand is on screen → teach the gesture.
+    try {
+      if (!hintDismissedRef.current && sessionStorage.getItem("gb_drag_hint_seen") !== "1") {
+        window.setTimeout(() => {
+          if (!hintDismissedRef.current) setShowDragHint(true);
+        }, 700);
+        window.setTimeout(() => {
+          if (!hintDismissedRef.current) dismissDragHint();
+        }, 5200);
+      }
+    } catch {}
   }
 
   async function next(opts: {
