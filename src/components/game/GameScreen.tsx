@@ -102,6 +102,7 @@ export function GameScreen({
   const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
   const chatRef = useRef<ChatItem[]>([]);
+  const toneCountsRef = useRef<Partial<Record<Vibe, number>>>({});
   useEffect(() => {
     chatRef.current = chat;
   }, [chat]);
