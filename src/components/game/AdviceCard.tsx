@@ -54,6 +54,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
     playing,
     entering,
     dragging,
+    armed,
     dragX = 0,
     dragY = 0,
     className,
