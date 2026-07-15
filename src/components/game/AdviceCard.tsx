@@ -43,6 +43,14 @@ type Props = {
 
 const CARD_WIDTH = 115; // px; narrow enough that 4 cards fit on a mobile screen
 
+/** Trim a label down to at most `max` words, stripping trailing punctuation. */
+function shortenLabel(label: string, max: number): string {
+  const cleaned = label.trim().replace(/[.!?,;:]+$/g, "");
+  const words = cleaned.split(/\s+/);
+  if (words.length <= max) return cleaned.toLowerCase();
+  return words.slice(0, max).join(" ").toLowerCase();
+}
+
 export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCard(
   {
     label,
@@ -69,12 +77,21 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
   const s = vibeStyles[vibe];
   const tint = `var(${s.tintVar})`;
 
+  // Card labels sometimes arrive as full sentences from the model. Only the
+  // first ≤ 4 words are shown on the card face; the full `say` is what gets
+  // sent to the chat when the card is played (owned by GameScreen).
+  const displayLabel = shortenLabel(label, 4);
+
   // Fan math: gentle, readable arc.
   const center = (fanTotal - 1) / 2;
   const offset = fanIndex - center;
   const maxRotate = 5;
   const rotateDeg = fanTotal > 1 ? (offset / center) * maxRotate : 0;
-  const visibleRatio = 0.65;
+  // Overlap is tuned so the uncovered LEFT strip of each fanned card
+  // (≈ CARD_WIDTH * (1 - visibleRatio) px) fits the shortened 4-word label
+  // and the tone tag without any character being obscured by the neighbor
+  // stacked on top of it. Do not raise visibleRatio without re-verifying.
+  const visibleRatio = 0.28;
   const translateX = offset * (CARD_WIDTH * (1 - visibleRatio));
   const translateY = Math.abs(offset) * 4;
 
@@ -169,35 +186,53 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
         ...style,
       }}
     >
-      {/* Vibe tag — pinned to the visible top-left edge of a fanned card.
-          The card's border glow already carries the tone; the label just names it. */}
-      <div className="flex items-center gap-1.5" style={{ WebkitUserSelect: "none", userSelect: "none", WebkitTouchCallout: "none" }}>
+      {/* Vibe tag — pinned to the visible top-left corner, constrained to
+          the uncovered strip so the neighbor card can't clip a character.
+          When lifted (peek / drag) the constraint relaxes and full width is used. */}
+      <div
+        className="flex items-center gap-1.5"
+        style={{
+          WebkitUserSelect: "none",
+          userSelect: "none",
+          WebkitTouchCallout: "none",
+          maxWidth: lifted ? "100%" : 68,
+        }}
+      >
         <span
-          className="text-[10px] font-bold uppercase tracking-[0.18em]"
+          className={cn(
+            "font-bold uppercase truncate",
+            lifted ? "text-[10px] tracking-[0.18em]" : "text-[9px] tracking-[0.12em]",
+          )}
           style={{ color: tint }}
         >
           {s.tag}
         </span>
       </div>
 
-      {/* Label — short punchy move name, top-left, readable while fanned */}
+      {/* Label — short (≤4 words), left-aligned in the uncovered strip. */}
       <div
         className={cn(
-          "absolute inset-x-3.5 top-9 flex items-start overflow-hidden",
+          "absolute left-3.5 top-9 flex items-start overflow-hidden",
           "font-semibold text-foreground/95 text-balance",
         )}
-        style={{ WebkitUserSelect: "none", userSelect: "none", WebkitTouchCallout: "none" }}
+        style={{
+          WebkitUserSelect: "none",
+          userSelect: "none",
+          WebkitTouchCallout: "none",
+          right: lifted ? 14 : undefined,
+          width: lifted ? undefined : 68,
+        }}
       >
         <span
           className={cn(
             "block w-full transition-all duration-200",
             lifted
               ? "text-[15px] leading-[1.32]"
-              : "text-[13px] leading-[1.28] line-clamp-4",
+              : "text-[11px] leading-[1.2] line-clamp-3",
           )}
           style={{ WebkitUserSelect: "none", userSelect: "none", WebkitTouchCallout: "none" }}
         >
-          {label}
+          {lifted ? label : displayLabel}
         </span>
       </div>
 
