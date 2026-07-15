@@ -69,6 +69,11 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
   const s = vibeStyles[vibe];
   const tint = `var(${s.tintVar})`;
 
+  // Card labels sometimes arrive as full sentences from the model. Only the
+  // first ≤ 4 words are shown on the card face; the full `say` is what gets
+  // sent to the chat when the card is played (owned by GameScreen).
+  const displayLabel = shortenLabel(label, 4);
+
   // Fan math: gentle, readable arc.
   const center = (fanTotal - 1) / 2;
   const offset = fanIndex - center;
