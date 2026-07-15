@@ -114,7 +114,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
       {/* Label — fills card. Top-aligned so long text doesn't clip from below. */}
       <div
         className={cn(
-          "absolute inset-x-3.5 top-9 bottom-3.5 flex items-start overflow-hidden",
+          "absolute inset-x-3 top-8 bottom-3 flex items-start overflow-hidden",
           "font-semibold text-foreground/95 text-balance",
         )}
       >
