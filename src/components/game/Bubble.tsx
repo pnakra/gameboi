@@ -28,12 +28,18 @@ export function Bubble({
   return (
     <div
       className={cn(
-        "flex w-full flex-col",
+        "flex w-full flex-col select-none",
         isYou ? "items-end" : "items-start",
         tight ? "mt-[3px]" : "mt-2",
         pop ? "animate-bubble-pop" : "animate-float-in",
       )}
-      style={{ animationDelay: `${delay}ms`, transformOrigin: isYou ? "bottom right" : "bottom left" }}
+      style={{
+        animationDelay: `${delay}ms`,
+        transformOrigin: isYou ? "bottom right" : "bottom left",
+        WebkitUserSelect: "none",
+        userSelect: "none",
+        WebkitTouchCallout: "none",
+      }}
     >
       {speaker && !tight && !isYou && (
         <div className="text-[10.5px] text-muted-foreground/80 lowercase font-medium ml-3 mb-[2px] tracking-tight">
@@ -50,6 +56,7 @@ export function Bubble({
             : "bg-bubble-them text-bubble-them-foreground",
           last && (isYou ? "rounded-br-[6px]" : "rounded-bl-[6px]"),
         )}
+        style={{ WebkitUserSelect: "none", userSelect: "none", WebkitTouchCallout: "none" }}
       >
         {children}
       </div>

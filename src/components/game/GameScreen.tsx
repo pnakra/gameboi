@@ -626,8 +626,8 @@ export function GameScreen({
               the available space it scrolls and the cards stay anchored. */}
           <div
             ref={scrollRef}
-            className="min-h-0 overflow-y-auto px-3 pt-3 pb-0"
-            style={{ flex: "0 1 auto" }}
+            className="min-h-0 overflow-y-auto px-3 pt-3 pb-0 select-none"
+            style={{ flex: "0 1 auto", WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
           >
             {groupedChat.map((item, i) => {
               if (item.kind === "stamp") {
@@ -685,10 +685,11 @@ export function GameScreen({
               // Fanned hand of cards — used throughout the entire arc.
               <div
                 className={cn(
-                  "relative h-[200px] mx-auto",
+                  "relative h-[200px] mx-auto select-none",
                   "before:content-[''] before:absolute before:left-1/2 before:bottom-2 before:-translate-x-1/2",
                   "before:w-[340px] before:h-[40px] before:rounded-full before:bg-primary/10 before:blur-2xl before:pointer-events-none",
                 )}
+                style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
               >
                 {hand.map((c, i) => {
                   const active = activeCardId === c.id && playingCardId == null;
