@@ -32,6 +32,8 @@ type Props = {
   style?: React.CSSProperties;
 };
 
+const CARD_WIDTH = 115; // px; kept narrow so 4 cards stay readable on mobile
+
 export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCard(
   { label, vibe, onClick, disabled, fanIndex = 0, fanTotal = 1, active, playing, entering, className, style },
   ref,
@@ -46,7 +48,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
   const maxRotate = 5; // ±5° max
   const rotateDeg = fanTotal > 1 ? (offset / center) * maxRotate : 0;
   const cardOverlap = 0.4; // each interior card keeps 60% of its face visible
-  const translateX = offset * (cardWidth * (1 - cardOverlap)); // px horizontal spread
+  const translateX = offset * (CARD_WIDTH * (1 - cardOverlap)); // px horizontal spread
   const translateY = Math.abs(offset) * 4; // shallow arc dip
 
   const fanTransform = `translate(calc(-50% + ${translateX}px), ${translateY}px) rotate(${rotateDeg}deg)`;
