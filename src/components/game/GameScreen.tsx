@@ -647,8 +647,16 @@ export function GameScreen({
               the available space it scrolls and the cards stay anchored. */}
           <div
             ref={scrollRef}
-            className="min-h-0 overflow-y-auto px-3 pt-3 pb-0 select-none"
-            style={{ flex: "0 1 auto", WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
+            className="min-h-0 overflow-y-auto px-3 pt-3 pb-0 select-none transition-[filter,background-color] duration-200 ease-out"
+            style={{
+              flex: "0 1 auto",
+              WebkitUserSelect: "none",
+              WebkitTouchCallout: "none",
+              filter: dragArmed ? "brightness(1.12) saturate(1.05)" : undefined,
+              backgroundColor: dragArmed
+                ? "color-mix(in oklch, var(--primary) 5%, transparent)"
+                : undefined,
+            }}
           >
             {groupedChat.map((item, i) => {
               if (item.kind === "stamp") {
