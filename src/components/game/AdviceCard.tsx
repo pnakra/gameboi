@@ -83,7 +83,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
   const peekTransform = `translate(-50%, -56px) rotate(0deg) scale(1.08)`;
   // Drag: follow the finger from the peek anchor, no rotation, slightly larger.
   // Uses displayed dragX/dragY (magnet pull applied upstream in GameScreen).
-  const dragScale = 1.12 + 0.04 * Math.max(0, Math.min(1, ((dragY < 0 ? -dragY : 0) - 40) / 90));
+  const dragScale = (armed ? 1.2 : 1.12) + 0.04 * Math.max(0, Math.min(1, ((dragY < 0 ? -dragY : 0) - 40) / 90));
   const dragTransform = `translate(calc(-50% + ${dragX}px), calc(-56px + ${dragY}px)) rotate(0deg) scale(${dragScale.toFixed(3)})`;
   // "Send" — snaps the card into the outgoing bubble area with a small bounce.
   // Short + fast: chat bubble takes over via its own settle animation.
