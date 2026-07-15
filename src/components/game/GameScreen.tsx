@@ -88,7 +88,8 @@ export function GameScreen({
     { x: number; y: number; t: number; id: string; pointerId: number } | null
   >(null);
   // Upward drag distance (px) needed to release-play a card.
-  const DRAG_PLAY_THRESHOLD = 110;
+  const DRAG_PLAY_THRESHOLD = 120;
+  const dragArmed = !!draggingCardId && -dragOffset.y >= DRAG_PLAY_THRESHOLD;
   // First-session hint teaching the drag-to-play gesture.
   const [showDragHint, setShowDragHint] = useState(false);
   const hintDismissedRef = useRef(false);
