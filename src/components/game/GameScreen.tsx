@@ -448,6 +448,7 @@ export function GameScreen({
   function pickWildcard(c: Card) {
     setActiveCardId(null);
     setPlayingCardId(c.id);
+    toneCountsRef.current[c.vibe] = (toneCountsRef.current[c.vibe] ?? 0) + 1;
     track("wildcard_played", {
       friend_id: friend.id,
       mode_id: mode.id,
