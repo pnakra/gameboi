@@ -759,8 +759,9 @@ export function GameScreen({
                       playing={playing}
                       entering={c.entering}
                       dragging={dragging}
-                      dragX={dragging ? dragOffset.x * (1 - 0.45 * Math.max(0, Math.min(1, ((-dragOffset.y) - (DRAG_PLAY_THRESHOLD - 70)) / 70))) : 0}
-                      dragY={dragging ? dragOffset.y - 14 * Math.max(0, Math.min(1, ((-dragOffset.y) - (DRAG_PLAY_THRESHOLD - 70)) / 70)) : 0}
+                      armed={dragging && dragArmed}
+                      dragX={dragging ? dragOffset.x : 0}
+                      dragY={dragging ? dragOffset.y : 0}
                       disabled={loading || !!playingCardId}
                       style={c.entering ? undefined : { animationDelay: `${i * 0.35}s` }}
                       onPointerDown={(e) => {
