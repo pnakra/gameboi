@@ -91,7 +91,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
   // (≈ CARD_WIDTH * (1 - visibleRatio) px) fits the shortened 4-word label
   // and the tone tag without any character being obscured by the neighbor
   // stacked on top of it. Do not raise visibleRatio without re-verifying.
-  const visibleRatio = 0.4;
+  const visibleRatio = 0.28;
   const translateX = offset * (CARD_WIDTH * (1 - visibleRatio));
   const translateY = Math.abs(offset) * 4;
 
