@@ -126,6 +126,28 @@
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
+
+  /* Game screen: nothing is text-selectable, and native touch callouts
+     (iOS magnifier / long-press menu) never appear. Applied to every
+     descendant so bubbles, headers, background all obey. */
+  .gb-game-screen,
+  .gb-game-screen * {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* While a card is being dragged, freeze pointer interactions on every
+     element EXCEPT the dragged card and its children. Prevents accidental
+     scrolls, taps, and hover states from interrupting the gesture. */
+  body.gb-dragging {
+    touch-action: none;
+    overflow: hidden;
+  }
+  body.gb-dragging *:not([data-drag-card]):not([data-drag-card] *) {
+    pointer-events: none !important;
+  }
 }
 
 @layer utilities {
