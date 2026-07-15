@@ -218,7 +218,7 @@ export function EndCard({ friend, mode, transcript, toneCounts, onPlayAgain, onS
               }}
               className="active:opacity-60 transition-opacity"
             >
-              switch friends
+              play another friend
             </button>
           </div>
         </div>
