@@ -32,6 +32,8 @@ type Props = {
   style?: React.CSSProperties;
 };
 
+const CARD_WIDTH = 115; // px; narrow enough that 4 cards fit on a mobile screen
+
 export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCard(
   { label, vibe, onClick, disabled, fanIndex = 0, fanTotal = 1, active, playing, entering, className, style },
   ref,
@@ -39,13 +41,16 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
   const s = vibeStyles[vibe];
   const tint = `var(${s.tintVar})`;
 
-  // Fan math: spread cards in an arc.
-  // Center index sits at the middle.
+  // Fan math: gentle, readable arc.
+  // Center index sits at the middle; rightmost card sits on top so each
+  // card's top-left text stays visible.
   const center = (fanTotal - 1) / 2;
   const offset = fanIndex - center; // -1.5 ... +1.5 for 4 cards
-  const rotateDeg = offset * 6; // ±9° max
-  const translateX = offset * 56; // px horizontal spread
-  const translateY = Math.abs(offset) * 8; // arc dip (further from center = lower)
+  const maxRotate = 5; // ±5° max
+  const rotateDeg = fanTotal > 1 ? (offset / center) * maxRotate : 0;
+  const visibleRatio = 0.65; // each card keeps ~65% of its face visible
+  const translateX = offset * (CARD_WIDTH * (1 - visibleRatio)); // px horizontal spread
+  const translateY = Math.abs(offset) * 4; // shallow arc dip
 
   const fanTransform = `translate(calc(-50% + ${translateX}px), ${translateY}px) rotate(${rotateDeg}deg)`;
 
@@ -57,7 +62,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
       aria-label={label}
       className={cn(
         "absolute left-1/2 bottom-0",
-        "w-[180px] rounded-[22px] p-3.5 text-left select-none",
+        "w-[115px] rounded-[22px] p-3.5 text-left select-none",
         "border border-white/10 ring-1 ring-white/5",
         "transition-[transform,box-shadow,opacity,height] duration-300 ease-out",
         "will-change-transform origin-bottom",
@@ -76,8 +81,8 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
             `translate(-50%, -56px) rotate(0deg) scale(1.08)`
           : fanTransform,
         opacity: playing ? 0 : 1,
-        // First card sits on top, last card (isthisok.app) sits at the back.
-        zIndex: active ? 30 : 10 + (fanTotal - 1 - fanIndex),
+        // Rightmost card sits on top so every card's top-left text is readable.
+        zIndex: active ? 30 : 10 + fanIndex,
         backgroundImage: `
           radial-gradient(120% 80% at 30% 0%, color-mix(in oklch, ${tint} 28%, transparent) 0%, transparent 55%),
           linear-gradient(160deg, color-mix(in oklch, ${tint} 22%, var(--surface-2)) 0%, var(--surface) 100%)
