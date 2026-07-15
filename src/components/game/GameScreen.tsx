@@ -711,6 +711,30 @@ export function GameScreen({
                 )}
                 style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
               >
+                {/* First-session gesture hint — dismisses on any card touch */}
+                {showDragHint && hand.length > 0 && !draggingCardId && !playingCardId && (
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-14 flex flex-col items-center gap-1 animate-fade-in"
+                  >
+                    <div
+                      className="animate-hint-bob text-[22px] leading-none"
+                      style={{ color: "var(--primary)" }}
+                    >
+                      ↑
+                    </div>
+                    <div
+                      className="text-[10.5px] uppercase tracking-[0.22em] font-semibold px-2.5 py-1 rounded-full"
+                      style={{
+                        color: "var(--primary)",
+                        background: "color-mix(in oklch, var(--primary) 12%, transparent)",
+                        border: "1px solid color-mix(in oklch, var(--primary) 30%, transparent)",
+                      }}
+                    >
+                      hold + drag up to send
+                    </div>
+                  </div>
+                )}
                 {hand.map((c, i) => {
                   const active = activeCardId === c.id && playingCardId == null;
                   const playing = playingCardId === c.id;
@@ -729,8 +753,10 @@ export function GameScreen({
                       dragX={dragging ? dragOffset.x : 0}
                       dragY={dragging ? dragOffset.y : 0}
                       disabled={loading || !!playingCardId}
+                      style={{ animationDelay: `${i * 0.35}s` }}
                       onPointerDown={(e) => {
                         if (loading || playingCardId) return;
+                        dismissDragHint();
                         (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
                         pointerStartRef.current = {
                           x: e.clientX,
