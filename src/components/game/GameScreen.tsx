@@ -81,6 +81,13 @@ export function GameScreen({
   const [isFinished, setIsFinished] = useState(false);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
+  const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const pointerStartRef = useRef<
+    { x: number; y: number; t: number; id: string; pointerId: number } | null
+  >(null);
+  // Upward drag distance (px) needed to release-play a card.
+  const DRAG_PLAY_THRESHOLD = 110;
   const [draft, setDraft] = useState("");
   const [showMidReview, setShowMidReview] = useState(false);
   const [pendingHand, setPendingHand] = useState<Card[] | null>(null);
@@ -679,6 +686,7 @@ export function GameScreen({
                 {hand.map((c, i) => {
                   const active = activeCardId === c.id && playingCardId == null;
                   const playing = playingCardId === c.id;
+                  const dragging = draggingCardId === c.id && playingCardId == null;
                   return (
                     <AdviceCard
                       key={c.id}
@@ -689,16 +697,61 @@ export function GameScreen({
                       active={active}
                       playing={playing}
                       entering={c.entering}
-                      onClick={() => {
-                        if (active) pickCard(c);
-                        else setActiveCardId(c.id);
-                      }}
+                      dragging={dragging}
+                      dragX={dragging ? dragOffset.x : 0}
+                      dragY={dragging ? dragOffset.y : 0}
                       disabled={loading || !!playingCardId}
-                      style={{}}
-                      {...{
-                        onMouseEnter: () => !playingCardId && setActiveCardId(c.id),
-                        onMouseLeave: () =>
-                          activeCardId === c.id && setActiveCardId(null),
+                      onPointerDown={(e) => {
+                        if (loading || playingCardId) return;
+                        (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+                        pointerStartRef.current = {
+                          x: e.clientX,
+                          y: e.clientY,
+                          t: Date.now(),
+                          id: c.id,
+                          pointerId: e.pointerId,
+                        };
+                        setDraggingCardId(c.id);
+                        setActiveCardId(c.id);
+                        setDragOffset({ x: 0, y: 0 });
+                      }}
+                      onPointerMove={(e) => {
+                        const s = pointerStartRef.current;
+                        if (!s || s.id !== c.id) return;
+                        setDragOffset({ x: e.clientX - s.x, y: e.clientY - s.y });
+                      }}
+                      onPointerUp={(e) => {
+                        const s = pointerStartRef.current;
+                        if (!s || s.id !== c.id) return;
+                        const dx = e.clientX - s.x;
+                        const dy = e.clientY - s.y;
+                        const dt = Date.now() - s.t;
+                        const dist = Math.hypot(dx, dy);
+                        pointerStartRef.current = null;
+                        // Quick tap → toggle peek (tap-to-peek fallback)
+                        if (dt < 250 && dist < 8) {
+                          setDraggingCardId(null);
+                          setDragOffset({ x: 0, y: 0 });
+                          setActiveCardId((cur) => (cur === c.id ? null : c.id));
+                          return;
+                        }
+                        // Upward drag past threshold → play
+                        if (-dy >= DRAG_PLAY_THRESHOLD) {
+                          setDraggingCardId(null);
+                          setDragOffset({ x: 0, y: 0 });
+                          pickCard(c);
+                          return;
+                        }
+                        // Otherwise → snap back into the fan
+                        setDraggingCardId(null);
+                        setDragOffset({ x: 0, y: 0 });
+                        setActiveCardId(null);
+                      }}
+                      onPointerCancel={() => {
+                        pointerStartRef.current = null;
+                        setDraggingCardId(null);
+                        setDragOffset({ x: 0, y: 0 });
+                        setActiveCardId(null);
                       }}
                     />
                   );
