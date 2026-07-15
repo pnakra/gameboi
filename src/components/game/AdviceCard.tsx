@@ -107,6 +107,9 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
       )}
       style={{
         touchAction: "none",
+        WebkitUserSelect: "none",
+        userSelect: "none",
+        WebkitTouchCallout: "none",
         height: lifted ? 250 : 196,
         transform: playing
           ? playTransform
@@ -145,7 +148,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
     >
       {/* Vibe tag — pinned to the visible top-left edge of a fanned card.
           The card's border glow already carries the tone; the label just names it. */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5" style={{ WebkitUserSelect: "none", userSelect: "none", WebkitTouchCallout: "none" }}>
         <span
           className="text-[10px] font-bold uppercase tracking-[0.18em]"
           style={{ color: tint }}
@@ -160,6 +163,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
           "absolute inset-x-3.5 top-9 flex items-start overflow-hidden",
           "font-semibold text-foreground/95 text-balance",
         )}
+        style={{ WebkitUserSelect: "none", userSelect: "none", WebkitTouchCallout: "none" }}
       >
         <span
           className={cn(
@@ -168,6 +172,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
               ? "text-[15px] leading-[1.32]"
               : "text-[13px] leading-[1.28] line-clamp-4",
           )}
+          style={{ WebkitUserSelect: "none", userSelect: "none", WebkitTouchCallout: "none" }}
         >
           {label}
         </span>
