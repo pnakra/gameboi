@@ -208,6 +208,26 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
             "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.15) 100%)",
         }}
       />
+
+      {/* "release to send" — rides with the card once drag crosses threshold */}
+      {dragging && armed && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-3 whitespace-nowrap animate-fade-in"
+        >
+          <span
+            className="text-[10px] uppercase tracking-[0.22em] font-bold px-2.5 py-1 rounded-full"
+            style={{
+              color: tint,
+              background: `color-mix(in oklch, ${tint} 14%, transparent)`,
+              border: `1px solid color-mix(in oklch, ${tint} 55%, transparent)`,
+              boxShadow: `0 0 18px -2px color-mix(in oklch, ${tint} 60%, transparent)`,
+            }}
+          >
+            release to send
+          </span>
+        </div>
+      )}
     </button>
   );
 });
