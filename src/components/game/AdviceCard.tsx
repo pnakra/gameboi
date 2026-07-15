@@ -186,35 +186,53 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
         ...style,
       }}
     >
-      {/* Vibe tag — pinned to the visible top-left edge of a fanned card.
-          The card's border glow already carries the tone; the label just names it. */}
-      <div className="flex items-center gap-1.5" style={{ WebkitUserSelect: "none", userSelect: "none", WebkitTouchCallout: "none" }}>
+      {/* Vibe tag — pinned to the visible top-left corner, constrained to
+          the uncovered strip so the neighbor card can't clip a character.
+          When lifted (peek / drag) the constraint relaxes and full width is used. */}
+      <div
+        className="flex items-center gap-1.5"
+        style={{
+          WebkitUserSelect: "none",
+          userSelect: "none",
+          WebkitTouchCallout: "none",
+          maxWidth: lifted ? "100%" : 68,
+        }}
+      >
         <span
-          className="text-[10px] font-bold uppercase tracking-[0.18em]"
+          className={cn(
+            "font-bold uppercase truncate",
+            lifted ? "text-[10px] tracking-[0.18em]" : "text-[9px] tracking-[0.12em]",
+          )}
           style={{ color: tint }}
         >
           {s.tag}
         </span>
       </div>
 
-      {/* Label — short punchy move name, top-left, readable while fanned */}
+      {/* Label — short (≤4 words), left-aligned in the uncovered strip. */}
       <div
         className={cn(
-          "absolute inset-x-3.5 top-9 flex items-start overflow-hidden",
+          "absolute left-3.5 top-9 flex items-start overflow-hidden",
           "font-semibold text-foreground/95 text-balance",
         )}
-        style={{ WebkitUserSelect: "none", userSelect: "none", WebkitTouchCallout: "none" }}
+        style={{
+          WebkitUserSelect: "none",
+          userSelect: "none",
+          WebkitTouchCallout: "none",
+          right: lifted ? 14 : undefined,
+          width: lifted ? undefined : 68,
+        }}
       >
         <span
           className={cn(
             "block w-full transition-all duration-200",
             lifted
               ? "text-[15px] leading-[1.32]"
-              : "text-[13px] leading-[1.28] line-clamp-4",
+              : "text-[11px] leading-[1.2] line-clamp-3",
           )}
           style={{ WebkitUserSelect: "none", userSelect: "none", WebkitTouchCallout: "none" }}
         >
-          {label}
+          {lifted ? label : displayLabel}
         </span>
       </div>
 
