@@ -61,7 +61,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
       aria-label={label}
       className={cn(
         "absolute left-1/2 bottom-0",
-        "w-[180px] rounded-[22px] p-3.5 text-left select-none",
+        "w-[115px] rounded-[22px] p-3 text-left select-none",
         "border border-white/10 ring-1 ring-white/5",
         "transition-[transform,box-shadow,opacity,height] duration-300 ease-out",
         "will-change-transform origin-bottom",
