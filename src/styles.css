@@ -172,4 +172,29 @@
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
   .animate-bubble-pop { animation: bubble-pop-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+  /* Registered custom property so we can animate it and compose with an
+     inline transform (the card's fan/peek transform is applied inline). */
+  @property --card-float {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+  }
+  @keyframes card-float {
+    0%, 100% { --card-float: 0px; }
+    50%      { --card-float: -6px; }
+  }
+  .animate-card-float { animation: card-float 3.4s ease-in-out infinite; }
+
+  @keyframes hint-bob {
+    0%, 100% { transform: translateY(0); opacity: 0.9; }
+    50%      { transform: translateY(-6px); opacity: 1; }
+  }
+  .animate-hint-bob { animation: hint-bob 1.4s ease-in-out infinite; }
+
+  @keyframes drop-zone-pulse {
+    0%, 100% { opacity: 0.75; }
+    50%      { opacity: 1; }
+  }
+  .animate-drop-zone-pulse { animation: drop-zone-pulse 1.6s ease-in-out infinite; }
 }

@@ -89,6 +89,15 @@ export function GameScreen({
   >(null);
   // Upward drag distance (px) needed to release-play a card.
   const DRAG_PLAY_THRESHOLD = 110;
+  // First-session hint teaching the drag-to-play gesture.
+  const [showDragHint, setShowDragHint] = useState(false);
+  const hintDismissedRef = useRef(false);
+  const dismissDragHint = () => {
+    if (hintDismissedRef.current) return;
+    hintDismissedRef.current = true;
+    setShowDragHint(false);
+    try { sessionStorage.setItem("gb_drag_hint_seen", "1"); } catch {}
+  };
   const [draft, setDraft] = useState("");
   const [showMidReview, setShowMidReview] = useState(false);
   const [pendingHand, setPendingHand] = useState<Card[] | null>(null);
@@ -205,6 +214,17 @@ export function GameScreen({
     window.setTimeout(() => {
       setHand((h) => h.map((c) => ({ ...c, entering: false })));
     }, 600);
+    // First time this session that a hand is on screen → teach the gesture.
+    try {
+      if (!hintDismissedRef.current && sessionStorage.getItem("gb_drag_hint_seen") !== "1") {
+        window.setTimeout(() => {
+          if (!hintDismissedRef.current) setShowDragHint(true);
+        }, 700);
+        window.setTimeout(() => {
+          if (!hintDismissedRef.current) dismissDragHint();
+        }, 5200);
+      }
+    } catch {}
   }
 
   async function next(opts: {
@@ -658,6 +678,41 @@ export function GameScreen({
             <div className="h-3" />
           </div>
 
+          {/* Drop zone — appears in the lower chat area while dragging a card,
+              highlights when the finger has crossed the release-to-send
+              threshold. Purely visual; play-detection uses dragOffset.y. */}
+          {draggingCardId && !playingCardId && (() => {
+            const inZone = -dragOffset.y >= DRAG_PLAY_THRESHOLD;
+            return (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-3 right-3 z-20 animate-fade-in"
+                style={{ bottom: 232 }}
+              >
+                <div
+                  className={cn(
+                    "rounded-2xl flex items-center justify-center h-24 transition-all duration-200",
+                    inZone ? "animate-drop-zone-pulse" : "",
+                  )}
+                  style={{
+                    border: `1.5px dashed color-mix(in oklch, var(--primary) ${inZone ? 85 : 55}%, transparent)`,
+                    background: `color-mix(in oklch, var(--primary) ${inZone ? 14 : 7}%, transparent)`,
+                    boxShadow: inZone
+                      ? "0 0 40px -4px color-mix(in oklch, var(--primary) 55%, transparent), inset 0 0 30px -6px color-mix(in oklch, var(--primary) 40%, transparent)"
+                      : "0 0 24px -6px color-mix(in oklch, var(--primary) 35%, transparent)",
+                  }}
+                >
+                  <span
+                    className="text-[11px] uppercase tracking-[0.24em] font-semibold"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    {inZone ? "release to send" : "drag here to send"}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* CARD HAND / CONTINUE — sits directly below the thread so on
               early turns it floats up to meet the last bubble. */}
           <div className="shrink-0 px-2 pt-2">
@@ -691,6 +746,30 @@ export function GameScreen({
                 )}
                 style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
               >
+                {/* First-session gesture hint — dismisses on any card touch */}
+                {showDragHint && hand.length > 0 && !draggingCardId && !playingCardId && (
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-14 flex flex-col items-center gap-1 animate-fade-in"
+                  >
+                    <div
+                      className="animate-hint-bob text-[22px] leading-none"
+                      style={{ color: "var(--primary)" }}
+                    >
+                      ↑
+                    </div>
+                    <div
+                      className="text-[10.5px] uppercase tracking-[0.22em] font-semibold px-2.5 py-1 rounded-full"
+                      style={{
+                        color: "var(--primary)",
+                        background: "color-mix(in oklch, var(--primary) 12%, transparent)",
+                        border: "1px solid color-mix(in oklch, var(--primary) 30%, transparent)",
+                      }}
+                    >
+                      hold + drag up to send
+                    </div>
+                  </div>
+                )}
                 {hand.map((c, i) => {
                   const active = activeCardId === c.id && playingCardId == null;
                   const playing = playingCardId === c.id;
@@ -709,8 +788,10 @@ export function GameScreen({
                       dragX={dragging ? dragOffset.x : 0}
                       dragY={dragging ? dragOffset.y : 0}
                       disabled={loading || !!playingCardId}
+                      style={c.entering ? undefined : { animationDelay: `${i * 0.35}s` }}
                       onPointerDown={(e) => {
                         if (loading || playingCardId) return;
+                        dismissDragHint();
                         (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
                         pointerStartRef.current = {
                           x: e.clientX,
