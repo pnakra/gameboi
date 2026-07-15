@@ -545,7 +545,7 @@ export function GameScreen({
   const groupedChat = useMemo(() => groupBubbles(chat), [chat]);
 
   return (
-    <div className="relative min-h-[100dvh] w-full bg-background flex items-stretch sm:items-center justify-center sm:py-6">
+    <div className="gb-game-screen relative min-h-[100dvh] w-full bg-background flex items-stretch sm:items-center justify-center sm:py-6">
       <div
         className={cn(
           "relative w-full sm:max-w-[400px] flex flex-col",
