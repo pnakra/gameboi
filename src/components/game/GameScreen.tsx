@@ -462,7 +462,7 @@ export function GameScreen({
       }
 
       void next({ chosenReply: c.say, replySource: "card", forExchange: nextEx });
-    }, 480);
+    }, 240);
   }
 
   function pickWildcard(c: Card) {
@@ -487,7 +487,7 @@ export function GameScreen({
       const nextEx = exchange + 1;
       setExchange(nextEx);
       void next({ chosenReply: c.say, replySource: "card", forExchange: nextEx });
-    }, 480);
+    }, 240);
   }
 
   function sendDraft() {
@@ -682,7 +682,12 @@ export function GameScreen({
               highlights when the finger has crossed the release-to-send
               threshold. Purely visual; play-detection uses dragOffset.y. */}
           {draggingCardId && !playingCardId && (() => {
-            const inZone = -dragOffset.y >= DRAG_PLAY_THRESHOLD;
+            const upward = Math.max(0, -dragOffset.y);
+            const proximity = Math.max(0, Math.min(1, (upward - (DRAG_PLAY_THRESHOLD - 70)) / 70));
+            const inZone = upward >= DRAG_PLAY_THRESHOLD;
+            const borderPct = 45 + 45 * proximity;
+            const bgPct = 5 + 11 * proximity;
+            const glow = 20 + 40 * proximity;
             return (
               <div
                 aria-hidden
@@ -691,19 +696,19 @@ export function GameScreen({
               >
                 <div
                   className={cn(
-                    "rounded-2xl flex items-center justify-center h-24 transition-all duration-200",
+                    "rounded-2xl flex items-center justify-center h-24",
                     inZone ? "animate-drop-zone-pulse" : "",
                   )}
                   style={{
-                    border: `1.5px dashed color-mix(in oklch, var(--primary) ${inZone ? 85 : 55}%, transparent)`,
-                    background: `color-mix(in oklch, var(--primary) ${inZone ? 14 : 7}%, transparent)`,
-                    boxShadow: inZone
-                      ? "0 0 40px -4px color-mix(in oklch, var(--primary) 55%, transparent), inset 0 0 30px -6px color-mix(in oklch, var(--primary) 40%, transparent)"
-                      : "0 0 24px -6px color-mix(in oklch, var(--primary) 35%, transparent)",
+                    transition: "border-color 120ms ease-out, background 120ms ease-out, box-shadow 160ms ease-out, transform 180ms cubic-bezier(0.34,1.56,0.64,1)",
+                    transform: `scale(${(1 + 0.03 * proximity).toFixed(3)})`,
+                    border: `1.5px dashed color-mix(in oklch, var(--primary) ${borderPct.toFixed(0)}%, transparent)`,
+                    background: `color-mix(in oklch, var(--primary) ${bgPct.toFixed(0)}%, transparent)`,
+                    boxShadow: `0 0 ${glow.toFixed(0)}px -4px color-mix(in oklch, var(--primary) ${(35 + 30 * proximity).toFixed(0)}%, transparent), inset 0 0 ${(15 + 20 * proximity).toFixed(0)}px -6px color-mix(in oklch, var(--primary) ${(25 + 25 * proximity).toFixed(0)}%, transparent)`,
                   }}
                 >
                   <span
-                    className="text-[11px] uppercase tracking-[0.24em] font-semibold"
+                    className="text-[11px] uppercase tracking-[0.24em] font-semibold transition-opacity"
                     style={{ color: "var(--primary)" }}
                   >
                     {inZone ? "release to send" : "drag here to send"}
@@ -785,8 +790,8 @@ export function GameScreen({
                       playing={playing}
                       entering={c.entering}
                       dragging={dragging}
-                      dragX={dragging ? dragOffset.x : 0}
-                      dragY={dragging ? dragOffset.y : 0}
+                      dragX={dragging ? dragOffset.x * (1 - 0.45 * Math.max(0, Math.min(1, ((-dragOffset.y) - (DRAG_PLAY_THRESHOLD - 70)) / 70))) : 0}
+                      dragY={dragging ? dragOffset.y - 14 * Math.max(0, Math.min(1, ((-dragOffset.y) - (DRAG_PLAY_THRESHOLD - 70)) / 70)) : 0}
                       disabled={loading || !!playingCardId}
                       style={c.entering ? undefined : { animationDelay: `${i * 0.35}s` }}
                       onPointerDown={(e) => {

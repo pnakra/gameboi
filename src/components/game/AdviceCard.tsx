@@ -79,11 +79,19 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
   // Peek / active (tap-to-peek fallback): lifted, enlarged, centered.
   const peekTransform = `translate(-50%, -56px) rotate(0deg) scale(1.08)`;
   // Drag: follow the finger from the peek anchor, no rotation, slightly larger.
-  const dragTransform = `translate(calc(-50% + ${dragX}px), calc(-56px + ${dragY}px)) rotate(0deg) scale(1.12)`;
-  const playTransform = `translate(-50%, -120vh) rotate(0deg) scale(0.9)`;
+  // Uses displayed dragX/dragY (magnet pull applied upstream in GameScreen).
+  const dragScale = 1.12 + 0.04 * Math.max(0, Math.min(1, ((dragY < 0 ? -dragY : 0) - 40) / 90));
+  const dragTransform = `translate(calc(-50% + ${dragX}px), calc(-56px + ${dragY}px)) rotate(0deg) scale(${dragScale.toFixed(3)})`;
+  // "Send" — snaps the card into the outgoing bubble area with a small bounce.
+  // Short + fast: chat bubble takes over via its own settle animation.
+  const playTransform = `translate(calc(-50% + 60px), -180px) rotate(0deg) scale(0.28)`;
 
   const lifted = active || dragging;
   const idle = !lifted && !playing && !entering;
+
+  // Springy pickup vs snappy release — both under 300ms.
+  const pickupSpring = "cubic-bezier(0.34, 1.56, 0.64, 1)"; // slight overshoot
+  const sendCurve = "cubic-bezier(0.4, 1.6, 0.5, 1)";       // quick settle
 
   return (
     <button
@@ -127,10 +135,10 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
           linear-gradient(160deg, color-mix(in oklch, ${tint} 22%, var(--surface-2)) 0%, var(--surface) 100%)
         `,
         boxShadow: dragging
-          ? `0 40px 90px -20px color-mix(in oklch, ${tint} 80%, transparent),
-             0 0 42px 4px color-mix(in oklch, ${tint} 55%, transparent),
-             0 0 0 2px color-mix(in oklch, ${tint} 90%, transparent),
-             inset 0 1px 0 rgba(255,255,255,0.14)`
+          ? `0 ${44 + 20 * (dragScale - 1.12) * 25}px ${100 + 40 * (dragScale - 1.12) * 25}px -20px color-mix(in oklch, ${tint} 85%, transparent),
+             0 0 ${48 + 60 * (dragScale - 1.12) * 25}px 4px color-mix(in oklch, ${tint} 60%, transparent),
+             0 0 0 2px color-mix(in oklch, ${tint} 95%, transparent),
+             inset 0 1px 0 rgba(255,255,255,0.16)`
           : active
           ? `0 30px 60px -16px color-mix(in oklch, ${tint} 55%, transparent),
              0 0 0 1.5px color-mix(in oklch, ${tint} 75%, transparent),
@@ -142,9 +150,13 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
              0 0 26px -6px color-mix(in oklch, ${tint} 30%, transparent),
              inset 0 0 0 1px color-mix(in oklch, ${tint} 22%, transparent),
              inset 0 1px 0 rgba(255,255,255,0.06)`,
-        // While dragging, kill the transition so it tracks the finger.
-        transition: dragging ? "none" : undefined,
-        transitionDuration: playing ? "550ms" : undefined,
+        // While dragging, kill transform transition so it tracks the finger;
+        // shadow still transitions for the "pickup" swell.
+        transition: dragging
+          ? `box-shadow 180ms ease-out, height 200ms ${pickupSpring}`
+          : playing
+          ? `transform 260ms ${sendCurve}, opacity 220ms ease-in 40ms, box-shadow 200ms ease-out`
+          : `transform 260ms ${pickupSpring}, box-shadow 220ms ease-out, height 260ms ${pickupSpring}, opacity 200ms ease-out`,
         ...style,
       }}
     >
