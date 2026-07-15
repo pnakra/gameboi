@@ -104,6 +104,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
         lifted && "z-30",
         playing && "pointer-events-none",
         entering && "animate-card-deal",
+        idle && !entering && "animate-card-float",
         className,
       )}
       style={{
