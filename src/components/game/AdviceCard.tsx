@@ -101,6 +101,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
       ref={ref}
       disabled={disabled}
       aria-label={label}
+      data-drag-card={dragging ? "" : undefined}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
