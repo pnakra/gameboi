@@ -232,15 +232,19 @@ function RecapFirstLayout({
   recap,
   question,
   loading,
+  toneMix,
+  toneChips,
 }: {
   friend: Friend;
   recap: string | null;
   question: string | null;
   loading: boolean;
+  toneMix: string | null;
+  toneChips: [Vibe, number][];
 }) {
   return (
     <>
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4">
         <div
           className="w-12 h-12 rounded-full overflow-hidden ring-1 ring-white/10"
           style={{ boxShadow: `0 0 0 1.5px var(--${friend.accent})` }}
@@ -252,6 +256,36 @@ function RecapFirstLayout({
           <div className="text-[12px] text-muted-foreground lowercase">went offline</div>
         </div>
       </div>
+
+      {toneChips.length > 0 && (
+        <div className="mb-6 flex flex-col gap-2">
+          <div className="flex flex-wrap gap-1.5">
+            {toneChips.map(([vibe, n]) => {
+              const tint = `var(${VIBE_TINT_VAR[vibe]})`;
+              return (
+                <span
+                  key={vibe}
+                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em]"
+                  style={{
+                    color: tint,
+                    backgroundColor: `color-mix(in oklch, ${tint} 12%, transparent)`,
+                    boxShadow: `inset 0 0 0 1px color-mix(in oklch, ${tint} 40%, transparent)`,
+                  }}
+                >
+                  {VIBE_LABEL[vibe]}
+                  <span className="text-foreground/70 font-semibold">×{n}</span>
+                </span>
+              );
+            })}
+          </div>
+          {toneMix && (
+            <div className="text-[12px] text-muted-foreground lowercase">
+              your mix: {toneMix.toLowerCase()}
+            </div>
+          )}
+        </div>
+      )}
+
 
       <p
         className={cn(
