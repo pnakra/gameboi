@@ -88,7 +88,8 @@ export function GameScreen({
     { x: number; y: number; t: number; id: string; pointerId: number } | null
   >(null);
   // Upward drag distance (px) needed to release-play a card.
-  const DRAG_PLAY_THRESHOLD = 110;
+  const DRAG_PLAY_THRESHOLD = 120;
+  const dragArmed = !!draggingCardId && -dragOffset.y >= DRAG_PLAY_THRESHOLD;
   // First-session hint teaching the drag-to-play gesture.
   const [showDragHint, setShowDragHint] = useState(false);
   const hintDismissedRef = useRef(false);
@@ -646,8 +647,16 @@ export function GameScreen({
               the available space it scrolls and the cards stay anchored. */}
           <div
             ref={scrollRef}
-            className="min-h-0 overflow-y-auto px-3 pt-3 pb-0 select-none"
-            style={{ flex: "0 1 auto", WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
+            className="min-h-0 overflow-y-auto px-3 pt-3 pb-0 select-none transition-[filter,background-color] duration-200 ease-out"
+            style={{
+              flex: "0 1 auto",
+              WebkitUserSelect: "none",
+              WebkitTouchCallout: "none",
+              filter: dragArmed ? "brightness(1.12) saturate(1.05)" : undefined,
+              backgroundColor: dragArmed
+                ? "color-mix(in oklch, var(--primary) 5%, transparent)"
+                : undefined,
+            }}
           >
             {groupedChat.map((item, i) => {
               if (item.kind === "stamp") {
@@ -677,46 +686,6 @@ export function GameScreen({
             {isFinished && !loading && <EndCap friendName={friend.name} />}
             <div className="h-3" />
           </div>
-
-          {/* Drop zone — appears in the lower chat area while dragging a card,
-              highlights when the finger has crossed the release-to-send
-              threshold. Purely visual; play-detection uses dragOffset.y. */}
-          {draggingCardId && !playingCardId && (() => {
-            const upward = Math.max(0, -dragOffset.y);
-            const proximity = Math.max(0, Math.min(1, (upward - (DRAG_PLAY_THRESHOLD - 70)) / 70));
-            const inZone = upward >= DRAG_PLAY_THRESHOLD;
-            const borderPct = 45 + 45 * proximity;
-            const bgPct = 5 + 11 * proximity;
-            const glow = 20 + 40 * proximity;
-            return (
-              <div
-                aria-hidden
-                className="pointer-events-none absolute left-3 right-3 z-20 animate-fade-in"
-                style={{ bottom: 232 }}
-              >
-                <div
-                  className={cn(
-                    "rounded-2xl flex items-center justify-center h-24",
-                    inZone ? "animate-drop-zone-pulse" : "",
-                  )}
-                  style={{
-                    transition: "border-color 120ms ease-out, background 120ms ease-out, box-shadow 160ms ease-out, transform 180ms cubic-bezier(0.34,1.56,0.64,1)",
-                    transform: `scale(${(1 + 0.03 * proximity).toFixed(3)})`,
-                    border: `1.5px dashed color-mix(in oklch, var(--primary) ${borderPct.toFixed(0)}%, transparent)`,
-                    background: `color-mix(in oklch, var(--primary) ${bgPct.toFixed(0)}%, transparent)`,
-                    boxShadow: `0 0 ${glow.toFixed(0)}px -4px color-mix(in oklch, var(--primary) ${(35 + 30 * proximity).toFixed(0)}%, transparent), inset 0 0 ${(15 + 20 * proximity).toFixed(0)}px -6px color-mix(in oklch, var(--primary) ${(25 + 25 * proximity).toFixed(0)}%, transparent)`,
-                  }}
-                >
-                  <span
-                    className="text-[11px] uppercase tracking-[0.24em] font-semibold transition-opacity"
-                    style={{ color: "var(--primary)" }}
-                  >
-                    {inZone ? "release to send" : "drag here to send"}
-                  </span>
-                </div>
-              </div>
-            );
-          })()}
 
           {/* CARD HAND / CONTINUE — sits directly below the thread so on
               early turns it floats up to meet the last bubble. */}
@@ -790,8 +759,9 @@ export function GameScreen({
                       playing={playing}
                       entering={c.entering}
                       dragging={dragging}
-                      dragX={dragging ? dragOffset.x * (1 - 0.45 * Math.max(0, Math.min(1, ((-dragOffset.y) - (DRAG_PLAY_THRESHOLD - 70)) / 70))) : 0}
-                      dragY={dragging ? dragOffset.y - 14 * Math.max(0, Math.min(1, ((-dragOffset.y) - (DRAG_PLAY_THRESHOLD - 70)) / 70)) : 0}
+                      armed={dragging && dragArmed}
+                      dragX={dragging ? dragOffset.x : 0}
+                      dragY={dragging ? dragOffset.y : 0}
                       disabled={loading || !!playingCardId}
                       style={c.entering ? undefined : { animationDelay: `${i * 0.35}s` }}
                       onPointerDown={(e) => {

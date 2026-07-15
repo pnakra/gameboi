@@ -29,6 +29,8 @@ type Props = {
   entering?: boolean;
   /** Live drag state — while true, transform follows dragX/dragY without transition */
   dragging?: boolean;
+  /** True when drag has crossed the release-to-send threshold */
+  armed?: boolean;
   dragX?: number;
   dragY?: number;
   className?: string;
@@ -52,6 +54,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
     playing,
     entering,
     dragging,
+    armed,
     dragX = 0,
     dragY = 0,
     className,
@@ -80,7 +83,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
   const peekTransform = `translate(-50%, -56px) rotate(0deg) scale(1.08)`;
   // Drag: follow the finger from the peek anchor, no rotation, slightly larger.
   // Uses displayed dragX/dragY (magnet pull applied upstream in GameScreen).
-  const dragScale = 1.12 + 0.04 * Math.max(0, Math.min(1, ((dragY < 0 ? -dragY : 0) - 40) / 90));
+  const dragScale = (armed ? 1.2 : 1.12) + 0.04 * Math.max(0, Math.min(1, ((dragY < 0 ? -dragY : 0) - 40) / 90));
   const dragTransform = `translate(calc(-50% + ${dragX}px), calc(-56px + ${dragY}px)) rotate(0deg) scale(${dragScale.toFixed(3)})`;
   // "Send" — snaps the card into the outgoing bubble area with a small bounce.
   // Short + fast: chat bubble takes over via its own settle animation.
@@ -135,7 +138,12 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
           linear-gradient(160deg, color-mix(in oklch, ${tint} 22%, var(--surface-2)) 0%, var(--surface) 100%)
         `,
         boxShadow: dragging
-          ? `0 ${44 + 20 * (dragScale - 1.12) * 25}px ${100 + 40 * (dragScale - 1.12) * 25}px -20px color-mix(in oklch, ${tint} 85%, transparent),
+          ? armed
+            ? `0 60px 120px -18px color-mix(in oklch, ${tint} 95%, transparent),
+               0 0 90px 6px color-mix(in oklch, ${tint} 80%, transparent),
+               0 0 0 2.5px color-mix(in oklch, ${tint} 100%, transparent),
+               inset 0 1px 0 rgba(255,255,255,0.2)`
+            : `0 ${44 + 20 * (dragScale - 1.12) * 25}px ${100 + 40 * (dragScale - 1.12) * 25}px -20px color-mix(in oklch, ${tint} 85%, transparent),
              0 0 ${48 + 60 * (dragScale - 1.12) * 25}px 4px color-mix(in oklch, ${tint} 60%, transparent),
              0 0 0 2px color-mix(in oklch, ${tint} 95%, transparent),
              inset 0 1px 0 rgba(255,255,255,0.16)`
@@ -200,6 +208,26 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
             "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.15) 100%)",
         }}
       />
+
+      {/* "release to send" — rides with the card once drag crosses threshold */}
+      {dragging && armed && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-3 whitespace-nowrap animate-fade-in"
+        >
+          <span
+            className="text-[10px] uppercase tracking-[0.22em] font-bold px-2.5 py-1 rounded-full"
+            style={{
+              color: tint,
+              background: `color-mix(in oklch, ${tint} 14%, transparent)`,
+              border: `1px solid color-mix(in oklch, ${tint} 55%, transparent)`,
+              boxShadow: `0 0 18px -2px color-mix(in oklch, ${tint} 60%, transparent)`,
+            }}
+          >
+            release to send
+          </span>
+        </div>
+      )}
     </button>
   );
 });
