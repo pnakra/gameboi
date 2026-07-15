@@ -98,24 +98,24 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
         ...style,
       }}
     >
-      {/* Vibe tag */}
-      <div className="flex items-center justify-between">
+      {/* Vibe tag — pinned to the visible top-left edge of a fanned card */}
+      <div className="flex items-center gap-1.5">
+        <span
+          className="w-2 h-2 rounded-full"
+          style={{ backgroundColor: tint, boxShadow: `0 0 12px ${tint}` }}
+        />
         <span
           className="text-[10px] font-bold uppercase tracking-[0.18em]"
           style={{ color: tint }}
         >
           {s.tag}
         </span>
-        <span
-          className="w-2 h-2 rounded-full"
-          style={{ backgroundColor: tint, boxShadow: `0 0 12px ${tint}` }}
-        />
       </div>
 
-      {/* Label — fills card. Top-aligned so long text doesn't clip from below. */}
+      {/* Label — short punchy move name, top-left, readable while fanned */}
       <div
         className={cn(
-          "absolute inset-x-3.5 top-9 bottom-3.5 flex items-start overflow-hidden",
+          "absolute inset-x-3.5 top-9 flex items-start overflow-hidden",
           "font-semibold text-foreground/95 text-balance",
         )}
       >
@@ -124,7 +124,7 @@ export const AdviceCard = forwardRef<HTMLButtonElement, Props>(function AdviceCa
             "block w-full transition-all duration-200",
             active
               ? "text-[15px] leading-[1.32]"
-              : "text-[13px] leading-[1.28] line-clamp-7",
+              : "text-[13px] leading-[1.28] line-clamp-4",
           )}
         >
           {label}
