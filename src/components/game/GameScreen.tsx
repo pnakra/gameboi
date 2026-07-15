@@ -81,6 +81,13 @@ export function GameScreen({
   const [isFinished, setIsFinished] = useState(false);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
+  const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const pointerStartRef = useRef<
+    { x: number; y: number; t: number; id: string; pointerId: number } | null
+  >(null);
+  // Upward drag distance (px) needed to release-play a card.
+  const DRAG_PLAY_THRESHOLD = 110;
   const [draft, setDraft] = useState("");
   const [showMidReview, setShowMidReview] = useState(false);
   const [pendingHand, setPendingHand] = useState<Card[] | null>(null);
