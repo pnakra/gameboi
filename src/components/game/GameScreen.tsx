@@ -9,6 +9,8 @@ import { avatarFor, type Gender } from "@/components/game/avatars";
 import { cn } from "@/lib/utils";
 import { track, logExchange, isDeepLinkSession } from "@/lib/analytics";
 import { itoUrl } from "@/lib/ito";
+import { Button } from "@/components/ui/button";
+import { MAX_EXCHANGES, canCompose, reviewForExchange } from "./round-rules";
 
 type RosterEntry = { name: string; gender: Gender; avatar: string; isMain?: boolean };
 
@@ -19,10 +21,6 @@ type ChatItem =
   | { kind: "stamp"; text: string };
 type ApiTurn = { role: "user" | "assistant"; content: string };
 
-const MIN_EXCHANGES = 4;
-const MAX_EXCHANGES = 8;
-const MID_REVIEW_EXCHANGES = [4, 6] as const;
-const FREETEXT_FROM = 3;
 const HAND_SIZE = 3;
 const WILDCARD_ID = "__wildcard_ito__";
 const ITO_CHECKIN_URL = "https://gameboi.isthisok.app/check-in";
@@ -79,6 +77,8 @@ export function GameScreen({
   const [history, setHistory] = useState<ApiTurn[]>([]);
   const [loading, setLoading] = useState(true);
   const [exchange, setExchange] = useState(1);
+  const [maxExchanges, setMaxExchanges] = useState(MAX_EXCHANGES);
+  const [freeTextEnabled, setFreeTextEnabled] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
@@ -282,6 +282,11 @@ export function GameScreen({
       }
       if (error) throw error;
 
+      if (Number.isInteger(data.maxExchanges) && data.maxExchanges > 0) {
+        setMaxExchanges(data.maxExchanges);
+      }
+      setFreeTextEnabled(data.freeTextEnabled === true);
+
       const friendMsgs: string[] = data.friend ?? [];
       const isGroupMode = mode.id === "group_guys" || mode.id === "group_mixed";
       const mainName = friend.name.toLowerCase();
@@ -415,16 +420,22 @@ export function GameScreen({
         // Mid-round review beats: trigger when we're about to deal cards for
         // exchange 4 (first review) and exchange 6 (second review). Stash the
         // hand so it deals once the player chooses "keep going".
-        const isReviewExchange = (MID_REVIEW_EXCHANGES as readonly number[]).includes(opts.forExchange);
-        if (isReviewExchange && !midReviewsShownRef.current.has(opts.forExchange)) {
-          midReviewsShownRef.current.add(opts.forExchange);
-          setReviewIndex(opts.forExchange === MID_REVIEW_EXCHANGES[0] ? 1 : 2);
+        const nextReview = reviewForExchange(opts.forExchange);
+        if (nextReview && !midReviewsShownRef.current.has(opts.forExchange)) {
           setPendingHand(incoming);
           setHand([]);
-          setShowMidReview(true);
         } else {
           await dealCards(incoming);
         }
+      }
+      // Reflection scheduling also runs for the final exchange. Its continue
+      // action returns to the completed thread rather than dealing more cards.
+      const nextReview = reviewForExchange(opts.forExchange);
+      if (nextReview && !midReviewsShownRef.current.has(opts.forExchange)) {
+        midReviewsShownRef.current.add(opts.forExchange);
+        setReviewIndex(nextReview);
+        if (data.isFinal) setPendingHand(null);
+        setShowMidReview(true);
       }
     } catch (e) {
       console.error(e);
@@ -512,7 +523,7 @@ export function GameScreen({
 
   function sendDraft() {
     const text = draft.trim();
-    if (!text || loading || isFinished || playingCardId) return;
+    if (!text || loading || playingCardId || !canCompose(exchange, isFinished, showMidReview, freeTextEnabled)) return;
     track("freetext_sent", {
       friend_id: friend.id,
       mode_id: mode.id,
@@ -656,7 +667,7 @@ export function GameScreen({
               </div>
             </div>
             <div className="ml-auto text-[11px] uppercase tracking-widest text-muted-foreground/70 font-semibold">
-              {Math.min(exchange, MAX_EXCHANGES)}/{MAX_EXCHANGES}
+              {Math.min(exchange, maxExchanges)}/{maxExchanges}
             </div>
           </header>
 
@@ -924,6 +935,17 @@ export function GameScreen({
             </div>
           )}
 
+          {canCompose(exchange, isFinished, showMidReview, freeTextEnabled) && (
+            <div className="shrink-0 px-3 py-2">
+              <ComposeBar
+                value={draft}
+                onChange={setDraft}
+                onSend={sendDraft}
+                disabled={loading || !!playingCardId}
+              />
+            </div>
+          )}
+
           {/* Bottom-anchored handoff link — mt-auto pins it to the bottom even
               when the cards have floated up to meet a short thread. */}
           <div className="shrink-0 mt-auto safe-bottom px-2">
@@ -1009,6 +1031,8 @@ function ComposeBar({
     <div className="flex items-end gap-2">
       <div className="flex-1 min-h-[44px] rounded-[22px] bg-surface border border-white/[0.08] px-4 py-2.5 focus-within:border-white/20 transition-colors">
         <textarea
+          aria-label="Your reply"
+          disabled={disabled}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={(e) => {
@@ -1023,7 +1047,8 @@ function ComposeBar({
           style={{ fieldSizing: "content" } as React.CSSProperties}
         />
       </div>
-      <button
+      <Button
+        size="icon"
         onClick={onSend}
         disabled={!canSend}
         aria-label="Send"
@@ -1043,7 +1068,7 @@ function ComposeBar({
             strokeLinejoin="round"
           />
         </svg>
-      </button>
+      </Button>
     </div>
   );
 }
