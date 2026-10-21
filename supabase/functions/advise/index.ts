@@ -292,6 +292,11 @@ async function callLovableAI(messages: AnthropicMsg[], system: string) {
     body: JSON.stringify({
       model,
       max_tokens: 700,
+      // Gemini's default thinking can consume this entire compact response
+      // budget, leaving the JSON unfinished. These short game turns do not
+      // need reasoning; preserve the existing model and output budget.
+      ...(model.startsWith("google/gemini-") ? { reasoning_effort: "none" } : {}),
+      response_format: { type: "json_object" },
       messages: [{ role: "system", content: system }, ...messages],
     }),
   });
@@ -301,6 +306,9 @@ async function callLovableAI(messages: AnthropicMsg[], system: string) {
     throw new Error(`Lovable AI ${res.status}: ${t}`);
   }
   const data = await res.json();
+  if (data?.choices?.[0]?.finish_reason === "length") {
+    throw new Error("The reply was cut off before it finished. Please try again.");
+  }
   return data?.choices?.[0]?.message?.content ?? "";
 }
 
